@@ -21,7 +21,7 @@ if ($status) {
 
 # 2. Push para o GitHub
 Write-Host "`n[1/4] Enviando para o GitHub..." -ForegroundColor Cyan
-git push origin main
+git push origin master
 if ($LASTEXITCODE -ne 0) { Write-Host "ERRO no git push." -ForegroundColor Red; exit 1 }
 
 # 3. Build e deploy no servidor
@@ -29,7 +29,7 @@ Write-Host "`n[2/4] Construindo imagem no servidor..." -ForegroundColor Cyan
 $BUILD_CMD = @"
 set -e
 cd $SERVER_PATH
-git pull --ff-only origin main
+git pull --ff-only origin master
 docker-compose -f docker-compose.prod.yml build web
 "@
 ssh -p $SSH_PORT $SERVER $BUILD_CMD
