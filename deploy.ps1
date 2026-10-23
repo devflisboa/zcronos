@@ -3,7 +3,7 @@
 
 $SERVER      = "felipe@casakek.duckdns.org"
 $SSH_PORT    = "64622"
-$SERVER_PATH = "/home/felipe/sistemas/zCronos"
+$SERVER_PATH = "/home/felipe/sistemas/zCronos/zcronos"
 $CONTAINER   = "zcronos_web_1"
 $APP_PORT    = "5012"
 $HEALTH_URL  = "http://localhost:$APP_PORT"
