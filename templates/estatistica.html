@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estatísticas de Corridas</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
+    <!--<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">-->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css">
+</head>
+
+<body>
+    <div class="container mt-5 mb-5">
+        <h1 class="text-center mb-5">Dashboard de Estatísticas de Corridas</h1>
+
+        <!-- Visão Geral -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">Visão Geral</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4"><strong>Total de Corridas:</strong> {{ total_corridas }}</div>
+                    <div class="col-md-4"><strong>Quilômetros Percorridos:</strong> {{ quilometros_percorridos }} km
+                    </div>
+                    <div class="col-md-4"><strong>Tempo Total Gasto:</strong> {{ tempo_gasto }} horas</div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-4"><strong>Ganho Bruto:</strong> R$ {{ ganho_bruto }}</div>
+                    <div class="col-md-4"><strong>Ganho Líquido:</strong> R$ {{ ganho_liquido }}</div>
+                    <div class="col-md-4"><strong>Pago pelos Usuários:</strong> R$ {{ pago_usuarios }}</div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-4"><strong>Pontos Ganhos:</strong> {{ pontos_ganhos }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Análise por Tipo de Corrida -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-secondary text-white">Análise por Tipo de Corrida</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Corridas por Tipo:</h6>
+                        <ul class="list-unstyled">
+                            {% for tipo in corridas_por_tipo %}
+                            <li>{{ tipo[0] }}: <strong>{{ tipo[1] }} corridas</strong></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Quilômetros por Tipo:</h6>
+                        <ul class="list-unstyled">
+                            {% for tipo in quilometros_por_tipo %}
+                            <li>{{ tipo[0] }}: <strong>{{ tipo[1] }} km</strong></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Análise Financeira -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-info text-white">Análise Financeira</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4"><strong>Média de Ganho Bruto por Corrida:</strong> R$ {{ media_ganho_bruto }}
+                    </div>
+                    <div class="col-md-4"><strong>Média de Ganho Líquido por Corrida:</strong> R$ {{ media_ganho_liquido
+                        }}</div>
+                    <div class="col-md-4"><strong>Taxa de Serviço Média:</strong> {{ taxa_servico_media }}%</div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6"><strong>Total de Promoções Aplicadas:</strong> {{ total_promocoes }}</div>
+                    <div class="col-md-6"><strong>Valor Total de Promoções Aplicadas:</strong> R$ {{ valor_promocoes }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Eficiência e Desempenho -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-warning text-dark">Eficiência e Desempenho</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4"><strong>Velocidade Média:</strong> {{ velocidade_media }} km/h</div>
+                    <div class="col-md-4"><strong>Tempo Médio por Corrida:</strong> {{ tempo_medio }} minutos</div>
+                    <div class="col-md-4"><strong>Distância Média por Corrida:</strong> {{ distancia_media }} km</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Análise por Local -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-success text-white">Análise por Local</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Locais de Partida Mais Populares:</h6>
+                        <ul class="list-unstyled">
+                            {% for local in corridas_por_local_partida %}
+                            <li>{{ local[0] }}: <strong>{{ local[1] }} corridas</strong></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Locais de Destino Mais Populares:</h6>
+                        <ul class="list-unstyled">
+                            {% for local in corridas_por_local_destino %}
+                            <li>{{ local[0] }}: <strong>{{ local[1] }} corridas</strong></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top 5 Corridas Mais Lucrativas -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-dark text-white">Top 5 Corridas Mais Lucrativas</div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    {% for corrida in top_5_corridas_lucrativas %}
+                    <li><strong>{{ corrida.data_corrida }} - {{ corrida.local_destino }}</strong>: R$ {{
+                        corrida.ganho_liquido }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Top 5 Dias Mais Movimentados -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">Top 5 Dias Mais Movimentados</div>
+            <div class="card-body">
+                <ul>
+                    {% for dia, total in top_5_dias_movimentados %}
+                        <li>{{ dia }}: {{ total }} corridas</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Top 5 Locais Mais Frequentados -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-secondary text-white">Top 5 Locais Mais Frequentados</div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    {% for local in top_5_locais_frequentados %}
+                    <li><strong>{{ local[0] }}:</strong> {{ local[1] }} corridas</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

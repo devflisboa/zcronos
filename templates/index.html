@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cronos | Gestão Automotiva</title>
+<link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/automotive.css') }}">
+</head>
+<body>
+
+<!-- ═══════════════ BOOT ═══════════════ -->
+<div id="boot">
+  <img class="boot-car" src="{{ url_for('static', filename='image/cronos.png') }}" alt="Fiat Cronos">
+  <div class="boot-logo">
+    <span class="boot-brand">Fiat</span>
+    <span class="boot-model">CRONOS</span>
+  </div>
+  <div class="boot-line"></div>
+  <div class="boot-sub">Gestão Automotiva Inteligente</div>
+  <div class="boot-bar-wrap"><div class="boot-bar"></div></div>
+  <div class="boot-msg" id="boot-msg">Inicializando...</div>
+</div>
+
+<!-- ═══════════════ APP ═══════════════ -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sb-head">
+      <div class="sb-logo">
+        <div class="sb-logo-icon">C</div>
+        <div class="sb-logo-text">
+          <div class="sb-logo-brand">Fiat</div>
+          <div class="sb-logo-model">Cronos</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="nav-group-label">Principal</div>
+      <button class="nav-item active" data-section="home" data-label="Dashboard">
+        <span class="ni">⊞</span> Dashboard
+      </button>
+
+      <div class="nav-group-label">Financeiro</div>
+      <button class="nav-item" data-section="combustivel" data-label="Combustível">
+        <span class="ni">⛽</span> Combustível
+      </button>
+      <button class="nav-item" data-section="despesas" data-label="Despesas">
+        <span class="ni">💳</span> Despesas
+        {% set n_desp = despesas|length %}
+        {% if n_desp > 0 %}<span class="nav-badge">{{ n_desp }}</span>{% endif %}
+      </button>
+      <button class="nav-item" data-section="analise" data-label="Análise Financeira">
+        <span class="ni">📊</span> Análise
+      </button>
+
+      <div class="nav-group-label">Veículo</div>
+      <button class="nav-item" data-section="manutencao" data-label="Manutenção">
+        <span class="ni">🔧</span> Manutenção
+        {% set n_alert = alertas|length %}
+        {% if n_alert > 0 %}<span class="nav-badge">{{ n_alert }}</span>{% endif %}
+      </button>
+      <button class="nav-item" data-section="historico" data-label="Histórico do Veículo">
+        <span class="ni">🚗</span> Histórico
+      </button>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="sb-car-thumb">
+        <img src="{{ url_for('static', filename='image/cronos.png') }}" alt="Fiat Cronos">
+      </div>
+      <div class="sb-vehicle">
+        <div>
+          <div class="sb-plate">{{ veiculo.placa if veiculo else '—' }}</div>
+          <div class="sb-km" style="margin-top:4px">
+            <span>{{ '{:,}'.format(km_atual).replace(',','.') }}</span> km
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openModal('km')">✏️</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div id="main">
+
+    <!-- TOPBAR -->
+    <header id="topbar">
+      <button class="btn btn-ghost btn-icon" id="sb-toggle" style="display:none">☰</button>
+      <h1 class="topbar-title" id="topbar-title">Dashboard</h1>
+      {% if alertas %}
+      <div class="status-pill warn">
+        <span class="status-dot"></span> {{ alertas|length }} alerta{{ 's' if alertas|length > 1 }}
+      </div>
+      {% else %}
+      <div class="status-pill ok">
+        <span class="status-dot"></span> Veículo OK
+      </div>
+      {% endif %}
+      <div class="topbar-date">{{ current_date }}</div>
+    </header>
+
+    <!-- ══════════════ CONTENT ══════════════ -->
+    <div class="content">
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div id="flash-container">
+        {% for cat, msg in messages %}
+        <div class="flash-msg {{ cat }}">{{ '✓' if cat == 'success' else '⚠' }} {{ msg }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      <!-- ──────────── HOME ──────────── -->
+      <section id="sec-home" class="section active">
+
+        <!-- KPI Row -->
+        <div class="grid-4 gap-top">
+
+          <div class="kpi" style="--accent-c:var(--red-d)">
+            <div class="kpi-icon">💰</div>
+            <div class="kpi-label">Custo do Mês</div>
+            <div class="kpi-value red" data-count="{{ custo_mes }}" data-prefix="R$ " data-dec="2">R$ 0</div>
+            <div class="kpi-delta {% if custo_mes_delta > 0 %}up{% elif custo_mes_delta < 0 %}down{% else %}neutral{% endif %}">
+              {% if custo_mes_delta > 0 %}▲{% elif custo_mes_delta < 0 %}▼{% else %}–{% endif %}
+              {{ custo_mes_delta|abs }}% vs mês anterior
+            </div>
+            <div class="kpi-bar" style="background:var(--red)"></div>
+          </div>
+
+          <div class="kpi" style="--accent-c:var(--blue-d)">
+            <div class="kpi-icon">📅</div>
+            <div class="kpi-label">Custo do Ano</div>
+            <div class="kpi-value blue" data-count="{{ custo_ano }}" data-prefix="R$ " data-dec="2">R$ 0</div>
+            <div class="kpi-delta neutral">Acumulado {{ current_date[-4:] }}</div>
+            <div class="kpi-bar" style="background:var(--blue)"></div>
+          </div>
+
+          <div class="kpi" style="--accent-c:var(--ok-d)">
+            <div class="kpi-icon">📈</div>
+            <div class="kpi-label">Média Mensal</div>
+            <div class="kpi-value ok" data-count="{{ media_mensal }}" data-prefix="R$ " data-dec="2">R$ 0</div>
+            <div class="kpi-delta neutral">Baseado em {{ current_date[3:5]|int }} meses</div>
+            <div class="kpi-bar" style="background:var(--ok)"></div>
+          </div>
+
+          <div class="kpi" style="--accent-c:var(--gold-d)">
+            <div class="kpi-icon">🛣️</div>
+            <div class="kpi-label">Custo por Km</div>
+            <div class="kpi-value" style="color:var(--gold)" data-count="{{ custo_por_km }}" data-prefix="R$ " data-dec="2">R$ 0</div>
+            <div class="kpi-delta neutral">Baseado no ano atual</div>
+            <div class="kpi-bar" style="background:var(--gold)"></div>
+          </div>
+        </div>
+
+        <!-- Middle Row: Gauge + Fuel + Maintenance -->
+        <div class="grid-3 gap-top">
+
+          <!-- Speedometer / KM Gauge -->
+          <div class="card">
+            <div class="card-title">Quilometragem Atual</div>
+            {% set km_pct = [(km_atual / 100000 * 100), 100]|min %}
+            <div class="gauge-wrap" data-gauge="{{ km_pct }}">
+              <svg class="gauge-svg" viewBox="0 0 200 120">
+                <path class="gauge-bg" d="M 20 110 A 90 90 0 0 1 180 110" stroke-dasharray="283" stroke-dashoffset="0"/>
+                <path class="gauge-fill" d="M 20 110 A 90 90 0 0 1 180 110"
+                  stroke="url(#grad-km)" stroke-dasharray="283" stroke-dashoffset="283"/>
+                <defs>
+                  <linearGradient id="grad-km" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%"   style="stop-color:#606870"/>
+                    <stop offset="50%"  style="stop-color:#b0b8c2"/>
+                    <stop offset="100%" style="stop-color:#d8dde2"/>
+                  </linearGradient>
+                </defs>
+                <text class="gauge-value-text" x="100" y="88">{{ '{:,}'.format(km_atual).replace(',','.') }}</text>
+                <text class="gauge-label-text" x="100" y="103">quilômetros</text>
+                <text class="gauge-min" x="15" y="124">0</text>
+                <text class="gauge-max" x="165" y="124">100k</text>
+              </svg>
+            </div>
+            <div style="text-align:center;margin-top:8px">
+              <button class="btn btn-ghost btn-sm" onclick="openModal('km')">✏️ Atualizar km</button>
+            </div>
+          </div>
+
+          <!-- Combustível do Mês -->
+          <div class="card">
+            <div class="card-title-row">
+              <div class="card-title">Combustível — Mês</div>
+              <span class="pill pill-red">⛽</span>
+            </div>
+            <div class="kpi-value red" style="font-size:28px" data-count="{{ gastos_combustivel_mes }}" data-prefix="R$ " data-dec="2">R$ 0</div>
+            <div style="margin-top:16px">
+              {% set fuel_pct = [(gastos_combustivel_mes / (custo_mes + 0.01) * 100), 100]|min %}
+              <div class="fuel-bar-wrap">
+                <div class="fuel-segments" data-fuel="{{ fuel_pct }}">
+                  {% for _ in range(10) %}<div class="fuel-seg"></div>{% endfor %}
+                </div>
+                <div class="fuel-label-row"><span>E</span><span>{{ fuel_pct|round(0)|int }}% do mês</span><span>F</span></div>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <ul class="stat-list">
+              <li class="stat-item"><span class="stat-key">Consumo médio</span><span class="stat-val">{{ consumo_medio }} km/L</span></li>
+              <li class="stat-item"><span class="stat-key">Preço médio/litro</span><span class="stat-val">R$ {{ preco_medio_litro }}</span></li>
+              <li class="stat-item"><span class="stat-key">Manutenção mês</span><span class="stat-val">R$ {{ gastos_manutencao_mes }}</span></li>
+            </ul>
+          </div>
+
+          <!-- Alertas de Manutenção -->
+          <div class="card">
+            <div class="card-title-row">
+              <div class="card-title">Status Manutenção</div>
+              <button class="btn btn-primary btn-sm" onclick="openModal('manutencao')">+ Novo</button>
+            </div>
+            {% if manutencoes %}
+              {% for m in manutencoes[:5] %}
+              {% set st = m.status_calculado %}
+              <div class="maint-item">
+                <div class="maint-icon" style="background:{% if st=='atrasada' %}var(--danger-d){% elif st=='proxima' %}var(--warn-d){% elif st=='realizada' %}var(--blue-d){% else %}var(--ok-d){% endif %}">
+                  {% if m.tipo == 'oleo' %}🛢️
+                  {% elif m.tipo == 'revisao' %}🔧
+                  {% elif m.tipo == 'pneu' %}🔄
+                  {% elif m.tipo == 'freio' %}🛑
+                  {% elif m.tipo == 'bateria' %}⚡
+                  {% else %}⚙️{% endif %}
+                </div>
+                <div class="maint-info">
+                  <div class="maint-name">{{ m.descricao }}</div>
+                  <div class="maint-detail">
+                    {% if m.data_prevista %}{{ m.data_prevista.strftime('%d/%m/%Y') }}{% endif %}
+                    {% if m.km_previsto %} · {{ '{:,}'.format(m.km_previsto).replace(',','.') }} km{% endif %}
+                  </div>
+                </div>
+                <span class="maint-badge badge-{{ st }}">
+                  {% if st=='atrasada' %}Atrasada
+                  {% elif st=='proxima' %}Próxima
+                  {% elif st=='realizada' %}OK
+                  {% else %}Pendente{% endif %}
+                </span>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Nenhum item pendente</div></div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid-2 gap-top">
+          <div class="card">
+            <div class="card-title">Gastos por Mês</div>
+            <div class="chart-box"><canvas id="chart-gastos-mes"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Distribuição por Categoria</div>
+            <div class="chart-box"><canvas id="chart-categorias"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Recent Expenses -->
+        <div class="card gap-top">
+          <div class="card-title-row">
+            <div class="card-title">Últimas Despesas</div>
+            <button class="btn btn-ghost btn-sm" onclick="switchSection('despesas','Despesas')">Ver tudo →</button>
+          </div>
+          <div class="table-wrap">
+            <table class="auto">
+              <thead><tr>
+                <th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th>
+              </tr></thead>
+              <tbody>
+                {% for d in despesas[:8] %}
+                <tr>
+                  <td>{{ d.data.strftime('%d/%m/%Y') }}</td>
+                  <td><span class="pill pill-gray">{{ d.categoria.icone }} {{ d.categoria.nome }}</span></td>
+                  <td>{{ d.descricao }}</td>
+                  <td style="color:var(--red);font-weight:600">R$ {{ '%.2f'|format(d.valor) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="table-empty">Nenhuma despesa registrada</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ──────────── COMBUSTÍVEL ──────────── -->
+      <section id="sec-combustivel" class="section">
+        <div class="sec-header">
+          <div><h2 class="sec-title">Combustível</h2><p class="sec-sub">Histórico de abastecimentos e consumo</p></div>
+          <button class="btn btn-primary" onclick="openModal('abastecimento')">+ Abastecer</button>
+        </div>
+
+        <div class="grid-4">
+          <div class="kpi">
+            <div class="kpi-label">Gasto Mês</div>
+            <div class="kpi-value red" data-count="{{ gastos_combustivel_mes }}" data-prefix="R$ " data-dec="2">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Consumo Médio</div>
+            <div class="kpi-value blue" data-count="{{ consumo_medio }}" data-suffix=" km/L" data-dec="2">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Preço Médio Litro</div>
+            <div class="kpi-value" style="color:var(--gold)" data-count="{{ preco_medio_litro }}" data-prefix="R$ " data-dec="3">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Total Abastecimentos</div>
+            <div class="kpi-value ok" data-count="{{ abastecimentos|length }}" data-suffix=" registros">—</div>
+          </div>
+        </div>
+
+        <div class="card gap-top">
+          <div class="card-title">Gastos e Litros por Mês</div>
+          <div class="chart-box tall"><canvas id="chart-combustivel"></canvas></div>
+        </div>
+
+        <div class="card gap-top">
+          <div class="card-title-row">
+            <div class="card-title">Histórico de Abastecimentos</div>
+          </div>
+          <div class="table-wrap">
+            <table class="auto">
+              <thead><tr>
+                <th>Data</th><th>Posto</th><th>Km</th><th>Litros</th><th>R$/L</th><th>Total</th><th>Consumo</th><th></th>
+              </tr></thead>
+              <tbody>
+                {% for a in abastecimentos %}
+                <tr>
+                  <td>{{ a.data }}</td>
+                  <td>{{ a.posto }}</td>
+                  <td>{{ '{:,}'.format(a.quilometragem).replace(',','.') }}</td>
+                  <td>{{ '%.2f'|format(a.litros) }} L</td>
+                  <td>R$ {{ a.preco_litro }}</td>
+                  <td style="color:var(--red);font-weight:600">R$ {{ '%.2f'|format(a.valor) }}</td>
+                  <td>{% if a.consumo %}<span class="pill pill-ok">{{ a.consumo }} km/L</span>{% else %}<span class="pill pill-gray">—</span>{% endif %}</td>
+                  <td>
+                    <form id="del-abast-{{ a.id }}" method="POST" action="{{ url_for('abastecimento.delete_abastecimento', id=a.id) }}">
+                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-abast-{{ a.id }}')">🗑</button>
+                    </form>
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="table-empty">Nenhum abastecimento registrado</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ──────────── DESPESAS ──────────── -->
+      <section id="sec-despesas" class="section">
+        <div class="sec-header">
+          <div><h2 class="sec-title">Despesas</h2><p class="sec-sub">Todos os gastos categorizados</p></div>
+          <button class="btn btn-primary" onclick="openModal('despesa')">+ Nova Despesa</button>
+        </div>
+
+        <div class="grid-3">
+          <div class="kpi">
+            <div class="kpi-label">Total do Mês</div>
+            <div class="kpi-value red" data-count="{{ custo_mes }}" data-prefix="R$ " data-dec="2">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Total do Ano</div>
+            <div class="kpi-value blue" data-count="{{ custo_ano }}" data-prefix="R$ " data-dec="2">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Registros</div>
+            <div class="kpi-value ok" data-count="{{ despesas|length }}">—</div>
+          </div>
+        </div>
+
+        <div class="card gap-top">
+          <div class="card-title-row">
+            <div class="card-title">Todas as Despesas</div>
+          </div>
+          <div class="table-wrap">
+            <table class="auto">
+              <thead><tr>
+                <th>Data</th><th>Categoria</th><th>Descrição</th><th>Km</th><th>Pagamento</th><th>Valor</th><th></th>
+              </tr></thead>
+              <tbody>
+                {% for d in despesas %}
+                <tr>
+                  <td>{{ d.data.strftime('%d/%m/%Y') }}</td>
+                  <td><span class="pill pill-gray">{{ d.categoria.icone }} {{ d.categoria.nome }}</span></td>
+                  <td>{{ d.descricao }}</td>
+                  <td>{{ '{:,}'.format(d.quilometragem).replace(',','.') if d.quilometragem else '—' }}</td>
+                  <td>{{ d.forma_pagamento or '—' }}</td>
+                  <td style="color:var(--red);font-weight:600">R$ {{ '%.2f'|format(d.valor) }}</td>
+                  <td>
+                    <form id="del-desp-{{ d.id }}" method="POST" action="{{ url_for('despesa.delete_despesa', id=d.id) }}">
+                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-desp-{{ d.id }}')">🗑</button>
+                    </form>
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="table-empty">Nenhuma despesa registrada</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ──────────── MANUTENÇÃO ──────────── -->
+      <section id="sec-manutencao" class="section">
+        <div class="sec-header">
+          <div><h2 class="sec-title">Manutenção</h2><p class="sec-sub">Preventiva e corretiva</p></div>
+          <button class="btn btn-primary" onclick="openModal('manutencao')">+ Registrar</button>
+        </div>
+
+        <!-- Alertas -->
+        {% if alertas %}
+        <div class="gap-top">
+          {% for a in alertas %}
+          <div class="alert-box {{ a.status }}">
+            <div class="alert-icon">{% if a.status == 'atrasada' %}🚨{% else %}⚠️{% endif %}</div>
+            <div class="alert-text">
+              <div class="alert-title">{{ a.descricao }}</div>
+              <div class="alert-detail">
+                {% if a.data_prevista %}Prevista: {{ a.data_prevista }}{% endif %}
+                {% if a.km_previsto %} · Km: {{ '{:,}'.format(a.km_previsto).replace(',','.') }}{% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="card gap-top">
+          <div class="card-title">Histórico e Agenda</div>
+          <div class="table-wrap">
+            <table class="auto">
+              <thead><tr>
+                <th>Tipo</th><th>Descrição</th><th>Realizada em</th><th>Km Realizado</th><th>Prevista</th><th>Km Previsto</th><th>Custo</th><th>Status</th><th></th>
+              </tr></thead>
+              <tbody>
+                {% for m in manutencoes %}
+                {% set st = m.status_calculado %}
+                <tr>
+                  <td>
+                    {% if m.tipo == 'oleo' %}🛢️ Óleo
+                    {% elif m.tipo == 'revisao' %}🔧 Revisão
+                    {% elif m.tipo == 'pneu' %}🔄 Pneu
+                    {% elif m.tipo == 'freio' %}🛑 Freio
+                    {% elif m.tipo == 'bateria' %}⚡ Bateria
+                    {% else %}⚙️ {{ m.tipo|capitalize }}{% endif %}
+                  </td>
+                  <td>{{ m.descricao }}</td>
+                  <td>{{ m.data_realizada.strftime('%d/%m/%Y') if m.data_realizada else '—' }}</td>
+                  <td>{{ '{:,}'.format(m.km_realizada).replace(',','.') if m.km_realizada else '—' }}</td>
+                  <td>{{ m.data_prevista.strftime('%d/%m/%Y') if m.data_prevista else '—' }}</td>
+                  <td>{{ '{:,}'.format(m.km_previsto).replace(',','.') if m.km_previsto else '—' }}</td>
+                  <td>{% if m.custo %}R$ {{ '%.2f'|format(m.custo) }}{% else %}—{% endif %}</td>
+                  <td><span class="maint-badge badge-{{ st }}">{{ st|capitalize }}</span></td>
+                  <td style="display:flex;gap:4px">
+                    {% if st != 'realizada' %}
+                    <button class="btn btn-ghost btn-sm" onclick="openModal('concluir-{{ m.id }}')">✓</button>
+                    {% endif %}
+                    <form id="del-maint-{{ m.id }}" method="POST" action="{{ url_for('manutencao.delete_manutencao', id=m.id) }}">
+                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-maint-{{ m.id }}')">🗑</button>
+                    </form>
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="9" class="table-empty">Nenhuma manutenção registrada</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ──────────── ANÁLISE ──────────── -->
+      <section id="sec-analise" class="section">
+        <div class="sec-header">
+          <div><h2 class="sec-title">Análise Financeira</h2><p class="sec-sub">Evolução e distribuição dos gastos</p></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="kpi">
+            <div class="kpi-label">Gastos Fixos (Mês)</div>
+            <div class="kpi-value blue" data-count="{{ fixo_vs_variavel.fixo }}" data-prefix="R$ " data-dec="2">—</div>
+            <div class="prog-bar"><div class="prog-fill" style="width:{% if custo_mes > 0 %}{{ (fixo_vs_variavel.fixo / custo_mes * 100)|round }}{% else %}0{% endif %}%;background:var(--blue)"></div></div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Gastos Variáveis (Mês)</div>
+            <div class="kpi-value red" data-count="{{ fixo_vs_variavel.variavel }}" data-prefix="R$ " data-dec="2">—</div>
+            <div class="prog-bar"><div class="prog-fill" style="width:{% if custo_mes > 0 %}{{ (fixo_vs_variavel.variavel / custo_mes * 100)|round }}{% else %}0{% endif %}%;background:var(--red)"></div></div>
+          </div>
+        </div>
+
+        <div class="card gap-top">
+          <div class="card-title">Evolução Mensal ({{ current_date[-4:] }})</div>
+          <div class="chart-box tall"><canvas id="chart-anual"></canvas></div>
+        </div>
+
+        <div class="grid-2 gap-top">
+          <div class="card">
+            <div class="card-title">Por Categoria (Mês Atual)</div>
+            {% for item in gastos_por_categoria %}
+            <div style="margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+                <span style="color:var(--text2)">{{ item.categoria }}</span>
+                <span style="color:var(--text);font-weight:600">R$ {{ '%.2f'|format(item.total) }}</span>
+              </div>
+              <div class="prog-bar">
+                <div class="prog-fill" style="width:{% if custo_mes > 0 %}{{ (item.total / custo_mes * 100)|round }}{% else %}0{% endif %}%;background:var(--red)"></div>
+              </div>
+            </div>
+            {% else %}
+            <div class="empty"><div class="empty-text">Sem dados neste mês</div></div>
+            {% endfor %}
+          </div>
+
+          <div class="card">
+            <div class="card-title">Resumo do Ano</div>
+            <ul class="stat-list">
+              <li class="stat-item"><span class="stat-key">Total gasto</span><span class="stat-val">R$ {{ '%.2f'|format(custo_ano) }}</span></li>
+              <li class="stat-item"><span class="stat-key">Média mensal</span><span class="stat-val">R$ {{ '%.2f'|format(media_mensal) }}</span></li>
+              <li class="stat-item"><span class="stat-key">Custo por km</span><span class="stat-val">R$ {{ '%.2f'|format(custo_por_km) }}</span></li>
+              <li class="stat-item"><span class="stat-key">Abastecimentos</span><span class="stat-val">{{ abastecimentos|length }}x</span></li>
+              <li class="stat-item"><span class="stat-key">Total combustível</span><span class="stat-val">R$ {{ '%.2f'|format(gastos_combustivel_mes) }}/mês</span></li>
+              <li class="stat-item"><span class="stat-key">Consumo médio</span><span class="stat-val">{{ consumo_medio }} km/L</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ──────────── HISTÓRICO ──────────── -->
+      <section id="sec-historico" class="section">
+        <div class="sec-header">
+          <div><h2 class="sec-title">Histórico do Veículo</h2><p class="sec-sub">Ficha completa e dados do carro</p></div>
+          <button class="btn btn-ghost" onclick="openModal('veiculo')">✏️ Editar</button>
+        </div>
+
+        {% if veiculo %}
+        <div class="vehicle-hero">
+          <div class="vehicle-hero-info">
+            <div class="vehicle-plate-display">🇧🇷 {{ veiculo.placa }}</div>
+            <div class="vehicle-model-name">{{ veiculo.marca }} {{ veiculo.modelo }}</div>
+            <div class="vehicle-version">{{ veiculo.versao }} — {{ veiculo.ano }}</div>
+            <div class="vehicle-specs">
+              <div class="spec-item"><div class="spec-label">Motor</div><div class="spec-value">{{ veiculo.motor or '—' }}</div></div>
+              <div class="spec-item"><div class="spec-label">Cor</div><div class="spec-value">{{ veiculo.cor or '—' }}</div></div>
+              <div class="spec-item"><div class="spec-label">Km Atual</div><div class="spec-value">{{ '{:,}'.format(veiculo.km_atual).replace(',','.') }}</div></div>
+              <div class="spec-item"><div class="spec-label">Compra</div><div class="spec-value">{{ veiculo.data_compra.strftime('%d/%m/%Y') if veiculo.data_compra else '—' }}</div></div>
+              <div class="spec-item"><div class="spec-label">Valor Pago</div><div class="spec-value">R$ {{ 'R$ {:,.0f}'.format(veiculo.valor_compra).replace(',','.') if veiculo.valor_compra else '—' }}</div></div>
+              <div class="spec-item"><div class="spec-label">Valor Atual</div><div class="spec-value">{{ 'R$ {:,.0f}'.format(veiculo.valor_atual).replace(',','.') if veiculo.valor_atual else '—' }}</div></div>
+            </div>
+          </div>
+          <div class="vehicle-hero-img">
+            <img src="{{ url_for('static', filename='image/cronos.png') }}" alt="Fiat Cronos">
+          </div>
+        </div>
+
+        <div class="grid-2 gap-top">
+          <div class="card">
+            <div class="card-title">Resumo de Manutenção</div>
+            <ul class="stat-list">
+              {% set realizadas = manutencoes|selectattr('status_calculado','eq','realizada')|list %}
+              {% set pendentes = manutencoes|selectattr('status_calculado','ne','realizada')|list %}
+              <li class="stat-item"><span class="stat-key">Total de registros</span><span class="stat-val">{{ manutencoes|length }}</span></li>
+              <li class="stat-item"><span class="stat-key">Concluídas</span><span class="stat-val" style="color:var(--ok)">{{ realizadas|length }}</span></li>
+              <li class="stat-item"><span class="stat-key">Pendentes</span><span class="stat-val" style="color:var(--warn)">{{ pendentes|length }}</span></li>
+              <li class="stat-item"><span class="stat-key">Alertas ativos</span><span class="stat-val" style="color:var(--danger)">{{ alertas|length }}</span></li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="card-title">Custo Total de Propriedade</div>
+            <ul class="stat-list">
+              <li class="stat-item"><span class="stat-key">Gasto total ({{ current_date[-4:] }})</span><span class="stat-val">R$ {{ '%.2f'|format(custo_ano) }}</span></li>
+              <li class="stat-item"><span class="stat-key">Custo por km</span><span class="stat-val">R$ {{ '%.2f'|format(custo_por_km) }}</span></li>
+              <li class="stat-item"><span class="stat-key">Média mensal</span><span class="stat-val">R$ {{ '%.2f'|format(media_mensal) }}</span></li>
+              <li class="stat-item"><span class="stat-key">Combustível mês</span><span class="stat-val">R$ {{ '%.2f'|format(gastos_combustivel_mes) }}</span></li>
+            </ul>
+          </div>
+        </div>
+        {% else %}
+        <div class="card"><div class="empty"><div class="empty-icon">🚗</div><div class="empty-text">Dados do veículo não cadastrados</div><button class="btn btn-primary" style="margin-top:12px" onclick="openModal('veiculo')">Cadastrar</button></div></div>
+        {% endif %}
+      </section>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ═══════════ MODALS ═══════════ -->
+
+<!-- Modal: Atualizar KM -->
+<div class="modal-overlay" id="modal-km">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🛣️ Atualizar Quilometragem</div>
+      <button class="modal-close" data-close-modal>✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('main.atualizar_km') }}">
+      <div class="form-group">
+        <label class="form-label">Quilometragem atual</label>
+        <input type="number" name="km_atual" class="form-control" value="{{ km_atual }}" required>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Abastecer -->
+<div class="modal-overlay" id="modal-abastecimento">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">⛽ Registrar Abastecimento</div>
+      <button class="modal-close" data-close-modal>✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('abastecimento.add_abastecimento') }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Data</label>
+          <input type="date" name="data" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quilometragem</label>
+          <input type="number" name="quilometragem" class="form-control" value="{{ km_atual }}" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Litros Abastecidos</label>
+          <input type="number" step="0.01" name="litros_abastecidos" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Preço por Litro (R$)</label>
+          <input type="number" step="0.001" name="preco_combustivel" class="form-control" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Valor Total (R$)</label>
+          <input type="number" step="0.01" name="valor_total" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Posto</label>
+          <input type="text" name="posto" class="form-control" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Nova Despesa -->
+<div class="modal-overlay" id="modal-despesa">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">💳 Nova Despesa</div>
+      <button class="modal-close" data-close-modal>✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('despesa.add_despesa') }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Data</label>
+          <input type="date" name="data" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Categoria</label>
+          <select name="categoria_id" class="form-control" required>
+            <option value="">Selecione...</option>
+            {% for cat in categorias %}
+            <option value="{{ cat.id }}">{{ cat.icone }} {{ cat.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descrição</label>
+        <input type="text" name="descricao" class="form-control" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Valor (R$)</label>
+          <input type="number" step="0.01" name="valor" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quilometragem</label>
+          <input type="number" name="quilometragem" class="form-control">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Forma de Pagamento</label>
+          <select name="forma_pagamento" class="form-control">
+            <option value="">—</option>
+            <option>Pix</option><option>Cartão Débito</option>
+            <option>Cartão Crédito</option><option>Dinheiro</option><option>Boleto</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Observações</label>
+          <input type="text" name="observacoes" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Nova Manutenção -->
+<div class="modal-overlay" id="modal-manutencao">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🔧 Registrar Manutenção</div>
+      <button class="modal-close" data-close-modal>✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('manutencao.add_manutencao') }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select name="tipo" class="form-control" required>
+            <option value="">Selecione...</option>
+            <option value="oleo">🛢️ Troca de Óleo</option>
+            <option value="revisao">🔧 Revisão</option>
+            <option value="pneu">🔄 Pneus</option>
+            <option value="freio">🛑 Freios</option>
+            <option value="bateria">⚡ Bateria</option>
+            <option value="filtro">🌬️ Filtros</option>
+            <option value="outro">⚙️ Outro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select name="status" class="form-control">
+            <option value="pendente">Pendente</option>
+            <option value="realizada">Realizada</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descrição</label>
+        <input type="text" name="descricao" class="form-control" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Data Realizada</label>
+          <input type="date" name="data_realizada" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Km Realizado</label>
+          <input type="number" name="km_realizada" class="form-control">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Data Prevista</label>
+          <input type="date" name="data_prevista" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Km Previsto</label>
+          <input type="number" name="km_previsto" class="form-control">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Custo (R$)</label>
+          <input type="number" step="0.01" name="custo" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Observações</label>
+          <input type="text" name="observacoes" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modais de Concluir Manutenção -->
+{% for m in manutencoes %}
+{% if m.status_calculado != 'realizada' %}
+<div class="modal-overlay" id="modal-concluir-{{ m.id }}">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✓ Concluir: {{ m.descricao }}</div>
+      <button class="modal-close" data-close-modal>✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('manutencao.concluir_manutencao', id=m.id) }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Data de Conclusão</label>
+          <input type="date" name="data_realizada" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Km na Conclusão</label>
+          <input type="number" name="km_realizada" class="form-control" value="{{ km_atual }}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Custo Final (R$)</label>
+        <input type="number" step="0.01" name="custo" class="form-control" value="{{ m.custo or '' }}">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Concluir</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% endfor %}
+
+<!-- Modal: Editar Veículo -->
+<div class="modal-overlay" id="modal-veiculo">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🚗 Editar Veículo</div>
+      <button class="modal-close" data-close-modal>✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('main.editar_veiculo') }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Marca</label>
+          <input type="text" name="marca" class="form-control" value="{{ veiculo.marca if veiculo else '' }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Modelo</label>
+          <input type="text" name="modelo" class="form-control" value="{{ veiculo.modelo if veiculo else '' }}">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Versão</label>
+          <input type="text" name="versao" class="form-control" value="{{ veiculo.versao if veiculo else '' }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ano</label>
+          <input type="number" name="ano" class="form-control" value="{{ veiculo.ano if veiculo else '' }}">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Placa</label>
+          <input type="text" name="placa" class="form-control" value="{{ veiculo.placa if veiculo else '' }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cor</label>
+          <input type="text" name="cor" class="form-control" value="{{ veiculo.cor if veiculo else '' }}">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Km Atual</label>
+          <input type="number" name="km_atual" class="form-control" value="{{ veiculo.km_atual if veiculo else '' }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Motor</label>
+          <input type="text" name="motor" class="form-control" value="{{ veiculo.motor if veiculo else '' }}">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Valor de Compra (R$)</label>
+          <input type="number" step="0.01" name="valor_compra" class="form-control" value="{{ veiculo.valor_compra if veiculo else '' }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Valor Atual (R$)</label>
+          <input type="number" step="0.01" name="valor_atual" class="form-control" value="{{ veiculo.valor_atual if veiculo else '' }}">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════ SCRIPTS ═══════════ -->
+<script>
+window.DASH = {
+  gastos_por_mes: {{ gastos_por_mes_json | safe }},
+  gastos_por_categoria: {{ gastos_por_categoria_json | safe }},
+  combustivel_por_mes: {{ combustivel_por_mes_json | safe }},
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/automotive.js') }}"></script>
+
+</body>
+</html>

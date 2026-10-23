@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estatísticas Semanais - Uber</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css">
+</head>
+<body>
+    <div class="container my-5">
+        <h1 class="text-center mb-4">Estatísticas Semanais</h1>
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">Estatística</th>
+                    <th scope="col">Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Total de Ganhos</td><td>R$ {{ stats.total_ganhos }}</td></tr>
+                <tr><td>Total de Despesas</td><td>R$ {{ stats.total_despesas }}</td></tr>
+                <tr><td>Média de Ganhos Semanais</td><td>R$ {{ stats.media_ganhos_semanal }}</td></tr>
+                <tr><td>Ganho Líquido</td><td>R$ {{ stats.ganho_liquido }}</td></tr>
+                <tr><td>Total de Taxas</td><td>R$ {{ stats.total_taxas }}</td></tr>
+                <tr><td>Total de Promoções</td><td>R$ {{ stats.total_promocoes }}</td></tr>
+                <tr><td>Média de Taxas Semanais</td><td>R$ {{ stats.media_taxa_semanal }}</td></tr>
+                <tr><td>Média de Promoções Semanais</td><td>R$ {{ stats.media_promocoes_semanal }}</td></tr>
+                <tr><td>Ganho com Preço Dinâmico</td><td>R$ {{ stats.ganho_dinamico }}</td></tr>
+                <tr><td>Ganho com Tempo de Espera</td><td>R$ {{ stats.ganho_espera }}</td></tr>
+                <tr><td>Ganho com Extras</td><td>R$ {{ stats.ganho_extras }}</td></tr>
+                <tr><td>Proporção de Ganho Base</td><td>{{ stats.proporcao_ganho_base | default(0) | round(2) }}%</td></tr>
+                <tr><td>Total de Transferências</td><td>R$ {{ stats.total_transferencias }}</td></tr>
+                <tr><td>Saldo Médio Semanal</td><td>R$ {{ stats.saldo_medio_semanal }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Bootstrap JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-6dJSjzov1A1E8CJpePwtaB8b34y5f4LuGijclLvOYwhn6KQwPYdJ+2Wic1/d83Ji" crossorigin="anonymous"></script>
+</body>
+</html>

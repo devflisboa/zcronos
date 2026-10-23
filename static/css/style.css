@@ -1,0 +1,272 @@
+/* Reset */
+*,
+*::before,
+*::after {
+    box-sizing: border-box; /* Define box-sizing como border-box para todos os elementos */
+    margin: 0; /* Remove margens padrão */
+    padding: 0; /* Remove preenchimentos padrão */
+}
+
+/* Body and Global Styles */
+body {
+    margin: 0; /* Remove margem padrão do body */
+    padding: 0 20px; /* Adiciona preenchimento lateral */
+    font-family: Arial, sans-serif; /* Define a fonte global */
+    background-color: #010101; /* Define a cor de fundo do body */
+    color: #ffffff; /* Define a cor do texto padrão */
+}
+
+/* Navbar */
+.navbar {
+    background-color: #000; /* Define a cor de fundo da barra de navegação */
+    padding: 0 20px; /* Adiciona preenchimento lateral */
+    border: #fff;
+}
+.navbar-brand img {
+    height: 40px; /* Define a altura do logo da navbar */
+    transition: height 0.3s ease; /* Transição suave para altura ao redimensionar */
+}
+.navbar .nav-link {
+    color: #fff; /* Cor dos links na navbar */
+    font-size: 0.9rem; /* Tamanho do texto dos links */
+    transition: color 0.3s ease; /* Transição suave para cor ao passar o mouse */
+}
+.navbar .nav-link:hover {
+    color: #ccc; /* Cor dos links na navbar ao passar o mouse */
+}
+
+/* Headings */
+h1, h3, h4, h5 {
+    color: #ffffff; /* Define a cor dos títulos */
+    font-weight: bold; /* Torna os títulos em negrito */
+}
+h4 {
+    font-size: 1.5rem; /* Define o tamanho da fonte do h4 */
+    color: #ffffff; /* Cor específica para h4 */
+    margin-bottom: 15px; /* Espaçamento inferior */
+}
+
+/* Buttons */
+.btn-dark {
+    background-color: #575151; /* Cor de fundo do botão escuro */
+    border: none; /* Remove borda padrão */
+    transition: background-color 0.3s ease; /* Transição para fundo ao passar o mouse */
+}
+.btn-dark:hover {
+    background-color: #02ba92; /* Fundo do botão escuro ao passar o mouse */
+}
+
+.btn-primary {
+    background-color: #575151; /* Cor de fundo do botão escuro */
+    border: none; /* Remove borda padrão */
+    transition: background-color 0.3s ease; /* Transição para fundo ao passar o mouse */
+}
+.btn-primary:hover {
+    background-color: #02ba92; /* Fundo do botão escuro ao passar o mouse */
+}
+
+/* Card Styles */
+.card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adiciona sombra ao redor do card */
+    border: none; /* Remove borda padrão */
+    border-radius: 10px; /* Bordas arredondadas */
+    padding: 15px; /* Preenchimento interno do card */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transição para hover */
+    margin: 20px 0; /* Margem vertical entre cards */
+}
+.card:hover {
+    transform: scale(1.02); /* Aumenta o tamanho ao passar o mouse */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); /* Intensifica sombra ao passar o mouse */
+}
+.card h5 {
+    font-size: 1.1rem; /* Define tamanho de título dentro do card */
+    color: #444; /* Define cor do título no card */
+}
+
+.card-text {
+    color: #000
+}
+
+.card-container {
+    display: flex; /* Usa flexbox para organizar os cards */
+    flex-wrap: wrap; /* Permite que os cards quebrem linha se necessário */
+    gap: 20px; /* Espaço entre os cards */
+    justify-content: center; /* Centraliza os cards */
+}
+
+/* Gráficos */
+.chart-container {
+    padding: 15px; /* Preenchimento interno do gráfico */
+    background-color: #fff; /* Fundo branco para o gráfico */
+    border-radius: 10px; /* Bordas arredondadas */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave ao redor do gráfico */
+    margin: 20px 0; /* Margem vertical para o gráfico */
+}
+.chart-container div {
+    width: 100%; /* Largura total do contêiner */
+    height: auto; /* Altura automática para responsividade */
+}
+
+/* Tabelas */
+.table-container {
+    padding: 20px; /* Preenchimento interno da tabela */
+}
+.table thead {
+    background-color: #333; /* Fundo da linha de cabeçalho da tabela */
+    color: #fff; /* Cor do texto no cabeçalho */
+}
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9; /* Fundo alternado para linhas da tabela */
+}
+.table tbody td {
+    vertical-align: middle; /* Alinha verticalmente o conteúdo das células */
+    font-size: 0.95rem; /* Define o tamanho da fonte das células */
+    color: #555; /* Define a cor do texto das células */
+}
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_paginate {
+    margin: 10px 0; /* Espaçamento vertical */
+    text-align: center; /* Centraliza filtros e paginação */
+}
+
+/* List Group */
+.list-group-item {
+    background-color: #f8f9fa; /* Fundo dos itens da lista */
+    border: 1px solid #ddd; /* Borda dos itens */
+    padding: 15px; /* Preenchimento interno dos itens */
+    font-size: 1.1rem; /* Tamanho do texto */
+    color: #333; /* Cor do texto */
+    border-radius: 8px; /* Bordas arredondadas */
+    margin-bottom: 10px; /* Espaço entre os itens */
+    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Transição suave */
+}
+.list-group-item:hover {
+    transform: scale(1.02); /* Aumenta levemente o item ao passar o mouse */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Intensifica a sombra */
+}
+
+/* Alertas */
+.alert-warning {
+    background-color: #fff3cd; /* Fundo do alerta */
+    color: #856404; /* Cor do texto do alerta */
+    border: 1px solid #ffeeba; /* Borda do alerta */
+    border-radius: 8px; /* Bordas arredondadas */
+    font-weight: 500; /* Texto em negrito */
+    padding: 15px; /* Preenchimento interno do alerta */
+    margin: 20px 0; /* Margem vertical */
+}
+
+/* Modals */
+.modal-content {
+    border-radius: 8px; /* Bordas arredondadas para o modal */
+    padding: 20px; /* Preenchimento interno do modal */
+}
+.modal-header {
+    background-color: #333; /* Fundo do cabeçalho do modal */
+    color: #fff; /* Cor do texto do cabeçalho do modal */
+    border-bottom: none; /* Remove a borda inferior do cabeçalho */
+}
+.modal-title {
+    font-size: 1.25rem; /* Tamanho da fonte do título do modal */
+}
+.modal-body label {
+    font-weight: bold; /* Texto em negrito */
+    color: #333; /* Cor do texto */
+}
+.close {
+    color: #fff; /* Cor do botão de fechar */
+    opacity: 0.8; /* Define a transparência */
+}
+.close:hover {
+    opacity: 1; /* Define a transparência ao passar o mouse */
+}
+
+/* Footer */
+footer {
+    background-color: #333; /* Fundo do rodapé */
+    color: #fff; /* Cor do texto do rodapé */
+    padding: 20px 0; /* Preenchimento vertical do rodapé */
+    text-align: center; /* Centraliza o texto do rodapé */
+    font-size: 0.9rem; /* Tamanho da fonte do rodapé */
+    margin-top: 30px; /* Margem superior */
+}
+footer a {
+    color: #ddd; /* Cor dos links no rodapé */
+    text-decoration: none; /* Remove a sublinha dos links */
+    transition: color 0.3s ease; /* Transição suave */
+}
+footer a:hover {
+    color: #fff; /* Cor dos links ao passar o mouse */
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .navbar-brand img {
+        height: 30px; /* Reduz a altura da logo em telas menores */
+    }
+    h1, h3, h4 {
+        font-size: 1.25rem; /* Reduz o tamanho das fontes em telas menores */
+    }
+    .list-group-item,
+    .table thead th,
+    .table tbody td {
+        font-size: 0.85rem; /* Reduz o tamanho do texto em listas e tabelas */
+    }
+    .chart-container, .card-container {
+        flex-direction: column; /* Organiza elementos em coluna em telas menores */
+    }
+}
+
+/* Estilo da seção de estatísticas de despesas */
+.estatisticas-despesas-abastecimento {
+    margin-top: 20px; /* Espaçamento superior */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.estatisticas-despesas-abastecimento h4 {
+    font-size: 1.5rem; /* Tamanho da fonte para título */
+    color: #333; /* Cor do título */
+    margin-bottom: 15px; /* Espaçamento inferior */
+}
+
+/* Grid para organizar a lista em 2 colunas ajustadas ao tamanho do conteúdo */
+.lista-tabela {
+    display: grid; /* Exibe a lista como grade */
+    grid-template-columns: repeat(3, max-content); /* Define 2 colunas ajustadas ao tamanho do conteúdo */
+    gap: 15px; /* Espaçamento entre os itens */
+    background-color: #f8f9fa; /* Fundo da grade */
+    padding: 15px; /* Preenchimento interno */
+    border-radius: 8px; /* Bordas arredondadas */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra */
+    margin: 0 auto; /* Centraliza o container na tela */
+    width: fit-content; /* Ajusta a largura ao conteúdo */
+}
+
+/* Estilo individual dos itens */
+.list-item {
+    background-color: #fff; /* Fundo dos itens */
+    padding: 15px; /* Preenchimento interno */
+    font-size: 1.1rem; /* Tamanho da fonte */
+    color: #333; /* Cor do texto */
+    border-radius: 8px; /* Bordas arredondadas */
+    text-align: center; /* Centraliza o texto */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra */
+    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Transição suave */
+}
+
+.list-item:hover {
+    transform: scale(1.02); /* Aumenta o item ao passar o mouse */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Intensifica a sombra */
+}
+
+/* Responsividade para telas menores */
+@media (max-width: 768px) {
+    .lista-tabela {
+        grid-template-columns: 1fr; /* Coloca os itens em uma coluna em telas menores */
+    }
+    .estatisticas-despesas-abastecimento h4 {
+        font-size: 1.25rem; /* Reduz o tamanho do título em telas menores */
+    }
+}

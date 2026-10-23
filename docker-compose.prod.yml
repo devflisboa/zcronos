@@ -1,0 +1,25 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  web:
+    build: .
+    image: zcronos_web:latest
+    restart: unless-stopped
+    ports:
+      - "5012:5000"
+    env_file: .env
+    environment:
+      DB_HOST: db:3306
+    depends_on:
+      - db
+
+volumes:
+  mysql_data:
