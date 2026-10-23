@@ -8,3 +8,4 @@ Flask-APScheduler==1.13.1
 Babel==2.16.0
 PyMySQL==1.1.1
 gunicorn==22.0.0
+cryptography==43.0.3
