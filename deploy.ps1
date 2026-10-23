@@ -39,7 +39,7 @@ Write-Host "`n[3/4] Recriando container..." -ForegroundColor Cyan
 $DEPLOY_CMD = @"
 set -e
 cd $SERVER_PATH
-docker rm -f $CONTAINER 2>/dev/null || true
+docker ps -a --filter name=zcronos_web --format '{{.Names}}' | xargs -r docker rm -f
 docker-compose -f docker-compose.prod.yml up -d --no-deps web
 "@
 ssh -p $SSH_PORT $SERVER $DEPLOY_CMD
