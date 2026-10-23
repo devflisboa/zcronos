@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask_login import login_required
 from datetime import datetime
 from extensions import db
 from models import Despesa, Categoria
@@ -7,12 +8,14 @@ despesa_bp = Blueprint('despesa', __name__)
 
 
 @despesa_bp.route('/cadastrar')
+@login_required
 def cadastrar_despesa():
     categorias = Categoria.query.all()
     return render_template('cadastrar_despesas.html', categorias=categorias)
 
 
 @despesa_bp.route('/add', methods=['POST'])
+@login_required
 def add_despesa():
     categoria_id = request.form.get('categoria_id')
     if not categoria_id:
@@ -41,6 +44,7 @@ def add_despesa():
 
 
 @despesa_bp.route('/delete/<int:id>', methods=['POST'])
+@login_required
 def delete_despesa(id):
     despesa = db.session.get(Despesa, id)
     try:

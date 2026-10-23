@@ -1,5 +1,6 @@
 import json
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_required
 from datetime import datetime
 from extensions import db
 from models import Despesa, Categoria, Abastecimento, Manutencao, Veiculo
@@ -9,6 +10,7 @@ main_bp = Blueprint('main', __name__)
 
 
 @main_bp.route('/')
+@login_required
 def index():
     data = get_dashboard_data()
     data['gastos_por_mes_json'] = json.dumps(data['gastos_por_mes'])
@@ -19,6 +21,7 @@ def index():
 
 
 @main_bp.route('/veiculo/editar', methods=['POST'])
+@login_required
 def editar_veiculo():
     veiculo = Veiculo.query.first()
     if not veiculo:
@@ -44,6 +47,7 @@ def editar_veiculo():
 
 
 @main_bp.route('/km/atualizar', methods=['POST'])
+@login_required
 def atualizar_km():
     veiculo = Veiculo.query.first()
     if veiculo:

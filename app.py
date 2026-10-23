@@ -1,10 +1,10 @@
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from flask import Flask
 from flask_apscheduler import APScheduler
 from sqlalchemy import text
 
 from config import config
-from extensions import db
+from extensions import db, login_manager, csrf, bcrypt, limiter
 
 scheduler = APScheduler()
 
@@ -88,16 +88,36 @@ def create_app(config_name='default'):
     app.config.from_object(config[config_name])
 
     db.init_app(app)
+    login_manager.init_app(app)
+    csrf.init_app(app)
+    bcrypt.init_app(app)
+    limiter.init_app(app)
+
+    login_manager.login_view = 'auth.login'
+    login_manager.login_message = 'Faça login para acessar essa página.'
+    login_manager.login_message_category = 'info'
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        from models import User
+        return db.session.get(User, int(user_id))
+
+    @app.context_processor
+    def inject_now():
+        return {'now': datetime.utcnow()}
+
     app.config['SCHEDULER_API_ENABLED'] = True
     scheduler.init_app(app)
     scheduler.start()
 
+    from blueprints.auth.routes import auth_bp
     from blueprints.main.routes import main_bp
     from blueprints.abastecimento.routes import abastecimento_bp
     from blueprints.despesa.routes import despesa_bp
     from blueprints.uber.routes import uber_bp
     from blueprints.manutencao.routes import manutencao_bp
 
+    app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(main_bp)
     app.register_blueprint(abastecimento_bp, url_prefix='/abastecimento')
     app.register_blueprint(despesa_bp, url_prefix='/despesa')

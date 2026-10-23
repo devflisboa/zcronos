@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask_login import login_required
 from datetime import datetime
 from extensions import db
 from models import Abastecimento
@@ -7,11 +8,13 @@ abastecimento_bp = Blueprint('abastecimento', __name__)
 
 
 @abastecimento_bp.route('/cadastrar')
+@login_required
 def cadastrar_abastecimento():
     return render_template('cadastrar_abastecimento.html')
 
 
 @abastecimento_bp.route('/add', methods=['POST'])
+@login_required
 def add_abastecimento():
     try:
         novo = Abastecimento(
@@ -32,6 +35,7 @@ def add_abastecimento():
 
 
 @abastecimento_bp.route('/delete/<int:id>', methods=['POST'])
+@login_required
 def delete_abastecimento(id):
     abastecimento = db.session.get(Abastecimento, id)
     try:

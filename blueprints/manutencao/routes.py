@@ -1,4 +1,5 @@
 from flask import Blueprint, redirect, url_for, request, flash
+from flask_login import login_required
 from datetime import datetime
 from extensions import db
 from models import Manutencao
@@ -7,6 +8,7 @@ manutencao_bp = Blueprint('manutencao', __name__)
 
 
 @manutencao_bp.route('/add', methods=['POST'])
+@login_required
 def add_manutencao():
     try:
         m = Manutencao(
@@ -32,6 +34,7 @@ def add_manutencao():
 
 
 @manutencao_bp.route('/concluir/<int:id>', methods=['POST'])
+@login_required
 def concluir_manutencao(id):
     m = db.session.get(Manutencao, id)
     if m:
@@ -46,6 +49,7 @@ def concluir_manutencao(id):
 
 
 @manutencao_bp.route('/delete/<int:id>', methods=['POST'])
+@login_required
 def delete_manutencao(id):
     m = db.session.get(Manutencao, id)
     if m:
