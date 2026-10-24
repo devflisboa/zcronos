@@ -2,39 +2,69 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{% if veiculo %}Editar Veículo{% else %}Novo Veículo{% endif %} | ΛUTOVIU</title>
+<link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/automotive.css') }}">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <style>
-.form-wrap { max-width:620px; margin:2rem auto; padding:0 1.5rem; }
-.form-title { font-size:1.3rem; font-weight:700; color:var(--accent); margin-bottom:1.5rem; }
-.form-card { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:1.75rem; }
-.form-row { margin-bottom:1.1rem; }
-.form-row label { display:block; font-size:.82rem; color:var(--muted); margin-bottom:.35rem; font-weight:500; }
-.form-row input, .form-row select {
-  width:100%; box-sizing:border-box;
-  background:var(--bg); border:1px solid var(--border);
-  color:var(--text); padding:.55rem .8rem;
-  border-radius:6px; font-size:.92rem;
+/* ── Veículo Form — estilos locais ── */
+.page-wrap { padding:24px; }
+.page-header { margin-bottom:24px; }
+.page-title { font-size:20px; font-weight:700; color:var(--gold); }
+
+.form-card {
+  max-width:640px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px;
 }
-.form-row input:focus { outline:none; border-color:var(--accent); }
-.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
-.form-actions { display:flex; gap:.75rem; justify-content:flex-end; margin-top:1.75rem; }
-.btn-submit { background:var(--accent); color:#000; border:none; padding:.6rem 1.4rem; border-radius:8px; font-weight:700; cursor:pointer; font-size:.92rem; }
-.btn-cancel { background:var(--bg); border:1px solid var(--border); color:var(--text); padding:.6rem 1.4rem; border-radius:8px; cursor:pointer; font-size:.92rem; text-decoration:none; display:inline-flex; align-items:center; }
-.flash { padding:.7rem 1rem; border-radius:8px; font-size:.88rem; margin-bottom:1rem; }
+
+.form-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+/* Flash */
+.flash-wrap { margin-bottom:20px; max-width:640px; }
+.flash { padding:12px 16px; border-radius:var(--radius-s); font-size:14px; margin-bottom:8px; }
+.flash-success { background:#1a3a1a; border:1px solid #2d5a2d; color:#90ee90; }
 .flash-danger  { background:#3a1a1a; border:1px solid #5a2d2d; color:#ff8080; }
-@media(max-width:600px){
-  .form-wrap { padding:0 1rem; }
-  .form-grid { grid-template-columns:1fr; }
+.flash-info    { background:#1a2a3a; border:1px solid #2d3a5a; color:#80b8ff; }
+
+/* Ações do formulário */
+.form-actions {
+  display:flex; gap:12px; justify-content:flex-end;
+  margin-top:24px; padding-top:20px;
+  border-top:1px solid var(--border);
+}
+
+/* ── TOPBAR local (mobile) ── */
+.page-topbar {
+  display:none;
+  height:56px; background:var(--bg2); border-bottom:1px solid var(--border);
+  align-items:center; padding:0 16px; gap:12px;
+  position:sticky; top:0; z-index:50;
+}
+.page-topbar-title { font-size:16px; font-weight:600; flex:1; }
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  .page-topbar { display:flex; }
+  .page-wrap { padding:16px; }
+  .page-header { margin-bottom:16px; }
+  .form-card { padding:16px; }
+}
+
+@media(max-width:480px){
+  .page-wrap { padding:12px; }
+  .form-grid-2 { grid-template-columns:1fr; }
   .form-actions { flex-direction:column-reverse; }
-  .btn-submit, .btn-cancel { width:100%; justify-content:center; text-align:center; }
+  .form-actions .btn { width:100%; justify-content:center; }
 }
 </style>
 </head>
 <body>
 <div id="app">
+  <div id="sb-overlay"></div>
   <aside id="sidebar">
     <div class="sb-head">
       <div class="sb-logo">
@@ -47,109 +77,128 @@
     </div>
     <nav class="sb-nav">
       <div class="nav-group-label">Principal</div>
-      <a href="{{ url_for('main.index') }}" class="nav-item" style="text-decoration:none;display:flex;align-items:center;gap:.5rem;color:inherit">
-        <span class="ni">⊞</span> Dashboard
+      <a href="{{ url_for('main.index') }}" class="nav-item">
+        <span class="ni"><i data-lucide="layout-dashboard"></i></span> Dashboard
       </a>
       <div class="nav-group-label">Veículo</div>
-      <a href="{{ url_for('veiculo.index') }}" class="nav-item active" style="text-decoration:none;display:flex;align-items:center;gap:.5rem;color:inherit">
-        <span class="ni">🚘</span> Meus Veículos
+      <a href="{{ url_for('veiculo.index') }}" class="nav-item active">
+        <span class="ni"><i data-lucide="car"></i></span> Meus Veículos
       </a>
       <div class="nav-group-label" style="margin-top:auto">Conta</div>
-      <a href="{{ url_for('auth.logout') }}" class="nav-item" style="text-decoration:none;display:flex;align-items:center;gap:.5rem;color:inherit">
-        <span class="ni">⏻</span> Sair
+      <a href="{{ url_for('auth.logout') }}" class="nav-item">
+        <span class="ni"><i data-lucide="log-out"></i></span> Sair
       </a>
     </nav>
   </aside>
 
   <main id="main">
-    <div class="form-wrap">
-      <div class="form-title">{{ '✏️ Editar Veículo' if veiculo else '🚘 Novo Veículo' }}</div>
+    <!-- Topbar mobile -->
+    <div class="page-topbar">
+      <button class="btn btn-ghost btn-icon" id="sb-toggle">☰</button>
+      <span class="page-topbar-title">{{ 'Editar Veículo' if veiculo else 'Novo Veículo' }}</span>
+    </div>
 
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for cat, msg in messages %}
-        <div class="flash flash-{{ cat }}">{{ msg }}</div>
-        {% endfor %}
-      {% endwith %}
+    <div class="page-wrap">
+      <div class="page-header">
+        <div class="page-title">{{ 'Editar Veículo' if veiculo else 'Novo Veículo' }}</div>
+      </div>
+
+      <div class="flash-wrap">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in messages %}
+          <div class="flash flash-{{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+      </div>
 
       <div class="form-card">
         <form method="POST">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-          <div class="form-grid">
-            <div class="form-row">
-              <label>Marca *</label>
-              <input name="marca" value="{{ veiculo.marca if veiculo else '' }}"
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="marca">Marca *</label>
+              <input class="form-control" id="marca" name="marca"
+                     value="{{ veiculo.marca if veiculo else '' }}"
                      placeholder="Fiat, VW, Toyota..." required>
             </div>
-            <div class="form-row">
-              <label>Modelo *</label>
-              <input name="modelo" value="{{ veiculo.modelo if veiculo else '' }}"
+            <div class="form-group">
+              <label class="form-label" for="modelo">Modelo *</label>
+              <input class="form-control" id="modelo" name="modelo"
+                     value="{{ veiculo.modelo if veiculo else '' }}"
                      placeholder="Cronos, Gol, Corolla..." required>
             </div>
           </div>
 
-          <div class="form-row">
-            <label>Versão</label>
-            <input name="versao" value="{{ veiculo.versao if veiculo else '' }}"
+          <div class="form-group">
+            <label class="form-label" for="versao">Versão</label>
+            <input class="form-control" id="versao" name="versao"
+                   value="{{ veiculo.versao if veiculo else '' }}"
                    placeholder="Drive 1.3 Manual">
           </div>
 
-          <div class="form-row">
-            <label>Motor</label>
-            <input name="motor" value="{{ veiculo.motor if veiculo else '' }}"
+          <div class="form-group">
+            <label class="form-label" for="motor">Motor</label>
+            <input class="form-control" id="motor" name="motor"
+                   value="{{ veiculo.motor if veiculo else '' }}"
                    placeholder="Firefly 1.3 Flex 109 CV">
           </div>
 
-          <div class="form-grid">
-            <div class="form-row">
-              <label>Ano *</label>
-              <input name="ano" type="number" min="1950" max="2030"
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="ano">Ano *</label>
+              <input class="form-control" id="ano" name="ano" type="number"
+                     min="1950" max="2030"
                      value="{{ veiculo.ano if veiculo else '' }}" required>
             </div>
-            <div class="form-row">
-              <label>Placa</label>
-              <input name="placa" value="{{ veiculo.placa if veiculo else '' }}"
+            <div class="form-group">
+              <label class="form-label" for="placa">Placa</label>
+              <input class="form-control" id="placa" name="placa"
+                     value="{{ veiculo.placa if veiculo else '' }}"
                      placeholder="ABC1D23" maxlength="8" style="text-transform:uppercase">
             </div>
           </div>
 
-          <div class="form-grid">
-            <div class="form-row">
-              <label>Cor</label>
-              <input name="cor" value="{{ veiculo.cor if veiculo else '' }}"
-                     placeholder="Branco Banchisa, Prata...">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="cor">Cor</label>
+              <input class="form-control" id="cor" name="cor"
+                     value="{{ veiculo.cor if veiculo else '' }}"
+                     placeholder="Branco, Prata...">
             </div>
-            <div class="form-row">
-              <label>Km atual</label>
-              <input name="km_atual" type="number" min="0"
+            <div class="form-group">
+              <label class="form-label" for="km_atual">Km atual</label>
+              <input class="form-control" id="km_atual" name="km_atual" type="number" min="0"
                      value="{{ veiculo.km_atual if veiculo else 0 }}">
             </div>
           </div>
 
-          <div class="form-grid">
-            <div class="form-row">
-              <label>Data de compra</label>
-              <input name="data_compra" type="date"
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="data_compra">Data de compra</label>
+              <input class="form-control" id="data_compra" name="data_compra" type="date"
                      value="{{ veiculo.data_compra.strftime('%Y-%m-%d') if veiculo and veiculo.data_compra else '' }}">
             </div>
-            <div class="form-row">
-              <label>Valor de compra (R$)</label>
-              <input name="valor_compra" type="number" step="0.01"
+            <div class="form-group">
+              <label class="form-label" for="valor_compra">Valor de compra (R$)</label>
+              <input class="form-control" id="valor_compra" name="valor_compra"
+                     type="number" step="0.01"
                      value="{{ veiculo.valor_compra if veiculo and veiculo.valor_compra else '' }}"
                      placeholder="0,00">
             </div>
           </div>
 
-          <div class="form-row">
-            <label>Valor atual estimado (R$)</label>
-            <input name="valor_atual" type="number" step="0.01"
+          <div class="form-group">
+            <label class="form-label" for="valor_atual">Valor atual estimado (R$)</label>
+            <input class="form-control" id="valor_atual" name="valor_atual"
+                   type="number" step="0.01"
                    value="{{ veiculo.valor_atual if veiculo and veiculo.valor_atual else '' }}"
                    placeholder="0,00">
           </div>
 
           <div class="form-actions">
-            <a href="{{ url_for('veiculo.index') }}" class="btn-cancel">Cancelar</a>
-            <button type="submit" class="btn-submit">
+            <a href="{{ url_for('veiculo.index') }}" class="btn btn-ghost">Cancelar</a>
+            <button type="submit" class="btn btn-primary">
               {{ 'Salvar alterações' if veiculo else 'Cadastrar veículo' }}
             </button>
           </div>
@@ -158,6 +207,9 @@
     </div>
   </main>
 </div>
-<script>document.getElementById('app').classList.add('ready');</script>
+
+<script src="https://unpkg.com/lucide@0.298.0/dist/umd/lucide.min.js"></script>
+<script src="{{ url_for('static', filename='js/automotive.js') }}"></script>
+<script>document.getElementById('app').classList.add('ready'); if(window.lucide) lucide.createIcons();</script>
 </body>
 </html>

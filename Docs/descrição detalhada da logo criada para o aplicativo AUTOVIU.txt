@@ -1,0 +1,35 @@
+descrição detalhada da logo criada para o aplicativo AUTOVIU:
+​1. Estrutura e Formato Principal
+​Base do Ícone (App Icon): O ícone possui o formato quadrado com cantos suavizados e arredondados, no padrão clássico de aplicativos para iOS e Android.
+​Fundo da Moldura: Apresenta uma textura premium em fibra de carbono preta, garantindo um visual esportivo e sofisticado.
+
+​Borda Externa: Uma moldura elegante em ouro dourado reluzente com acabamento metálico chanfrado e detalhes de brilho reflexivo.
+
+​2. Símbolo Central (A Combinação de Escudo e Velocímetro)
+​O Escudo Hexagonal: O elemento que envolve a ilustração central é um hexágono dourado em linhas duplas metálicas, remetendo à proteção, segurança e estrutura de gestão.
+
+​O Velocímetro Integrado:
+​Na metade superior do interior do hexágono, há a marcação de um marcador de velocidade/medidor de painel.
+​Conta com pequenos traços radiais (marpadores de escala) iluminados e refinados.
+​O ponteiro do velocímetro é esticado em um ângulo dinâmico para a direita em cor dourada, simbolizando performance, acompanhamento e medição.
+ão.
+​3. A Silhueta do Veículo
+​Design Minimalista: No centro, abaixo do ponteiro, há a representação minimalista da dianteira de um carro esportivo moderno.
+
+​Linhas de Contorno:
+​O capô, o para-brisa, os retrovisores e a grade inferior são desenhados com traços finos e luminosos na cor branca.
+​Os faróis possuem um visual agressivo e tecnológico em branco brilhante.
+.
+​4. Paleta de Cores e Iluminação
+​Preto Profundo / Carbono: Utilizado nos fundos para criar contraste elevado e sensação dark mode premium.
+
+​Ouro Dourado: Aplicação vibrante nas bordas, no hexágono e no ponteiro, trazendo o conceito de gestão de alto nível e luxo.
+
+​Branco Neon / Iluminado: Usado na silhueta do carro e nas marcações do painel, garantindo legibilidade perfeita e ar de tecnologia.
+
+​5. Tipografia (Texto "AUTOVIU")
+​Nome do App: Posicionado centralizado na parte inferior.
+
+​Fonte Personalizada: Tipografia moderna, minimalista e futurista (sans-serif) em tom dourado suave.
+
+​O detalhe da letra "A": A letra A foi desenhada estilizada como um chevron/seta para cima ( Λ ), sem o traço horizontal central, exatamente como solicitado, combinando perfeitamente com a estética futurista do aplicativo.

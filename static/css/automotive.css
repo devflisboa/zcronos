@@ -94,6 +94,7 @@ input,select,textarea,button{font-family:inherit}
 .nav-item{display:flex;align-items:center;gap:10px;padding:12px 10px;min-height:48px;border-radius:var(--radius-s);color:var(--text2);font-size:14px;font-weight:500;cursor:pointer;transition:all var(--t);border:none;background:none;width:100%;text-align:left}
 .nav-item:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 .nav-item .ni{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;background:var(--bg3);transition:all var(--t);flex-shrink:0}
+.ni svg{width:17px;height:17px;stroke-width:1.75;display:block}
 .nav-item:hover{color:var(--text);background:var(--bg3)}
 .nav-item.active{color:var(--text);background:var(--red-d)}
 .nav-item.active .ni{background:var(--red-d)}
@@ -148,7 +149,8 @@ input,select,textarea,button{font-family:inherit}
 .card-title-row .card-title{margin:0}
 
 /* ── KPI CARDS ── */
-.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden;transition:border-color var(--t),transform var(--t)}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden;transition:border-color var(--t),transform var(--t);cursor:pointer}
+.kpi[onclick]:hover{border-color:var(--gold-border);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.5)}
 .kpi::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent-c,.05) 0%,transparent 60%);pointer-events:none}
 .kpi:hover{border-color:var(--border2);transform:translateY(-2px)}
 .kpi-icon{font-size:22px;margin-bottom:8px}

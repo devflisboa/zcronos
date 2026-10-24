@@ -44,38 +44,38 @@
     <nav class="sb-nav">
       <div class="nav-group-label">Principal</div>
       <button class="nav-item active" data-section="home" data-label="Dashboard">
-        <span class="ni">⊞</span> Dashboard
+        <span class="ni"><i data-lucide="layout-dashboard"></i></span> Dashboard
       </button>
 
       <div class="nav-group-label">Financeiro</div>
       <button class="nav-item" data-section="combustivel" data-label="Combustível">
-        <span class="ni">⛽</span> Combustível
+        <span class="ni"><i data-lucide="fuel"></i></span> Combustível
       </button>
       <button class="nav-item" data-section="despesas" data-label="Despesas">
-        <span class="ni">💳</span> Despesas
+        <span class="ni"><i data-lucide="credit-card"></i></span> Despesas
         {% set n_desp = despesas|length %}
         {% if n_desp > 0 %}<span class="nav-badge">{{ n_desp }}</span>{% endif %}
       </button>
       <button class="nav-item" data-section="analise" data-label="Análise Financeira">
-        <span class="ni">📊</span> Análise
+        <span class="ni"><i data-lucide="bar-chart-3"></i></span> Análise
       </button>
 
       <div class="nav-group-label">Veículo</div>
       <button class="nav-item" data-section="manutencao" data-label="Manutenção">
-        <span class="ni">🔧</span> Manutenção
+        <span class="ni"><i data-lucide="wrench"></i></span> Manutenção
         {% set n_alert = alertas|length %}
         {% if n_alert > 0 %}<span class="nav-badge">{{ n_alert }}</span>{% endif %}
       </button>
       <button class="nav-item" data-section="historico" data-label="Histórico do Veículo">
-        <span class="ni">🚗</span> Histórico
+        <span class="ni"><i data-lucide="history"></i></span> Histórico
       </button>
-      <a href="{{ url_for('veiculo.index') }}" class="nav-item" style="text-decoration:none;display:flex;align-items:center;gap:.5rem;color:inherit">
-        <span class="ni">🚘</span> Meus Veículos
+      <a href="{{ url_for('veiculo.index') }}" class="nav-item">
+        <span class="ni"><i data-lucide="car"></i></span> Meus Veículos
       </a>
 
       <div class="nav-group-label" style="margin-top:auto">Conta</div>
-      <a href="{{ url_for('auth.logout') }}" class="nav-item" style="text-decoration:none;display:flex;align-items:center;gap:.5rem;color:inherit">
-        <span class="ni">⏻</span> Sair
+      <a href="{{ url_for('auth.logout') }}" class="nav-item">
+        <span class="ni"><i data-lucide="log-out"></i></span> Sair
       </a>
     </nav>
 
@@ -90,7 +90,7 @@
             <span>{{ '{:,}'.format(km_atual).replace(',','.') }}</span> km
           </div>
         </div>
-        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openModal('km')">✏️</button>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openModal('km')"><i data-lucide="pencil" style="width:14px;height:14px"></i></button>
       </div>
     </div>
   </aside>
@@ -134,8 +134,8 @@
         <!-- KPI Row -->
         <div class="grid-4 gap-top">
 
-          <div class="kpi" style="--accent-c:var(--red-d)">
-            <div class="kpi-icon">💰</div>
+          <div class="kpi" style="--accent-c:var(--red-d)" onclick="switchSection('despesas','Despesas')" title="Ver despesas do mês">
+            <div class="kpi-icon"><i data-lucide="dollar-sign" style="width:22px;height:22px;stroke:var(--danger)"></i></div>
             <div class="kpi-label">Custo do Mês</div>
             <div class="kpi-value red" data-count="{{ custo_mes }}" data-prefix="R$ " data-dec="2">R$ 0</div>
             <div class="kpi-delta {% if custo_mes_delta > 0 %}up{% elif custo_mes_delta < 0 %}down{% else %}neutral{% endif %}">
@@ -145,24 +145,24 @@
             <div class="kpi-bar" style="background:var(--red)"></div>
           </div>
 
-          <div class="kpi" style="--accent-c:var(--blue-d)">
-            <div class="kpi-icon">📅</div>
+          <div class="kpi" style="--accent-c:var(--blue-d)" onclick="switchSection('analise','Análise Financeira')" title="Ver análise do ano">
+            <div class="kpi-icon"><i data-lucide="calendar" style="width:22px;height:22px;stroke:var(--blue)"></i></div>
             <div class="kpi-label">Custo do Ano</div>
             <div class="kpi-value blue" data-count="{{ custo_ano }}" data-prefix="R$ " data-dec="2">R$ 0</div>
             <div class="kpi-delta neutral">Acumulado {{ current_date[-4:] }}</div>
             <div class="kpi-bar" style="background:var(--blue)"></div>
           </div>
 
-          <div class="kpi" style="--accent-c:var(--ok-d)">
-            <div class="kpi-icon">📈</div>
+          <div class="kpi" style="--accent-c:var(--ok-d)" onclick="switchSection('analise','Análise Financeira')" title="Ver análise financeira">
+            <div class="kpi-icon"><i data-lucide="trending-up" style="width:22px;height:22px;stroke:var(--ok)"></i></div>
             <div class="kpi-label">Média Mensal</div>
             <div class="kpi-value ok" data-count="{{ media_mensal }}" data-prefix="R$ " data-dec="2">R$ 0</div>
             <div class="kpi-delta neutral">Baseado em {{ current_date[3:5]|int }} meses</div>
             <div class="kpi-bar" style="background:var(--ok)"></div>
           </div>
 
-          <div class="kpi" style="--accent-c:var(--gold-d)">
-            <div class="kpi-icon">🛣️</div>
+          <div class="kpi" style="--accent-c:var(--gold-d)" onclick="switchSection('analise','Análise Financeira')" title="Ver análise financeira">
+            <div class="kpi-icon"><i data-lucide="route" style="width:22px;height:22px;stroke:var(--gold)"></i></div>
             <div class="kpi-label">Custo por Km</div>
             <div class="kpi-value" style="color:var(--gold)" data-count="{{ custo_por_km }}" data-prefix="R$ " data-dec="2">R$ 0</div>
             <div class="kpi-delta neutral">Baseado no ano atual</div>
@@ -196,15 +196,15 @@
               </svg>
             </div>
             <div style="text-align:center;margin-top:8px">
-              <button class="btn btn-ghost btn-sm" onclick="openModal('km')">✏️ Atualizar km</button>
+              <button class="btn btn-ghost btn-sm" onclick="openModal('km')">Atualizar km</button>
             </div>
           </div>
 
           <!-- Combustível do Mês -->
-          <div class="card">
+          <div class="card" onclick="switchSection('combustivel','Combustível')" style="cursor:pointer" title="Ver combustível">
             <div class="card-title-row">
               <div class="card-title">Combustível — Mês</div>
-              <span class="pill pill-red">⛽</span>
+              <span class="pill pill-red"><i data-lucide="fuel" style="width:14px;height:14px;display:block"></i></span>
             </div>
             <div class="kpi-value red" style="font-size:28px" data-count="{{ gastos_combustivel_mes }}" data-prefix="R$ " data-dec="2">R$ 0</div>
             <div style="margin-top:16px">
@@ -227,7 +227,7 @@
           <!-- Alertas de Manutenção -->
           <div class="card">
             <div class="card-title-row">
-              <div class="card-title">Status Manutenção</div>
+              <div class="card-title" onclick="switchSection('manutencao','Manutenção')" style="cursor:pointer">Status Manutenção</div>
               <button class="btn btn-primary btn-sm" onclick="openModal('manutencao')">+ Novo</button>
             </div>
             {% if manutencoes %}
@@ -235,12 +235,12 @@
               {% set st = m.status_calculado %}
               <div class="maint-item">
                 <div class="maint-icon" style="background:{% if st=='atrasada' %}var(--danger-d){% elif st=='proxima' %}var(--warn-d){% elif st=='realizada' %}var(--blue-d){% else %}var(--ok-d){% endif %}">
-                  {% if m.tipo == 'oleo' %}🛢️
-                  {% elif m.tipo == 'revisao' %}🔧
-                  {% elif m.tipo == 'pneu' %}🔄
-                  {% elif m.tipo == 'freio' %}🛑
-                  {% elif m.tipo == 'bateria' %}⚡
-                  {% else %}⚙️{% endif %}
+                  {% if m.tipo == 'oleo' %}<i data-lucide="droplets" style="width:16px;height:16px"></i>
+                  {% elif m.tipo == 'revisao' %}<i data-lucide="wrench" style="width:16px;height:16px"></i>
+                  {% elif m.tipo == 'pneu' %}<i data-lucide="circle-dashed" style="width:16px;height:16px"></i>
+                  {% elif m.tipo == 'freio' %}<i data-lucide="disc-3" style="width:16px;height:16px"></i>
+                  {% elif m.tipo == 'bateria' %}<i data-lucide="zap" style="width:16px;height:16px"></i>
+                  {% else %}<i data-lucide="settings" style="width:16px;height:16px"></i>{% endif %}
                 </div>
                 <div class="maint-info">
                   <div class="maint-name">{{ m.descricao }}</div>
@@ -258,7 +258,7 @@
               </div>
               {% endfor %}
             {% else %}
-              <div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Nenhum item pendente</div></div>
+              <div class="empty"><div class="empty-icon"><i data-lucide="check-circle-2" style="width:28px;height:28px;stroke:var(--ok);opacity:.6"></i></div><div class="empty-text">Nenhum item pendente</div></div>
             {% endif %}
           </div>
         </div>
@@ -356,7 +356,7 @@
                   <td>{% if a.consumo %}<span class="pill pill-ok">{{ a.consumo }} km/L</span>{% else %}<span class="pill pill-gray">—</span>{% endif %}</td>
                   <td>
                     <form id="del-abast-{{ a.id }}" method="POST" action="{{ url_for('abastecimento.delete_abastecimento', id=a.id) }}">
-                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-abast-{{ a.id }}')">🗑</button>
+                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-abast-{{ a.id }}')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
                     </form>
                   </td>
                 </tr>
@@ -411,7 +411,7 @@
                   <td style="color:var(--red);font-weight:600">R$ {{ '%.2f'|format(d.valor) }}</td>
                   <td>
                     <form id="del-desp-{{ d.id }}" method="POST" action="{{ url_for('despesa.delete_despesa', id=d.id) }}">
-                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-desp-{{ d.id }}')">🗑</button>
+                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-desp-{{ d.id }}')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
                     </form>
                   </td>
                 </tr>
@@ -436,7 +436,7 @@
         <div class="gap-top">
           {% for a in alertas %}
           <div class="alert-box {{ a.status }}">
-            <div class="alert-icon">{% if a.status == 'atrasada' %}🚨{% else %}⚠️{% endif %}</div>
+            <div class="alert-icon">{% if a.status == 'atrasada' %}<i data-lucide="alert-octagon" style="width:20px;height:20px;stroke:var(--danger)"></i>{% else %}<i data-lucide="alert-triangle" style="width:20px;height:20px;stroke:var(--warn)"></i>{% endif %}</div>
             <div class="alert-text">
               <div class="alert-title">{{ a.descricao }}</div>
               <div class="alert-detail">
@@ -461,12 +461,12 @@
                 {% set st = m.status_calculado %}
                 <tr>
                   <td>
-                    {% if m.tipo == 'oleo' %}🛢️ Óleo
-                    {% elif m.tipo == 'revisao' %}🔧 Revisão
-                    {% elif m.tipo == 'pneu' %}🔄 Pneu
-                    {% elif m.tipo == 'freio' %}🛑 Freio
-                    {% elif m.tipo == 'bateria' %}⚡ Bateria
-                    {% else %}⚙️ {{ m.tipo|capitalize }}{% endif %}
+                    {% if m.tipo == 'oleo' %}Óleo
+                    {% elif m.tipo == 'revisao' %}Revisão
+                    {% elif m.tipo == 'pneu' %}Pneu
+                    {% elif m.tipo == 'freio' %}Freio
+                    {% elif m.tipo == 'bateria' %}Bateria
+                    {% else %}{{ m.tipo|capitalize }}{% endif %}
                   </td>
                   <td>{{ m.descricao }}</td>
                   <td>{{ m.data_realizada.strftime('%d/%m/%Y') if m.data_realizada else '—' }}</td>
@@ -477,10 +477,10 @@
                   <td><span class="maint-badge badge-{{ st }}">{{ st|capitalize }}</span></td>
                   <td style="display:flex;gap:4px">
                     {% if st != 'realizada' %}
-                    <button class="btn btn-ghost btn-sm" onclick="openModal('concluir-{{ m.id }}')">✓</button>
+                    <button class="btn btn-ghost btn-sm" onclick="openModal('concluir-{{ m.id }}')"><i data-lucide="check" style="width:14px;height:14px"></i></button>
                     {% endif %}
                     <form id="del-maint-{{ m.id }}" method="POST" action="{{ url_for('manutencao.delete_manutencao', id=m.id) }}">
-                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-maint-{{ m.id }}')">🗑</button>
+                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-maint-{{ m.id }}')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
                     </form>
                   </td>
                 </tr>
@@ -553,13 +553,13 @@
       <section id="sec-historico" class="section">
         <div class="sec-header">
           <div><h2 class="sec-title">Histórico do Veículo</h2><p class="sec-sub">Ficha completa e dados do carro</p></div>
-          <button class="btn btn-ghost" onclick="openModal('veiculo')">✏️ Editar</button>
+          <button class="btn btn-ghost" onclick="openModal('veiculo')">Editar</button>
         </div>
 
         {% if veiculo %}
         <div class="vehicle-hero">
           <div class="vehicle-hero-info">
-            <div class="vehicle-plate-display">🇧🇷 {{ veiculo.placa }}</div>
+            <div class="vehicle-plate-display">{{ veiculo.placa }}</div>
             <div class="vehicle-model-name">{{ veiculo.marca }} {{ veiculo.modelo }}</div>
             <div class="vehicle-version">{{ veiculo.versao }} — {{ veiculo.ano }}</div>
             <div class="vehicle-specs">
@@ -599,7 +599,7 @@
           </div>
         </div>
         {% else %}
-        <div class="card"><div class="empty"><div class="empty-icon">🚗</div><div class="empty-text">Dados do veículo não cadastrados</div><button class="btn btn-primary" style="margin-top:12px" onclick="openModal('veiculo')">Cadastrar</button></div></div>
+        <div class="card"><div class="empty"><div class="empty-icon"><i data-lucide="car" style="width:32px;height:32px;opacity:.4"></i></div><div class="empty-text">Dados do veículo não cadastrados</div><button class="btn btn-primary" style="margin-top:12px" onclick="openModal('veiculo')">Cadastrar</button></div></div>
         {% endif %}
       </section>
 
@@ -613,7 +613,7 @@
 <div class="modal-overlay" id="modal-km">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">🛣️ Atualizar Quilometragem</div>
+      <div class="modal-title">Atualizar Quilometragem</div>
       <button class="modal-close" data-close-modal>✕</button>
     </div>
     <form method="POST" action="{{ url_for('main.atualizar_km') }}">
@@ -633,7 +633,7 @@
 <div class="modal-overlay" id="modal-abastecimento">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">⛽ Registrar Abastecimento</div>
+      <div class="modal-title">Registrar Abastecimento</div>
       <button class="modal-close" data-close-modal>✕</button>
     </div>
     <form method="POST" action="{{ url_for('abastecimento.add_abastecimento') }}">
@@ -679,7 +679,7 @@
 <div class="modal-overlay" id="modal-despesa">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">💳 Nova Despesa</div>
+      <div class="modal-title">Nova Despesa</div>
       <button class="modal-close" data-close-modal>✕</button>
     </div>
     <form method="POST" action="{{ url_for('despesa.add_despesa') }}">
@@ -738,7 +738,7 @@
 <div class="modal-overlay" id="modal-manutencao">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">🔧 Registrar Manutenção</div>
+      <div class="modal-title">Registrar Manutenção</div>
       <button class="modal-close" data-close-modal>✕</button>
     </div>
     <form method="POST" action="{{ url_for('manutencao.add_manutencao') }}">
@@ -747,13 +747,13 @@
           <label class="form-label">Tipo</label>
           <select name="tipo" class="form-control" required>
             <option value="">Selecione...</option>
-            <option value="oleo">🛢️ Troca de Óleo</option>
-            <option value="revisao">🔧 Revisão</option>
-            <option value="pneu">🔄 Pneus</option>
-            <option value="freio">🛑 Freios</option>
-            <option value="bateria">⚡ Bateria</option>
-            <option value="filtro">🌬️ Filtros</option>
-            <option value="outro">⚙️ Outro</option>
+            <option value="oleo">Troca de Óleo</option>
+            <option value="revisao">Revisão</option>
+            <option value="pneu">Pneus</option>
+            <option value="freio">Freios</option>
+            <option value="bateria">Bateria</option>
+            <option value="filtro">Filtros</option>
+            <option value="outro">Outro</option>
           </select>
         </div>
         <div class="form-group">
@@ -844,7 +844,7 @@
 <div class="modal-overlay" id="modal-veiculo">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">🚗 Editar Veículo</div>
+      <div class="modal-title">Editar Veículo</div>
       <button class="modal-close" data-close-modal>✕</button>
     </div>
     <form method="POST" action="{{ url_for('main.editar_veiculo') }}">
@@ -915,6 +915,7 @@ window.DASH = {
 };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lucide@0.298.0/dist/umd/lucide.min.js"></script>
 <script src="{{ url_for('static', filename='js/automotive.js') }}"></script>
 <script>
 (function() {
@@ -927,6 +928,7 @@ window.DASH = {
     f.appendChild(inp);
   });
 })();
+if(window.lucide) lucide.createIcons();
 </script>
 
 </body>
