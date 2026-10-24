@@ -25,6 +25,7 @@
 @media(max-width:768px){
   .page-topbar { display:flex; }
   .page-wrap { padding:16px; }
+  .page-header { display:none; }
   .form-card { padding:16px; }
 }
 @media(max-width:480px){
@@ -56,6 +57,13 @@
       <div class="nav-group-label">Veículo</div>
       <a href="{{ url_for('veiculo.index') }}" class="nav-item">
         <span class="ni"><i data-lucide="car"></i></span> Meus Veículos
+      </a>
+      <div class="nav-group-label">Registros</div>
+      <a href="{{ url_for('abastecimento.cadastrar_abastecimento') }}" class="nav-item active">
+        <span class="ni"><i data-lucide="fuel"></i></span> Abastecimento
+      </a>
+      <a href="{{ url_for('despesa.cadastrar_despesa') }}" class="nav-item">
+        <span class="ni"><i data-lucide="receipt"></i></span> Despesa
       </a>
       <div class="nav-group-label" style="margin-top:auto">Conta</div>
       <a href="{{ url_for('auth.logout') }}" class="nav-item">

@@ -14,9 +14,11 @@ const CHART_DEFAULTS = {
   bg_ok: 'rgba(0,146,70,0.12)',
 };
 
-Chart.defaults.color = CHART_DEFAULTS.color;
-Chart.defaults.font.family = "'Inter', sans-serif";
-Chart.defaults.font.size = 11;
+if (typeof Chart !== 'undefined') {
+  Chart.defaults.color = CHART_DEFAULTS.color;
+  Chart.defaults.font.family = "'Inter', sans-serif";
+  Chart.defaults.font.size = 11;
+}
 
 // ── BOOT ──────────────────────────────────────────────
 const BOOT_MSGS = [
@@ -27,6 +29,12 @@ const BOOT_MSGS = [
 ];
 
 function runBoot() {
+  const boot = document.getElementById('boot');
+  if (!boot) {
+    // Páginas sem boot screen (veículos, formulários)
+    initAll();
+    return;
+  }
   const el = document.getElementById('boot-msg');
   let i = 0;
   const iv = setInterval(() => {
@@ -35,13 +43,12 @@ function runBoot() {
 
   setTimeout(() => {
     clearInterval(iv);
-    const boot = document.getElementById('boot');
     boot.style.transition = 'opacity .5s ease';
     boot.style.opacity = '0';
     setTimeout(() => {
       boot.style.display = 'none';
       const app = document.getElementById('app');
-      app.classList.add('ready');
+      if (app) app.classList.add('ready');
       initAll();
     }, 500);
   }, 1800);

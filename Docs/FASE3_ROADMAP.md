@@ -273,15 +273,201 @@ static/
 
 ---
 
+## 3.7 — Login Social (Google OAuth)
+
+**Objetivo:** Reduzir atrito no cadastro e login — "Entrar com Google" é o padrão esperado em apps modernos, especialmente mobile.
+
+### Fluxo
+
+```
+Tela de Login
+   ↓
+[ Entrar com Google ]  ← botão abaixo do formulário tradicional
+   ↓
+Pop-up Google OAuth 2.0 (consentimento)
+   ↓
+Callback /auth/google/callback
+   ↓
+Se e-mail já existe → faz login (vincula conta Google)
+Se e-mail novo     → cria conta no plano free automaticamente
+   ↓
+Redireciona para /veiculos/
+```
+
+### Stack técnica
+
+| Componente | Opção |
+|---|---|
+| Biblioteca Python | `Authlib` (OAuth 2.0 client) ou `Flask-Dance` |
+| Provider | Google Identity (OAuth 2.0 + OpenID Connect) |
+| Credenciais | Google Cloud Console → OAuth 2.0 Client ID |
+| Dados recebidos | `email`, `name`, `picture` (avatar) |
+
+### Modelo de dados — campo adicional
+
+```python
+class Usuario(db.Model):
+    # ... campos existentes ...
+    google_id = db.Column(db.String(100), unique=True, nullable=True)
+    avatar_url = db.Column(db.String(300), nullable=True)  # foto do Google
+```
+
+### Endpoint backend
+
+```python
+@auth_bp.route('/auth/google')
+def google_login():
+    redirect_uri = url_for('auth.google_callback', _external=True)
+    return oauth.google.authorize_redirect(redirect_uri)
+
+@auth_bp.route('/auth/google/callback')
+def google_callback():
+    token = oauth.google.authorize_access_token()
+    userinfo = oauth.google.userinfo()
+    email = userinfo['email']
+    user = Usuario.query.filter_by(email=email).first()
+    if not user:
+        user = Usuario(email=email, nome=userinfo['name'],
+                       google_id=userinfo['sub'], avatar_url=userinfo['picture'],
+                       plano='free', ativo=True)
+        db.session.add(user)
+        db.session.commit()
+    login_user(user, remember=True)
+    return redirect(url_for('veiculo.index'))
+```
+
+### UX no login
+
+```
+┌──────────────────────────────┐
+│  [Λ] AUTOVIU                 │
+│                              │
+│  E-mail ________________     │
+│  Senha  ________________     │
+│                              │
+│  [ Entrar ]                  │
+│                              │
+│  ─────────── ou ──────────   │
+│                              │
+│  [G]  Entrar com Google      │
+└──────────────────────────────┘
+```
+
+### Segurança
+
+- Validar `state` anti-CSRF no callback (Authlib faz automaticamente)
+- HTTPS obrigatório (já configurado em produção via nginx)
+- Nunca armazenar tokens do Google — apenas o `google_id` como identificador
+- Usuários criados via Google não têm senha hash — bloquear rota `/auth/redefinir-senha` para esses usuários
+
+---
+
+## 3.8 — Login Biométrico / Passkeys (WebAuthn)
+
+**Objetivo:** Usuário mobile pode entrar com digital, Face ID ou padrão de desbloqueio do celular — zero senha. O padrão W3C WebAuthn é suportado nativamente por todos os browsers mobile modernos (Chrome Android, Safari iOS).
+
+### Como funciona
+
+```
+1ª vez (registro da biometria):
+  Usuário logado → Configurações → "Ativar login com digital"
+      ↓
+  Browser solicita autenticação biométrica (Face ID / impressão digital)
+      ↓
+  Dispositivo gera par de chaves (privada fica no TPM/Secure Enclave)
+      ↓
+  Chave pública + credentialId enviados ao servidor → salvos no banco
+
+Login subsequente:
+  Tela de login → "Entrar com digital"
+      ↓
+  Desafio (challenge) gerado pelo servidor
+      ↓
+  Browser solicita biometria → dispositivo assina o challenge com chave privada
+      ↓
+  Servidor verifica assinatura com chave pública armazenada → login concedido
+```
+
+### Compatibilidade
+
+| Plataforma | Biometria suportada |
+|---|---|
+| Android (Chrome 67+) | Impressão digital, Face Unlock, PIN do dispositivo |
+| iOS (Safari 14+) | Face ID, Touch ID |
+| Desktop (Chrome/Edge) | Windows Hello, Touch ID Mac, chave de segurança USB |
+
+### Stack técnica
+
+| Componente | Opção |
+|---|---|
+| Backend Python | `py_webauthn` (Duo Security) |
+| Frontend JS | `SimpleWebAuthn` (browser) |
+| Armazenamento | Tabela `webauthn_credentials` no banco |
+
+### Modelo de dados
+
+```python
+class WebAuthnCredential(db.Model):
+    __tablename__ = 'webauthn_credential'
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    credential_id = db.Column(db.Text, nullable=False, unique=True)
+    public_key = db.Column(db.Text, nullable=False)
+    sign_count = db.Column(db.Integer, default=0)
+    device_name = db.Column(db.String(100))   # ex: "iPhone de Felipe"
+    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+```
+
+### Endpoints backend
+
+```python
+# Registro
+POST /auth/webauthn/register/begin   → gera options de registro
+POST /auth/webauthn/register/finish  → verifica + salva credencial
+
+# Login
+POST /auth/webauthn/login/begin      → gera challenge
+POST /auth/webauthn/login/finish     → verifica assinatura + faz login
+```
+
+### UX
+
+```
+Tela de Login:
+  [ Entrar ]
+  [G] Entrar com Google
+  [🔑] Entrar com digital / Face ID   ← aparece só se dispositivo tem credencial registrada
+                                         (usa localStorage flag para detectar)
+
+Configurações (usuário logado):
+  Segurança
+  ├── Alterar senha
+  ├── Dispositivos biométricos cadastrados
+  │     iPhone de Felipe  [Remover]
+  │     MacBook Pro       [Remover]
+  └── [+ Adicionar este dispositivo]
+```
+
+### Segurança
+
+- `challenge` gerado no servidor com `os.urandom(32)`, validade de 60 segundos (salvo em sessão)
+- `sign_count` incrementado a cada autenticação — detecta clonagem de credencial
+- Remoção de credencial exige confirmação de senha atual
+- HTTPS obrigatório (requisito do WebAuthn — sem exceções)
+
+---
+
 ## Prioridade de Implementação
 
 ```
 3.2 Registro público    ← primeiro (sem isso, não há novos usuários)
 3.1 Monetização         ← junto com registro
+3.7 Login Google        ← reduz atrito no cadastro (rápido de implementar)
 3.6 Galeria de fotos    ← engajamento e viralização (mais fácil, alto impacto)
 3.3 Perfil do condutor  ← base para 3.4 e 3.5
 3.4 Upload CNH/CRLV     ← diferencial competitivo
 3.5 Alertas inteligentes ← retenção de usuários
+3.8 Login biométrico    ← após 3.7 (WebAuthn = próximo passo natural das passkeys)
 ```
 
 ---
@@ -295,3 +481,6 @@ static/
 | SendGrid ou Resend | E-mails transacionais | Free tier até 100/dia |
 | Redis (opcional) | Rate limiting, sessões | R$ 50/mês no servidor |
 | Cloudflare R2 (futuro) | Armazenamento de fotos (escala) | ~R$ 0,015/GB/mês |
+| Google Cloud Console | OAuth 2.0 credentials (Client ID + Secret) | Gratuito |
+| `Authlib` ou `Flask-Dance` | Google OAuth no Flask | Open source |
+| `py_webauthn` + `SimpleWebAuthn` | WebAuthn/Passkeys | Open source |

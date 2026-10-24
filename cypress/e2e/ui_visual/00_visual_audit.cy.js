@@ -48,7 +48,7 @@ describe('Auditoria Visual — Screenshots', () => {
           cy.get('#sb-toggle').click()
           cy.wait(400)
           shot(`veiculos/${name}/02_sidebar_aberta`)
-          cy.get('#sb-overlay').click()
+          cy.get('#sb-toggle').click({ force: true })
           cy.wait(300)
         }
       })
@@ -84,7 +84,9 @@ describe('Auditoria Visual — Screenshots', () => {
         cy.viewport(width, height)
         cy.visit('/')
         cy.url().should('match', /\/$|\/veiculos/)
-        cy.wait(800)  // aguarda animações/boot screen
+        // Boot animation: 4 msgs × 350ms + fade 500ms ≈ 1900ms; aguarda o boot sumir
+        cy.get('#boot', { timeout: 4000 }).should('not.be.visible')
+        cy.wait(300)  // aguarda animações pós-boot (counters, gauges)
 
         // Só captura dashboard se não redirecionou para veículos
         cy.url().then((url) => {
