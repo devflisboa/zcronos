@@ -93,11 +93,12 @@ input,select,textarea,button{font-family:inherit}
 .nav-group-label{font-size:9px;font-weight:700;letter-spacing:2px;color:var(--text3);text-transform:uppercase;padding:16px 8px 6px}
 .nav-item{display:flex;align-items:center;gap:10px;padding:12px 10px;min-height:48px;border-radius:var(--radius-s);color:var(--text2);font-size:14px;font-weight:500;cursor:pointer;transition:all var(--t);border:none;background:none;width:100%;text-align:left}
 .nav-item:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
-.nav-item .ni{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;background:var(--bg3);transition:all var(--t);flex-shrink:0}
-.ni svg{width:17px;height:17px;stroke-width:1.75;display:block}
+.nav-item .ni{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;background:var(--gold-d);border:1px solid var(--gold-border);transition:all var(--t);flex-shrink:0}
+.ni svg{width:17px;height:17px;stroke-width:1.75;display:block;stroke:var(--gold);transition:stroke var(--t)}
 .nav-item:hover{color:var(--text);background:var(--bg3)}
-.nav-item.active{color:var(--text);background:var(--red-d)}
-.nav-item.active .ni{background:var(--red-d)}
+.nav-item:hover .ni{background:rgba(212,175,55,0.2);border-color:rgba(212,175,55,0.4)}
+.nav-item.active{color:var(--gold);background:var(--gold-d);font-weight:600}
+.nav-item.active .ni{background:rgba(212,175,55,0.25);border-color:var(--gold);box-shadow:0 0 8px rgba(212,175,55,0.2)}
 .nav-badge{margin-left:auto;background:var(--gold);color:#000;font-size:10px;font-weight:700;padding:1px 7px;border-radius:99px}
 
 .sb-footer{padding:0 16px 12px;border-top:1px solid var(--border)}
