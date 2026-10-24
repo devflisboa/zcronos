@@ -28,10 +28,10 @@
   --blue-g: rgba(138,144,153,0.28);
   --silver: #b0b8c2;
 
-  /* ── Texto ── */
+  /* ── Texto (contraste WCAG AA: text≥16:1, text2≥4.7:1, text3≥5.1:1) ── */
   --text:  #f0f0f0;
-  --text2: #989898;
-  --text3: #4e4e4e;
+  --text2: #b0b8c2;
+  --text3: #7a8289;
 
   /* ── Status ── */
   --ok:      #34C759;
@@ -130,7 +130,7 @@ input,select,textarea,button{font-family:inherit}
 /* ── SECTION HEADER ── */
 .sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .sec-title{font-size:24px;font-weight:700;line-height:1.4}
-.sec-sub{font-size:12px;color:var(--text3);margin-top:2px}
+.sec-sub{font-size:14px;color:var(--text3);margin-top:4px;line-height:1.4}
 
 /* ── GRID ── */
 .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
@@ -138,7 +138,7 @@ input,select,textarea,button{font-family:inherit}
 .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
 .grid-1-2{display:grid;grid-template-columns:1fr 2fr;gap:16px}
 .grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:16px}
-.gap-top{margin-top:16px}
+.gap-top{margin-top:24px}
 
 /* ── CARD ── */
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:border-color var(--t),box-shadow var(--t)}
@@ -240,7 +240,7 @@ table.auto tbody td:first-child{color:var(--text);font-weight:500}
 .modal-title{font-size:16px;font-weight:700}
 .modal-close{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;transition:color var(--t)}
 .modal-close:hover{color:var(--text)}
-.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--bg2);z-index:10;padding-bottom:4px}
 
 /* ── FORM ── */
 .form-group{margin-bottom:16px}
@@ -351,7 +351,7 @@ table.auto tbody td:first-child{color:var(--text);font-weight:500}
   .topbar-date{display:none}
   .kpi-value{font-size:20px;letter-spacing:-.5px}
   .sec-title{font-size:20px}
-  .btn{min-height:44px;padding:10px 16px}
+  .btn{min-height:48px;padding:11px 14px}
   .kpi{padding:14px 16px}
   .sec-title{font-size:17px}
   .vehicle-model-name{font-size:22px}
