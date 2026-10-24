@@ -22,3 +22,9 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+# Cypress
+node_modules/
+cypress/videos/
+cypress/screenshots/
+cypress.env.json

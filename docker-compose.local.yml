@@ -1,0 +1,37 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: localdev123
+      MYSQL_DATABASE: car_management
+    ports:
+      - "3311:3306"
+    volumes:
+      - mysql_data_local:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-plocaldev123"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "5012:5000"
+    env_file: .env.local
+    environment:
+      DB_HOST: db:3306
+      DB_PORT: 3306
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    command: gunicorn -w 1 --worker-class gthread --threads 4 -b 0.0.0.0:5000 "app:create_app('development')"
+
+volumes:
+  mysql_data_local:

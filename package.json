@@ -1,0 +1,15 @@
+{
+  "name": "zcronos-e2e",
+  "version": "1.0.0",
+  "description": "Cypress E2E tests para zCronos",
+  "scripts": {
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "cy:run:fase0": "cypress run --spec 'cypress/e2e/fase0_auth/**'",
+    "cy:run:fase1": "cypress run --spec 'cypress/e2e/fase0_auth/**,cypress/e2e/fase1_multitenant/**'",
+    "cy:run:all": "cypress run --spec 'cypress/e2e/**'"
+  },
+  "devDependencies": {
+    "cypress": "^13.17.0"
+  }
+}

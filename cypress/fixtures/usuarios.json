@@ -1,0 +1,9 @@
+{
+  "comentario": "Dados de teste — não usar credenciais reais. Criar usuário de teste no servidor antes de rodar Cypress.",
+  "usuario_teste": {
+    "email": "teste@zcronos.local",
+    "nome": "Usuário Cypress",
+    "senha": "TesteSenha123",
+    "plano": "frota"
+  }
+}

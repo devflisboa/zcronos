@@ -2,6 +2,7 @@ from datetime import datetime
 from flask import Flask
 from flask_apscheduler import APScheduler
 from sqlalchemy import text
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config import config
 from extensions import db, login_manager, csrf, bcrypt, limiter
@@ -32,6 +33,7 @@ def _seed_categorias(app):
 def create_app(config_name='default'):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     db.init_app(app)
     login_manager.init_app(app)

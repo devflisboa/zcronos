@@ -40,6 +40,7 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_ECHO = False
     SESSION_COOKIE_SECURE = False
     REMEMBER_COOKIE_SECURE = False
+    RATELIMIT_ENABLED = False
 
 
 class ProductionConfig(Config):
