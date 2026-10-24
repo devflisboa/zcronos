@@ -8,7 +8,9 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/automotive.css') }}">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <style>
-.page-wrap { padding:24px; }
+html, body { overflow-x: hidden; }
+#main { overflow-x: hidden; max-width: 100%; }
+.page-wrap { padding:24px; box-sizing:border-box; width:100%; }
 .page-header { margin-bottom:24px; }
 .page-title { font-size:20px; font-weight:700; color:var(--gold); }
 .form-card { max-width:560px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
@@ -74,7 +76,7 @@
 
   <main id="main">
     <div class="page-topbar">
-      <button class="btn btn-ghost btn-icon" id="sb-toggle">☰</button>
+      <button class="btn btn-ghost btn-icon" id="sb-toggle"><i data-lucide="menu"></i></button>
       <span class="page-topbar-title">Nova Despesa</span>
     </div>
 
