@@ -10,35 +10,46 @@ def _mes_ano():
     return n.month, n.year
 
 
-def get_custo_mes(mes=None, ano=None):
+def get_custo_mes(veiculo_id, mes=None, ano=None):
     m, a = mes or _mes_ano()[0], ano or _mes_ano()[1]
     d = db.session.query(func.sum(Despesa.valor)).filter(
-        extract('month', Despesa.data) == m, extract('year', Despesa.data) == a
+        Despesa.veiculo_id == veiculo_id,
+        extract('month', Despesa.data) == m,
+        extract('year', Despesa.data) == a,
     ).scalar() or 0
     c = db.session.query(func.sum(Abastecimento.valor_total)).filter(
-        extract('month', Abastecimento.data) == m, extract('year', Abastecimento.data) == a
+        Abastecimento.veiculo_id == veiculo_id,
+        extract('month', Abastecimento.data) == m,
+        extract('year', Abastecimento.data) == a,
     ).scalar() or 0
     return round(float(d) + float(c), 2)
 
 
-def get_custo_ano(ano=None):
+def get_custo_ano(veiculo_id, ano=None):
     a = ano or _mes_ano()[1]
-    d = db.session.query(func.sum(Despesa.valor)).filter(extract('year', Despesa.data) == a).scalar() or 0
-    c = db.session.query(func.sum(Abastecimento.valor_total)).filter(extract('year', Abastecimento.data) == a).scalar() or 0
+    d = db.session.query(func.sum(Despesa.valor)).filter(
+        Despesa.veiculo_id == veiculo_id,
+        extract('year', Despesa.data) == a,
+    ).scalar() or 0
+    c = db.session.query(func.sum(Abastecimento.valor_total)).filter(
+        Abastecimento.veiculo_id == veiculo_id,
+        extract('year', Abastecimento.data) == a,
+    ).scalar() or 0
     return round(float(d) + float(c), 2)
 
 
-def get_media_mensal():
+def get_media_mensal(veiculo_id):
     mes_atual = datetime.now().month
-    total = get_custo_ano()
+    total = get_custo_ano(veiculo_id)
     return round(total / mes_atual, 2) if mes_atual > 0 else 0
 
 
-def get_custo_por_km():
+def get_custo_por_km(veiculo_id):
     a = datetime.now().year
-    total = get_custo_ano(a)
+    total = get_custo_ano(veiculo_id, a)
     registros = Abastecimento.query.filter(
-        extract('year', Abastecimento.data) == a
+        Abastecimento.veiculo_id == veiculo_id,
+        extract('year', Abastecimento.data) == a,
     ).order_by(Abastecimento.quilometragem).all()
     if len(registros) < 2:
         return 0
@@ -46,26 +57,29 @@ def get_custo_por_km():
     return round(total / km_rodados, 2) if km_rodados > 0 else 0
 
 
-def get_gastos_combustivel_mes(mes=None, ano=None):
+def get_gastos_combustivel_mes(veiculo_id, mes=None, ano=None):
     m, a = mes or _mes_ano()[0], ano or _mes_ano()[1]
     v = db.session.query(func.sum(Abastecimento.valor_total)).filter(
-        extract('month', Abastecimento.data) == m, extract('year', Abastecimento.data) == a
+        Abastecimento.veiculo_id == veiculo_id,
+        extract('month', Abastecimento.data) == m,
+        extract('year', Abastecimento.data) == a,
     ).scalar() or 0
     return round(float(v), 2)
 
 
-def get_gastos_manutencao_mes(mes=None, ano=None):
+def get_gastos_manutencao_mes(veiculo_id, mes=None, ano=None):
     m, a = mes or _mes_ano()[0], ano or _mes_ano()[1]
     cats = ['Troca de Óleo', 'Revisão', 'Pneus', 'Peças', 'Reparo', 'Bateria', 'Filtro']
     v = db.session.query(func.sum(Despesa.valor)).join(Categoria).filter(
+        Despesa.veiculo_id == veiculo_id,
         Categoria.nome.in_(cats),
         extract('month', Despesa.data) == m,
-        extract('year', Despesa.data) == a
+        extract('year', Despesa.data) == a,
     ).scalar() or 0
     return round(float(v), 2)
 
 
-def get_gastos_por_mes(ultimos=12):
+def get_gastos_por_mes(veiculo_id, ultimos=12):
     hoje = datetime.now()
     resultado = []
     for i in range(ultimos - 1, -1, -1):
@@ -76,28 +90,32 @@ def get_gastos_por_mes(ultimos=12):
         else:
             m = total_meses
             a = hoje.year
-        total = get_custo_mes(m, a)
+        total = get_custo_mes(veiculo_id, m, a)
         resultado.append({'mes': calendar.month_abbr[m], 'ano': a, 'total': total})
     return resultado
 
 
-def get_gastos_por_categoria(mes=None, ano=None):
+def get_gastos_por_categoria(veiculo_id, mes=None, ano=None):
     m, a = mes or _mes_ano()[0], ano or _mes_ano()[1]
     rows = db.session.query(
         Categoria.nome, func.sum(Despesa.valor).label('total')
     ).join(Despesa.categoria).filter(
-        extract('month', Despesa.data) == m, extract('year', Despesa.data) == a
+        Despesa.veiculo_id == veiculo_id,
+        extract('month', Despesa.data) == m,
+        extract('year', Despesa.data) == a,
     ).group_by(Categoria.nome).all()
     resultado = [{'categoria': r.nome, 'total': round(float(r.total), 2)} for r in rows]
-    comb = get_gastos_combustivel_mes(m, a)
+    comb = get_gastos_combustivel_mes(veiculo_id, m, a)
     if comb > 0:
         resultado.append({'categoria': 'Combustível', 'total': comb})
     resultado.sort(key=lambda x: x['total'], reverse=True)
     return resultado
 
 
-def get_consumo_medio():
-    abast = Abastecimento.query.order_by(Abastecimento.quilometragem).all()
+def get_consumo_medio(veiculo_id):
+    abast = Abastecimento.query.filter_by(veiculo_id=veiculo_id).order_by(
+        Abastecimento.quilometragem
+    ).all()
     if len(abast) < 2:
         return 0
     medias = []
@@ -109,13 +127,17 @@ def get_consumo_medio():
     return round(sum(medias) / len(medias), 2) if medias else 0
 
 
-def get_preco_medio_litro():
-    v = db.session.query(func.avg(Abastecimento.preco_combustivel)).scalar()
+def get_preco_medio_litro(veiculo_id):
+    v = db.session.query(func.avg(Abastecimento.preco_combustivel)).filter(
+        Abastecimento.veiculo_id == veiculo_id
+    ).scalar()
     return round(float(v), 3) if v else 0
 
 
-def get_abastecimentos_com_consumo():
-    abast = Abastecimento.query.order_by(Abastecimento.quilometragem).all()
+def get_abastecimentos_com_consumo(veiculo_id):
+    abast = Abastecimento.query.filter_by(veiculo_id=veiculo_id).order_by(
+        Abastecimento.quilometragem
+    ).all()
     resultado = []
     for i, a in enumerate(abast):
         consumo = None
@@ -132,12 +154,12 @@ def get_abastecimentos_com_consumo():
     return list(reversed(resultado))
 
 
-def get_alertas_manutencao():
+def get_alertas_manutencao(veiculo_id):
     hoje = date.today()
-    veiculo = Veiculo.query.first()
-    km_atual = veiculo.km_atual if veiculo else 0
     alertas = []
-    for m in Manutencao.query.filter(Manutencao.status != 'realizada').all():
+    for m in Manutencao.query.filter_by(veiculo_id=veiculo_id).filter(
+        Manutencao.status != 'realizada'
+    ).all():
         st = m.status_calculado
         if st in ('atrasada', 'proxima'):
             alertas.append({
@@ -149,17 +171,17 @@ def get_alertas_manutencao():
     return alertas
 
 
-def get_comparativo_mes():
+def get_comparativo_mes(veiculo_id):
     agora = datetime.now()
-    atual = get_custo_mes(agora.month, agora.year)
+    atual = get_custo_mes(veiculo_id, agora.month, agora.year)
     m_ant = agora.month - 1 if agora.month > 1 else 12
     a_ant = agora.year if agora.month > 1 else agora.year - 1
-    anterior = get_custo_mes(m_ant, a_ant)
+    anterior = get_custo_mes(veiculo_id, m_ant, a_ant)
     delta = round(((atual - anterior) / anterior) * 100, 1) if anterior > 0 else 0
     return {'atual': atual, 'anterior': anterior, 'delta': delta}
 
 
-def get_combustivel_por_mes(ultimos=6):
+def get_combustivel_por_mes(veiculo_id, ultimos=6):
     hoje = datetime.now()
     resultado = []
     for i in range(ultimos - 1, -1, -1):
@@ -170,52 +192,65 @@ def get_combustivel_por_mes(ultimos=6):
         else:
             m = total_meses
             a = hoje.year
-        total = get_gastos_combustivel_mes(m, a)
+        total = get_gastos_combustivel_mes(veiculo_id, m, a)
         litros = db.session.query(func.sum(Abastecimento.litros_abastecidos)).filter(
+            Abastecimento.veiculo_id == veiculo_id,
             extract('month', Abastecimento.data) == m,
-            extract('year', Abastecimento.data) == a
+            extract('year', Abastecimento.data) == a,
         ).scalar() or 0
-        resultado.append({'mes': calendar.month_abbr[m], 'valor': total, 'litros': round(float(litros), 2)})
+        resultado.append({
+            'mes': calendar.month_abbr[m],
+            'valor': total,
+            'litros': round(float(litros), 2),
+        })
     return resultado
 
 
-def get_gastos_fixos_vs_variaveis(mes=None, ano=None):
+def get_gastos_fixos_vs_variaveis(veiculo_id, mes=None, ano=None):
     m, a = mes or _mes_ano()[0], ano or _mes_ano()[1]
     fixo = db.session.query(func.sum(Despesa.valor)).join(Categoria).filter(
+        Despesa.veiculo_id == veiculo_id,
         Categoria.tipo == 'fixo',
-        extract('month', Despesa.data) == m, extract('year', Despesa.data) == a
+        extract('month', Despesa.data) == m,
+        extract('year', Despesa.data) == a,
     ).scalar() or 0
     variavel = db.session.query(func.sum(Despesa.valor)).join(Categoria).filter(
+        Despesa.veiculo_id == veiculo_id,
         Categoria.tipo == 'variavel',
-        extract('month', Despesa.data) == m, extract('year', Despesa.data) == a
+        extract('month', Despesa.data) == m,
+        extract('year', Despesa.data) == a,
     ).scalar() or 0
-    comb = get_gastos_combustivel_mes(m, a)
+    comb = get_gastos_combustivel_mes(veiculo_id, m, a)
     return {'fixo': round(float(fixo), 2), 'variavel': round(float(variavel) + comb, 2)}
 
 
-def get_dashboard_data():
-    veiculo = Veiculo.query.first()
-    comp = get_comparativo_mes()
+def get_dashboard_data(veiculo_id):
+    veiculo = Veiculo.query.get(veiculo_id)
+    comp = get_comparativo_mes(veiculo_id)
     return {
         'veiculo': veiculo,
         'custo_mes': comp['atual'],
         'custo_mes_anterior': comp['anterior'],
         'custo_mes_delta': comp['delta'],
-        'custo_ano': get_custo_ano(),
-        'media_mensal': get_media_mensal(),
-        'custo_por_km': get_custo_por_km(),
-        'gastos_combustivel_mes': get_gastos_combustivel_mes(),
-        'gastos_manutencao_mes': get_gastos_manutencao_mes(),
-        'consumo_medio': get_consumo_medio(),
-        'preco_medio_litro': get_preco_medio_litro(),
+        'custo_ano': get_custo_ano(veiculo_id),
+        'media_mensal': get_media_mensal(veiculo_id),
+        'custo_por_km': get_custo_por_km(veiculo_id),
+        'gastos_combustivel_mes': get_gastos_combustivel_mes(veiculo_id),
+        'gastos_manutencao_mes': get_gastos_manutencao_mes(veiculo_id),
+        'consumo_medio': get_consumo_medio(veiculo_id),
+        'preco_medio_litro': get_preco_medio_litro(veiculo_id),
         'km_atual': veiculo.km_atual if veiculo else 0,
-        'gastos_por_mes': get_gastos_por_mes(12),
-        'gastos_por_categoria': get_gastos_por_categoria(),
-        'combustivel_por_mes': get_combustivel_por_mes(6),
-        'fixo_vs_variavel': get_gastos_fixos_vs_variaveis(),
-        'alertas': get_alertas_manutencao(),
-        'abastecimentos': get_abastecimentos_com_consumo(),
-        'despesas': Despesa.query.order_by(Despesa.data.desc()).all(),
+        'gastos_por_mes': get_gastos_por_mes(veiculo_id, 12),
+        'gastos_por_categoria': get_gastos_por_categoria(veiculo_id),
+        'combustivel_por_mes': get_combustivel_por_mes(veiculo_id, 6),
+        'fixo_vs_variavel': get_gastos_fixos_vs_variaveis(veiculo_id),
+        'alertas': get_alertas_manutencao(veiculo_id),
+        'abastecimentos': get_abastecimentos_com_consumo(veiculo_id),
+        'despesas': Despesa.query.filter_by(veiculo_id=veiculo_id).order_by(
+            Despesa.data.desc()
+        ).all(),
         'categorias': Categoria.query.order_by(Categoria.nome).all(),
-        'manutencoes': Manutencao.query.order_by(Manutencao.data_prevista).all(),
+        'manutencoes': Manutencao.query.filter_by(veiculo_id=veiculo_id).order_by(
+            Manutencao.data_prevista
+        ).all(),
     }

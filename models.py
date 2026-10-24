@@ -2,6 +2,8 @@ from datetime import datetime, date
 from flask_login import UserMixin
 from extensions import db, bcrypt
 
+PLANO_LIMITES = {'free': 1, 'pro': 3, 'frota': 15}
+
 
 class User(db.Model, UserMixin):
     __tablename__ = 'usuarios'
@@ -9,9 +11,15 @@ class User(db.Model, UserMixin):
     email            = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash    = db.Column(db.String(255), nullable=False)
     nome             = db.Column(db.String(100), nullable=False)
+    plano            = db.Column(db.String(20), default='free')
+    status           = db.Column(db.String(20), default='ativo')
+    email_confirmado = db.Column(db.Boolean, default=False)
     ativo            = db.Column(db.Boolean, default=True)
     created_at       = db.Column(db.DateTime, default=datetime.utcnow)
     last_login_at    = db.Column(db.DateTime)
+
+    veiculos = db.relationship('Veiculo', backref='dono', lazy='dynamic',
+                               foreign_keys='Veiculo.user_id')
 
     def set_password(self, senha):
         self.password_hash = bcrypt.generate_password_hash(senha).decode('utf-8')
@@ -22,21 +30,32 @@ class User(db.Model, UserMixin):
     def get_id(self):
         return str(self.id)
 
+    def pode_adicionar_veiculo(self):
+        limite = PLANO_LIMITES.get(self.plano or 'free', 1)
+        return self.veiculos.filter_by(ativo=True).count() < limite
+
 
 class Veiculo(db.Model):
     __tablename__ = 'veiculo'
-    id = db.Column(db.Integer, primary_key=True)
-    marca = db.Column(db.String(50))
-    modelo = db.Column(db.String(50))
-    versao = db.Column(db.String(100))
-    motor = db.Column(db.String(100))
-    ano = db.Column(db.Integer)
-    placa = db.Column(db.String(10))
-    cor = db.Column(db.String(50))
-    km_atual = db.Column(db.Integer, default=0)
+    id          = db.Column(db.Integer, primary_key=True)
+    user_id     = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True, index=True)
+    ativo       = db.Column(db.Boolean, default=True)
+    marca       = db.Column(db.String(50))
+    modelo      = db.Column(db.String(50))
+    versao      = db.Column(db.String(100))
+    motor       = db.Column(db.String(100))
+    ano         = db.Column(db.Integer)
+    placa       = db.Column(db.String(10))
+    cor         = db.Column(db.String(50))
+    km_atual    = db.Column(db.Integer, default=0)
     data_compra = db.Column(db.Date)
     valor_compra = db.Column(db.Float)
-    valor_atual = db.Column(db.Float)
+    valor_atual  = db.Column(db.Float)
+
+    abastecimentos = db.relationship('Abastecimento', backref='veiculo', lazy='dynamic')
+    despesas       = db.relationship('Despesa', backref='veiculo', lazy='dynamic')
+    manutencoes    = db.relationship('Manutencao', backref='veiculo', lazy='dynamic')
+    corridas       = db.relationship('CorridaUber', backref='veiculo', lazy='dynamic')
 
     def to_dict(self):
         return {
@@ -50,13 +69,14 @@ class Veiculo(db.Model):
 
 class Abastecimento(db.Model):
     __tablename__ = 'abastecimentos'
-    id = db.Column(db.Integer, primary_key=True)
-    data = db.Column(db.Date, default=datetime.utcnow)
-    quilometragem = db.Column(db.Integer, nullable=False)
-    litros_abastecidos = db.Column(db.Float, nullable=False)
-    valor_total = db.Column(db.Float, nullable=False)
-    preco_combustivel = db.Column(db.Float, nullable=False)
-    posto = db.Column(db.String(250), nullable=False)
+    id                  = db.Column(db.Integer, primary_key=True)
+    veiculo_id          = db.Column(db.Integer, db.ForeignKey('veiculo.id'), nullable=True, index=True)
+    data                = db.Column(db.Date, default=datetime.utcnow)
+    quilometragem       = db.Column(db.Integer, nullable=False)
+    litros_abastecidos  = db.Column(db.Float, nullable=False)
+    valor_total         = db.Column(db.Float, nullable=False)
+    preco_combustivel   = db.Column(db.Float, nullable=False)
+    posto               = db.Column(db.String(250), nullable=False)
 
     def to_dict(self):
         return {
@@ -71,10 +91,10 @@ class Abastecimento(db.Model):
 
 class Categoria(db.Model):
     __tablename__ = 'categorias'
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(50), nullable=False, unique=True)
+    id    = db.Column(db.Integer, primary_key=True)
+    nome  = db.Column(db.String(50), nullable=False, unique=True)
     icone = db.Column(db.String(10), default='📦')
-    tipo = db.Column(db.String(20), default='variavel')  # fixo | variavel
+    tipo  = db.Column(db.String(20), default='variavel')  # fixo | variavel
 
     def __repr__(self):
         return f'<Categoria {self.nome}>'
@@ -82,15 +102,16 @@ class Categoria(db.Model):
 
 class Despesa(db.Model):
     __tablename__ = 'despesas'
-    id = db.Column(db.Integer, primary_key=True)
-    data = db.Column(db.Date, default=datetime.utcnow)
-    descricao = db.Column(db.String(100), nullable=False)
-    valor = db.Column(db.Float, nullable=False)
-    quilometragem = db.Column(db.Integer)
+    id              = db.Column(db.Integer, primary_key=True)
+    veiculo_id      = db.Column(db.Integer, db.ForeignKey('veiculo.id'), nullable=True, index=True)
+    data            = db.Column(db.Date, default=datetime.utcnow)
+    descricao       = db.Column(db.String(100), nullable=False)
+    valor           = db.Column(db.Float, nullable=False)
+    quilometragem   = db.Column(db.Integer)
     forma_pagamento = db.Column(db.String(50))
-    observacoes = db.Column(db.Text)
-    categoria_id = db.Column(db.Integer, db.ForeignKey('categorias.id'), nullable=False)
-    categoria = db.relationship('Categoria', backref='despesas')
+    observacoes     = db.Column(db.Text)
+    categoria_id    = db.Column(db.Integer, db.ForeignKey('categorias.id'), nullable=False)
+    categoria       = db.relationship('Categoria', backref='despesas')
 
     def to_dict(self):
         return {
@@ -107,22 +128,22 @@ class Despesa(db.Model):
 
 class Manutencao(db.Model):
     __tablename__ = 'manutencoes'
-    id = db.Column(db.Integer, primary_key=True)
-    tipo = db.Column(db.String(50))
-    descricao = db.Column(db.String(200))
+    id             = db.Column(db.Integer, primary_key=True)
+    veiculo_id     = db.Column(db.Integer, db.ForeignKey('veiculo.id'), nullable=True, index=True)
+    tipo           = db.Column(db.String(50))
+    descricao      = db.Column(db.String(200))
     data_realizada = db.Column(db.Date)
-    km_realizada = db.Column(db.Integer)
-    data_prevista = db.Column(db.Date)
-    km_previsto = db.Column(db.Integer)
-    custo = db.Column(db.Float, default=0)
-    status = db.Column(db.String(20), default='pendente')
-    observacoes = db.Column(db.Text)
+    km_realizada   = db.Column(db.Integer)
+    data_prevista  = db.Column(db.Date)
+    km_previsto    = db.Column(db.Integer)
+    custo          = db.Column(db.Float, default=0)
+    status         = db.Column(db.String(20), default='pendente')
+    observacoes    = db.Column(db.Text)
 
     @property
     def status_calculado(self):
         hoje = date.today()
-        veiculo = Veiculo.query.first()
-        km_atual = veiculo.km_atual if veiculo else 0
+        km_atual = self.veiculo.km_atual if self.veiculo else 0
         if self.status == 'realizada':
             return 'realizada'
         atrasada = (self.data_prevista and self.data_prevista < hoje) or \
@@ -148,35 +169,38 @@ class Manutencao(db.Model):
 
 
 class CorridaUber(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    data_corrida = db.Column(db.Date, nullable=False)
-    hora_corrida = db.Column(db.Time, nullable=False)
-    tipo_corrida = db.Column(db.String(50))
-    duracao = db.Column(db.Time)
-    distancia_km = db.Column(db.Numeric(5, 2))
-    local_partida = db.Column(db.String(255))
-    local_destino = db.Column(db.String(255))
-    ganho_bruto = db.Column(db.Numeric(10, 2), nullable=False)
-    taxa_servico = db.Column(db.Numeric(5, 2))
-    ganho_liquido = db.Column(db.Numeric(10, 2))
-    pontos_ganhos = db.Column(db.Integer)
+    __tablename__ = 'corrida_uber'
+    id                 = db.Column(db.Integer, primary_key=True)
+    veiculo_id         = db.Column(db.Integer, db.ForeignKey('veiculo.id'), nullable=True, index=True)
+    data_corrida       = db.Column(db.Date, nullable=False)
+    hora_corrida       = db.Column(db.Time, nullable=False)
+    tipo_corrida       = db.Column(db.String(50))
+    duracao            = db.Column(db.Time)
+    distancia_km       = db.Column(db.Numeric(5, 2))
+    local_partida      = db.Column(db.String(255))
+    local_destino      = db.Column(db.String(255))
+    ganho_bruto        = db.Column(db.Numeric(10, 2), nullable=False)
+    taxa_servico       = db.Column(db.Numeric(5, 2))
+    ganho_liquido      = db.Column(db.Numeric(10, 2))
+    pontos_ganhos      = db.Column(db.Integer)
     total_pago_usuario = db.Column(db.Numeric(10, 2))
-    promocao_aplicada = db.Column(db.Numeric(10, 2))
+    promocao_aplicada  = db.Column(db.Numeric(10, 2))
 
 
 class SemanalUber(db.Model):
     __tablename__ = 'semanal_uber'
-    id = db.Column(db.Integer, primary_key=True)
-    data_inicio = db.Column(db.DateTime, nullable=False)
-    data_termino = db.Column(db.DateTime, nullable=False)
-    nome_motorista = db.Column(db.String(255))
-    contato = db.Column(db.String(255))
-    saldo_inicial = db.Column(db.Numeric(10, 2))
-    ganhos = db.Column(db.Numeric(10, 2))
-    despesas_reembolsos = db.Column(db.Numeric(10, 2))
-    transferencias = db.Column(db.Numeric(10, 2))
-    saldo_final = db.Column(db.Numeric(10, 2))
-    detalhamento_ganhos = db.Column(db.Text)
-    resumo_taxas = db.Column(db.Text)
+    id                    = db.Column(db.Integer, primary_key=True)
+    user_id               = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
+    data_inicio           = db.Column(db.DateTime, nullable=False)
+    data_termino          = db.Column(db.DateTime, nullable=False)
+    nome_motorista        = db.Column(db.String(255))
+    contato               = db.Column(db.String(255))
+    saldo_inicial         = db.Column(db.Numeric(10, 2))
+    ganhos                = db.Column(db.Numeric(10, 2))
+    despesas_reembolsos   = db.Column(db.Numeric(10, 2))
+    transferencias        = db.Column(db.Numeric(10, 2))
+    saldo_final           = db.Column(db.Numeric(10, 2))
+    detalhamento_ganhos   = db.Column(db.Text)
+    resumo_taxas          = db.Column(db.Text)
     transacoes_detalhadas = db.Column(db.Text)
-    nome_arquivo = db.Column(db.String(255))
+    nome_arquivo          = db.Column(db.String(255))

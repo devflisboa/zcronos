@@ -66,6 +66,9 @@
       <button class="nav-item" data-section="historico" data-label="Histórico do Veículo">
         <span class="ni">🚗</span> Histórico
       </button>
+      <a href="{{ url_for('veiculo.index') }}" class="nav-item" style="text-decoration:none;display:flex;align-items:center;gap:.5rem;color:inherit">
+        <span class="ni">🚘</span> Meus Veículos
+      </a>
 
       <div class="nav-group-label" style="margin-top:auto">Conta</div>
       <a href="{{ url_for('auth.logout') }}" class="nav-item" style="text-decoration:none;display:flex;align-items:center;gap:.5rem;color:inherit">

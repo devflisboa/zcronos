@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meus Veículos | zCronos</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/automotive.css') }}">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<style>
+.page-wrap { padding: 2rem; }
+.page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem; }
+.page-title { font-size:1.4rem; font-weight:700; color:var(--accent); }
+.veiculo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:1.5rem; }
+.veiculo-card { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:1.5rem; position:relative; }
+.veiculo-card.is-ativo { border-color:var(--accent); }
+.vc-ativo-badge { position:absolute; top:1rem; right:1rem; background:var(--accent); color:#000; font-size:.7rem; font-weight:700; padding:.2rem .5rem; border-radius:4px; }
+.vc-name { font-size:1.1rem; font-weight:700; margin-bottom:.2rem; }
+.vc-sub { font-size:.82rem; color:var(--muted); margin-bottom:.15rem; }
+.vc-km { font-size:1.6rem; font-weight:700; color:var(--accent); margin:.75rem 0 .25rem; }
+.vc-placa { display:inline-block; font-family:monospace; font-size:.8rem; background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:.15rem .45rem; color:var(--muted); }
+.vc-actions { display:flex; gap:.5rem; margin-top:1.1rem; flex-wrap:wrap; }
+.btn-xs { padding:.3rem .65rem; font-size:.78rem; border-radius:6px; border:none; cursor:pointer; font-weight:500; }
+.btn-accent { background:var(--accent); color:#000; }
+.btn-ghost { background:var(--bg); border:1px solid var(--border); color:var(--text); text-decoration:none; display:inline-flex; align-items:center; }
+.btn-danger-xs { background:#3a1a1a; border:1px solid #5a2d2d; color:#ff6b6b; }
+.btn-add { display:inline-flex; align-items:center; gap:.4rem; background:var(--accent); color:#000; padding:.55rem 1.1rem; border-radius:8px; border:none; cursor:pointer; font-weight:600; text-decoration:none; font-size:.9rem; }
+.flash-wrap { margin-bottom:1.5rem; }
+.flash { padding:.7rem 1rem; border-radius:8px; font-size:.88rem; margin-bottom:.5rem; }
+.flash-success { background:#1a3a1a; border:1px solid #2d5a2d; color:#90ee90; }
+.flash-danger  { background:#3a1a1a; border:1px solid #5a2d2d; color:#ff8080; }
+.flash-info    { background:#1a2a3a; border:1px solid #2d3a5a; color:#80b8ff; }
+.empty-state { text-align:center; padding:4rem 2rem; color:var(--muted); }
+.empty-state p { margin-bottom:1.5rem; }
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <div class="sb-head">
+      <div class="sb-logo">
+        <div class="sb-logo-icon">z</div>
+        <div class="sb-logo-text">
+          <div class="sb-logo-brand">zCronos</div>
+          <div class="sb-logo-model">Gestão Automotiva</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="nav-group-label">Principal</div>
+      <a href="{{ url_for('main.index') }}" class="nav-item" style="text-decoration:none;display:flex;align-items:center;gap:.5rem;color:inherit">
+        <span class="ni">⊞</span> Dashboard
+      </a>
+      <div class="nav-group-label">Veículo</div>
+      <a href="{{ url_for('veiculo.index') }}" class="nav-item active" style="text-decoration:none;display:flex;align-items:center;gap:.5rem;color:inherit">
+        <span class="ni">🚘</span> Meus Veículos
+      </a>
+      <div class="nav-group-label" style="margin-top:auto">Conta</div>
+      <a href="{{ url_for('auth.logout') }}" class="nav-item" style="text-decoration:none;display:flex;align-items:center;gap:.5rem;color:inherit">
+        <span class="ni">⏻</span> Sair
+      </a>
+    </nav>
+  </aside>
+
+  <main id="content">
+    <div class="page-wrap">
+      <div class="page-header">
+        <div class="page-title">🚘 Meus Veículos</div>
+        {% if pode_adicionar %}
+        <a href="{{ url_for('veiculo.novo') }}" class="btn-add">+ Novo Veículo</a>
+        {% else %}
+        <span style="font-size:.82rem;color:var(--muted)">Limite do plano atingido</span>
+        {% endif %}
+      </div>
+
+      <div class="flash-wrap">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in messages %}
+          <div class="flash flash-{{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+      </div>
+
+      {% if veiculos %}
+      <div class="veiculo-grid">
+        {% for v in veiculos %}
+        <div class="veiculo-card {% if v.id == veiculo_ativo_id %}is-ativo{% endif %}">
+          {% if v.id == veiculo_ativo_id %}
+          <div class="vc-ativo-badge">ATIVO</div>
+          {% endif %}
+          <div class="vc-name">{{ v.marca }} {{ v.modelo }}</div>
+          <div class="vc-sub">{{ v.versao or '' }}</div>
+          <div class="vc-sub">{{ v.motor or '' }}</div>
+          {% if v.placa %}<div class="vc-placa">{{ v.placa }}</div>{% endif %}
+          <div class="vc-km">{{ '{:,}'.format(v.km_atual or 0).replace(',', '.') }} km</div>
+          <div class="vc-sub">{{ v.ano or '' }}{% if v.cor %} · {{ v.cor }}{% endif %}</div>
+          <div class="vc-actions">
+            {% if v.id != veiculo_ativo_id %}
+            <form method="POST" action="{{ url_for('veiculo.selecionar', id=v.id) }}" style="display:contents">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn-xs btn-accent" type="submit">Selecionar</button>
+            </form>
+            {% endif %}
+            <a href="{{ url_for('veiculo.editar', id=v.id) }}" class="btn-xs btn-ghost">Editar</a>
+            {% if v.id != veiculo_ativo_id %}
+            <form method="POST" action="{{ url_for('veiculo.deletar', id=v.id) }}"
+                  onsubmit="return confirm('Remover {{ v.marca }} {{ v.modelo }}?')" style="display:contents">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn-xs btn-danger-xs" type="submit">Remover</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <p>Nenhum veículo cadastrado ainda.</p>
+        <a href="{{ url_for('veiculo.novo') }}" class="btn-add">+ Cadastrar meu primeiro veículo</a>
+      </div>
+      {% endif %}
+    </div>
+  </main>
+</div>
+</body>
+</html>

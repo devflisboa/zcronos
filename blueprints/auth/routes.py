@@ -1,8 +1,8 @@
 from datetime import datetime
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, session
 from flask_login import login_user, logout_user, login_required, current_user
 from extensions import db, limiter
-from models import User
+from models import User, Veiculo
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -24,6 +24,11 @@ def login():
             user.last_login_at = datetime.utcnow()
             db.session.commit()
             login_user(user, remember=lembrar)
+
+            veiculo = Veiculo.query.filter_by(user_id=user.id, ativo=True).first()
+            if veiculo:
+                session['veiculo_ativo_id'] = veiculo.id
+
             destino = request.args.get('next')
             return redirect(destino or url_for('main.index'))
 
@@ -35,6 +40,7 @@ def login():
 @auth_bp.route('/logout')
 @login_required
 def logout():
+    session.pop('veiculo_ativo_id', None)
     logout_user()
     flash('Sessão encerrada.', 'info')
     return redirect(url_for('auth.login'))

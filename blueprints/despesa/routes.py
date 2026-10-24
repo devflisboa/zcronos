@@ -3,6 +3,7 @@ from flask_login import login_required
 from datetime import datetime
 from extensions import db
 from models import Despesa, Categoria
+from services.veiculo_helper import get_veiculo_ativo
 
 despesa_bp = Blueprint('despesa', __name__)
 
@@ -17,6 +18,11 @@ def cadastrar_despesa():
 @despesa_bp.route('/add', methods=['POST'])
 @login_required
 def add_despesa():
+    veiculo = get_veiculo_ativo()
+    if not veiculo:
+        flash('Nenhum veículo ativo. Selecione um veículo primeiro.', 'danger')
+        return redirect(url_for('veiculo.index'))
+
     categoria_id = request.form.get('categoria_id')
     if not categoria_id:
         flash('Categoria não selecionada.', 'danger')
@@ -29,6 +35,7 @@ def add_despesa():
             return redirect(url_for('despesa.cadastrar_despesa'))
 
         nova = Despesa(
+            veiculo_id=veiculo.id,
             descricao=request.form.get('descricao'),
             valor=request.form.get('valor'),
             data=datetime.strptime(request.form.get('data'), '%Y-%m-%d'),
@@ -46,7 +53,11 @@ def add_despesa():
 @despesa_bp.route('/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_despesa(id):
+    veiculo = get_veiculo_ativo()
     despesa = db.session.get(Despesa, id)
+    if not despesa or (veiculo and despesa.veiculo_id != veiculo.id):
+        flash('Registro não encontrado.', 'danger')
+        return redirect(url_for('main.index'))
     try:
         db.session.delete(despesa)
         db.session.commit()

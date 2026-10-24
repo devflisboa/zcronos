@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required
-from datetime import datetime
 from extensions import db
 from models import Abastecimento
+from services.veiculo_helper import get_veiculo_ativo
 
 abastecimento_bp = Blueprint('abastecimento', __name__)
 
@@ -16,8 +16,13 @@ def cadastrar_abastecimento():
 @abastecimento_bp.route('/add', methods=['POST'])
 @login_required
 def add_abastecimento():
+    veiculo = get_veiculo_ativo()
+    if not veiculo:
+        flash('Nenhum veículo ativo. Selecione um veículo primeiro.', 'danger')
+        return redirect(url_for('veiculo.index'))
     try:
         novo = Abastecimento(
+            veiculo_id=veiculo.id,
             quilometragem=request.form.get('quilometragem'),
             litros_abastecidos=request.form.get('litros_abastecidos'),
             valor_total=request.form.get('valor_total'),
@@ -37,7 +42,11 @@ def add_abastecimento():
 @abastecimento_bp.route('/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_abastecimento(id):
+    veiculo = get_veiculo_ativo()
     abastecimento = db.session.get(Abastecimento, id)
+    if not abastecimento or (veiculo and abastecimento.veiculo_id != veiculo.id):
+        flash('Registro não encontrado.', 'danger')
+        return redirect(url_for('main.index'))
     try:
         db.session.delete(abastecimento)
         db.session.commit()

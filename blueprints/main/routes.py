@@ -5,6 +5,7 @@ from datetime import datetime
 from extensions import db
 from models import Despesa, Categoria, Abastecimento, Manutencao, Veiculo
 from services.dashboard_service import get_dashboard_data
+from services.veiculo_helper import get_veiculo_ativo
 
 main_bp = Blueprint('main', __name__)
 
@@ -12,7 +13,11 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/')
 @login_required
 def index():
-    data = get_dashboard_data()
+    veiculo = get_veiculo_ativo()
+    if not veiculo:
+        flash('Cadastre seu primeiro veículo para começar.', 'info')
+        return redirect(url_for('veiculo.novo'))
+    data = get_dashboard_data(veiculo.id)
     data['gastos_por_mes_json'] = json.dumps(data['gastos_por_mes'])
     data['gastos_por_categoria_json'] = json.dumps(data['gastos_por_categoria'])
     data['combustivel_por_mes_json'] = json.dumps(data['combustivel_por_mes'])
@@ -23,10 +28,10 @@ def index():
 @main_bp.route('/veiculo/editar', methods=['POST'])
 @login_required
 def editar_veiculo():
-    veiculo = Veiculo.query.first()
+    veiculo = get_veiculo_ativo()
     if not veiculo:
-        veiculo = Veiculo()
-        db.session.add(veiculo)
+        flash('Nenhum veículo ativo selecionado.', 'danger')
+        return redirect(url_for('veiculo.index'))
     veiculo.marca = request.form.get('marca', veiculo.marca)
     veiculo.modelo = request.form.get('modelo', veiculo.modelo)
     veiculo.versao = request.form.get('versao', veiculo.versao)
@@ -49,7 +54,7 @@ def editar_veiculo():
 @main_bp.route('/km/atualizar', methods=['POST'])
 @login_required
 def atualizar_km():
-    veiculo = Veiculo.query.first()
+    veiculo = get_veiculo_ativo()
     if veiculo:
         novo_km = request.form.get('km_atual')
         if novo_km:
