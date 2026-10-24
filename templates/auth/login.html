@@ -3,25 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>zCronos | Entrar</title>
+<title>ΛUTOVIU | Entrar</title>
 <link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
     min-height: 100vh;
-    background: #0d0d0f;
+    background: #0A0A0C;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    color: #e2e8f0;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #f0f0f0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Glow ambiente dourado no fundo */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(ellipse at center, rgba(212,175,55,0.07) 0%, transparent 65%);
+    pointer-events: none;
   }
 
   .login-wrap {
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
     padding: 2rem;
+    position: relative;
+    z-index: 1;
   }
 
   .login-logo {
@@ -30,59 +49,65 @@
   }
 
   .login-logo-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #1A1A1E 0%, #D4AF37 100%);
+    border: 1px solid rgba(212,175,55,0.35);
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    font-family: 'Orbitron', sans-serif;
     font-size: 2rem;
-    font-weight: 800;
-    color: #fff;
-    margin-bottom: 1rem;
-    box-shadow: 0 4px 24px rgba(59,130,246,.35);
+    font-weight: 900;
+    color: #000;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 4px 32px rgba(212,175,55,0.25), 0 0 0 1px rgba(212,175,55,0.1);
   }
 
   .login-logo-brand {
-    font-size: .75rem;
+    font-size: .7rem;
     font-weight: 600;
-    letter-spacing: .15em;
+    letter-spacing: .2em;
     text-transform: uppercase;
-    color: #64748b;
+    color: #4e4e4e;
+    margin-bottom: .35rem;
   }
 
   .login-logo-model {
-    font-size: 1.5rem;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.6rem;
     font-weight: 800;
-    letter-spacing: .05em;
-    color: #f1f5f9;
+    letter-spacing: .12em;
+    color: #D4AF37;
+    text-shadow: 0 0 24px rgba(212,175,55,0.3);
   }
 
   .login-card {
-    background: #16181d;
-    border: 1px solid #1e2229;
-    border-radius: 16px;
+    background: #111116;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px;
     padding: 2rem;
-    box-shadow: 0 8px 48px rgba(0,0,0,.6);
+    box-shadow: 0 8px 48px rgba(0,0,0,.7), 0 0 0 1px rgba(212,175,55,0.05);
   }
 
   .login-card h2 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #94a3b8;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #4e4e4e;
     margin-bottom: 1.5rem;
     text-align: center;
+    letter-spacing: .025em;
   }
 
   .alert {
     padding: .75rem 1rem;
-    border-radius: 8px;
+    border-radius: 9px;
     font-size: .875rem;
     margin-bottom: 1rem;
   }
-  .alert-danger { background: rgba(220,38,38,.15); border: 1px solid rgba(220,38,38,.3); color: #fca5a5; }
-  .alert-info   { background: rgba(59,130,246,.12); border: 1px solid rgba(59,130,246,.25); color: #93c5fd; }
+  .alert-danger { background: rgba(255,59,48,0.1); border: 1px solid rgba(255,59,48,0.25); color: #ff8080; }
+  .alert-info   { background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.25); color: #D4AF37; }
 
   .form-group {
     margin-bottom: 1.25rem;
@@ -90,32 +115,33 @@
 
   .form-group label {
     display: block;
-    font-size: .8rem;
+    font-size: .78rem;
     font-weight: 600;
-    letter-spacing: .05em;
+    letter-spacing: .06em;
     text-transform: uppercase;
-    color: #64748b;
+    color: #4e4e4e;
     margin-bottom: .5rem;
   }
 
   .form-group input {
     width: 100%;
     padding: .75rem 1rem;
-    background: #0d0d0f;
-    border: 1px solid #1e2229;
-    border-radius: 8px;
-    color: #e2e8f0;
+    background: #0A0A0C;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 9px;
+    color: #f0f0f0;
     font-size: .9375rem;
-    transition: border-color .15s;
+    font-family: 'Inter', sans-serif;
+    transition: border-color .15s, box-shadow .15s;
     outline: none;
   }
 
   .form-group input:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+    border-color: #D4AF37;
+    box-shadow: 0 0 0 3px rgba(212,175,55,0.14);
   }
 
-  .form-group input::placeholder { color: #334155; }
+  .form-group input::placeholder { color: #2e2e2e; }
 
   .form-check {
     display: flex;
@@ -127,38 +153,41 @@
   .form-check input[type="checkbox"] {
     width: 16px;
     height: 16px;
-    accent-color: #3b82f6;
+    accent-color: #D4AF37;
     cursor: pointer;
   }
 
   .form-check label {
     font-size: .875rem;
-    color: #64748b;
+    color: #4e4e4e;
     cursor: pointer;
   }
 
   .btn-login {
     width: 100%;
     padding: .875rem;
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    background: linear-gradient(135deg, #B8960C 0%, #D4AF37 50%, #FFD700 100%);
     border: none;
-    border-radius: 8px;
-    color: #fff;
-    font-size: 1rem;
+    border-radius: 9px;
+    color: #000;
+    font-size: .95rem;
     font-weight: 700;
-    letter-spacing: .025em;
+    letter-spacing: .05em;
+    font-family: 'Inter', sans-serif;
     cursor: pointer;
-    transition: opacity .15s, transform .1s;
+    transition: opacity .15s, transform .1s, box-shadow .15s;
+    box-shadow: 0 4px 20px rgba(212,175,55,0.25);
   }
 
-  .btn-login:hover { opacity: .9; }
+  .btn-login:hover { opacity: .92; box-shadow: 0 6px 28px rgba(212,175,55,0.35); }
   .btn-login:active { transform: scale(.98); }
 
   .login-footer {
     text-align: center;
     margin-top: 1.5rem;
-    font-size: .8rem;
-    color: #334155;
+    font-size: .78rem;
+    color: #2e2e2e;
+    letter-spacing: .04em;
   }
 </style>
 </head>
@@ -166,9 +195,9 @@
 
 <div class="login-wrap">
   <div class="login-logo">
-    <div class="login-logo-icon">z</div>
+    <div class="login-logo-icon">Λ</div>
     <div class="login-logo-brand">Gestão Automotiva</div>
-    <div class="login-logo-model">zCronos</div>
+    <div class="login-logo-model">ΛUTOVIU</div>
   </div>
 
   <div class="login-card">
@@ -203,7 +232,7 @@
     </form>
   </div>
 
-  <div class="login-footer">zCronos &copy; {{ now.year }}</div>
+  <div class="login-footer">ΛUTOVIU &copy; {{ now.year }}</div>
 </div>
 
 </body>

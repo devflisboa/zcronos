@@ -1,45 +1,45 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  /* ── Fundo: preto puro (sem azulado) ── */
-  --bg: #080808;
-  --bg2: #0f0f0f;
-  --bg3: #181818;
-  --card: #111111;
-  --card-h: #1a1a1a;
+  /* ── AUTOVIU — Dark Carbon Premium ── */
+  --bg:    #0A0A0C;
+  --bg2:   #121214;
+  --bg3:   #1A1A1E;
+  --card:  #111116;
+  --card-h:#18181E;
   --border: rgba(255,255,255,0.07);
-  --border2: rgba(255,255,255,0.15);
+  --border2:rgba(255,255,255,0.15);
 
-  /* ── Bandeira italiana: Fiat identity ── */
-  --it-green: #009246;
-  --it-red:   #CE2B37;
+  /* ── Ouro Dourado — cor primária / acento ── */
+  --red:   #D4AF37;
+  --red-d: rgba(212,175,55,0.14);
+  --red-g: rgba(212,175,55,0.35);
 
-  /* Vermelho → italiano */
-  --red:   #CE2B37;
-  --red-d: rgba(206,43,55,0.14);
-  --red-g: rgba(206,43,55,0.35);
+  /* ── Gold explícito (mesmo valor, nome semântico) ── */
+  --gold:   #D4AF37;
+  --gold-bright: #FFD700;
+  --gold-d: rgba(212,175,55,0.14);
+  --gold-g: rgba(212,175,55,0.35);
+  --gold-border: rgba(212,175,55,0.28);
 
-  /* Prata metálica (substituiu azul) */
+  /* ── Prata metálica — secundário ── */
   --blue:   #8a9099;
   --blue-d: rgba(138,144,153,0.12);
   --blue-g: rgba(138,144,153,0.28);
   --silver: #b0b8c2;
 
-  --gold:   #c9a84c;
-  --gold-d: rgba(201,168,76,0.12);
-
-  /* ── Texto: branco ── */
+  /* ── Texto ── */
   --text:  #f0f0f0;
   --text2: #989898;
   --text3: #4e4e4e;
 
-  /* ── Status: verde italiano = ok ── */
-  --ok:      #009246;
-  --ok-d:    rgba(0,146,70,0.12);
-  --warn:    #f59e0b;
-  --warn-d:  rgba(245,158,11,0.12);
-  --danger:  #CE2B37;
-  --danger-d:rgba(206,43,55,0.12);
+  /* ── Status ── */
+  --ok:      #34C759;
+  --ok-d:    rgba(52,199,89,0.12);
+  --warn:    #FF9F0A;
+  --warn-d:  rgba(255,159,10,0.12);
+  --danger:  #FF3B30;
+  --danger-d:rgba(255,59,48,0.12);
 
   --sidebar: 240px;
   --topbar: 60px;
@@ -62,11 +62,11 @@ input,select,textarea,button{font-family:inherit}
 #boot{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px}
 .boot-logo{text-align:center}
 .boot-brand{display:block;font-size:11px;font-weight:700;letter-spacing:6px;color:var(--text3);text-transform:uppercase;margin-bottom:6px}
-.boot-model{display:block;font-size:52px;font-weight:800;letter-spacing:8px;color:var(--text);text-transform:uppercase;opacity:0;animation:boot-fade 1s var(--ease) .3s forwards}
+.boot-model{display:block;font-size:52px;font-weight:800;letter-spacing:8px;color:var(--gold);text-transform:uppercase;opacity:0;animation:boot-fade 1s var(--ease) .3s forwards;font-family:'Orbitron',sans-serif}
 .boot-line{width:1px;height:0;background:var(--red);margin:0 auto;animation:boot-line 1s var(--ease) .6s forwards}
 .boot-sub{font-size:11px;letter-spacing:4px;color:var(--text3);text-transform:uppercase;opacity:0;animation:boot-fade 1s .9s forwards}
 .boot-bar-wrap{width:240px;height:2px;background:var(--border);border-radius:99px;overflow:hidden}
-.boot-bar{height:100%;width:0;background:linear-gradient(90deg,var(--it-green) 33%,#fff 33% 66%,var(--it-red) 66%);border-radius:99px;animation:boot-bar 1.4s var(--ease) .4s forwards}
+.boot-bar{height:100%;width:0;background:linear-gradient(90deg,#6B4F12 0%,#D4AF37 50%,#FFD700 100%);border-radius:99px;animation:boot-bar 1.4s var(--ease) .4s forwards}
 .boot-msg{font-size:11px;color:var(--text3);letter-spacing:1px;min-height:16px}
 
 @keyframes boot-fade{to{opacity:1}}
@@ -84,7 +84,7 @@ input,select,textarea,button{font-family:inherit}
 #sidebar{width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform var(--t)}
 .sb-head{padding:20px 16px 16px;border-bottom:1px solid var(--border)}
 .sb-logo{display:flex;align-items:center;gap:10px}
-.sb-logo-icon{width:34px;height:34px;background:linear-gradient(90deg,var(--it-green) 33%,#fff 33% 66%,var(--it-red) 66%);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.sb-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#1A1A1E 0%,#D4AF37 100%);border:1px solid var(--gold-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#000;flex-shrink:0;font-family:'Orbitron',sans-serif}
 .sb-logo-text{line-height:1.1}
 .sb-logo-brand{font-size:9px;font-weight:700;letter-spacing:3px;color:var(--text3);text-transform:uppercase}
 .sb-logo-model{font-size:15px;font-weight:700;color:var(--text)}
@@ -96,7 +96,7 @@ input,select,textarea,button{font-family:inherit}
 .nav-item:hover{color:var(--text);background:var(--bg3)}
 .nav-item.active{color:var(--text);background:var(--red-d)}
 .nav-item.active .ni{background:var(--red-d)}
-.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:99px}
+.nav-badge{margin-left:auto;background:var(--gold);color:#000;font-size:10px;font-weight:700;padding:1px 7px;border-radius:99px}
 
 .sb-footer{padding:0 16px 12px;border-top:1px solid var(--border)}
 .sb-car-thumb{padding:10px 0 6px;text-align:center}
@@ -152,7 +152,7 @@ input,select,textarea,button{font-family:inherit}
 .kpi:hover{border-color:var(--border2);transform:translateY(-2px)}
 .kpi-icon{font-size:22px;margin-bottom:8px}
 .kpi-label{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:.5px;margin-bottom:4px}
-.kpi-value{font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;color:var(--text)}
+.kpi-value{font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;color:var(--text);font-family:'Orbitron',sans-serif}
 .kpi-value.red{color:var(--red)}
 .kpi-value.blue{color:var(--blue)}
 .kpi-value.ok{color:var(--ok)}
@@ -218,8 +218,8 @@ table.auto tbody td:first-child{color:var(--text);font-weight:500}
 
 /* ── BUTTONS ── */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-s);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all var(--t)}
-.btn-primary{background:var(--red);color:#fff}
-.btn-primary:hover{background:#e01333;transform:translateY(-1px)}
+.btn-primary{background:var(--gold);color:#000}
+.btn-primary:hover{background:var(--gold-bright);transform:translateY(-1px)}
 .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
 .btn-ghost:hover{background:var(--bg3);color:var(--text)}
 .btn-sm{padding:5px 10px;font-size:11px}
