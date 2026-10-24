@@ -1,7 +1,20 @@
 # AUTOVIU — Roadmap Fase 3
 
 **Criado em:** 24/10/2026  
-**Status:** Planejamento
+**Atualizado em:** 24/10/2026  
+**Status:** Em execução
+
+---
+
+## Estado atual (baseline 24/10/2026)
+
+| Item | Status |
+|---|---|
+| Fase 0–2 (auth, multi-tenant, múltiplos veículos) | ✅ Produção |
+| Rebrand AUTOVIU (gold/dark, Orbitron, Λ) | ✅ Produção |
+| UI/UX mobile-first (Lucide icons, sidebar, overflow corrigido) | ✅ Produção |
+| Cypress 53/53 + Visual Audit 24 screenshots | ✅ Produção |
+| Auditoria 360° (redesign Meus Veículos, boot timing, None fix) | ✅ Produção |
 
 ---
 
@@ -460,15 +473,33 @@ Configurações (usuário logado):
 ## Prioridade de Implementação
 
 ```
-3.2 Registro público    ← primeiro (sem isso, não há novos usuários)
-3.1 Monetização         ← junto com registro
-3.7 Login Google        ← reduz atrito no cadastro (rápido de implementar)
-3.6 Galeria de fotos    ← engajamento e viralização (mais fácil, alto impacto)
-3.3 Perfil do condutor  ← base para 3.4 e 3.5
-3.4 Upload CNH/CRLV     ← diferencial competitivo
-3.5 Alertas inteligentes ← retenção de usuários
-3.8 Login biométrico    ← após 3.7 (WebAuthn = próximo passo natural das passkeys)
+[QW] PWA (manifest.json + SW)   ← 1 dia — app instalável no celular, alto impacto UX
+[QW] Máscara de placa (JS)      ← meio dia — AAA-0000 e Mercosul AAA0A00
+
+3.2  Registro público    ← BLOQUEADOR: sem isso não há novos usuários
+3.1  Monetização         ← junto com 3.2 (Asaas, planos, webhook)
+3.7  Login Google        ← após 3.2 — reduz atrito no cadastro
+3.6  Galeria de fotos    ← engajamento e viralização (fácil, alto impacto)
+3.3  Perfil do condutor  ← base para 3.4 e 3.5
+3.4  Upload CNH/CRLV     ← diferencial competitivo
+3.5  Alertas inteligentes ← retenção de usuários
+3.8  Login biométrico    ← após 3.7 (WebAuthn/Passkeys)
 ```
+
+### Estimativas
+
+| Item | Esforço | Impacto |
+|---|---|---|
+| PWA | 1 dia | App instalável, offline parcial |
+| Máscara placa | ½ dia | Qualidade de dados |
+| 3.2 Registro público | 3–5 dias | Crítico — crescimento |
+| 3.1 Monetização | 4–6 dias | Receita |
+| 3.7 Google OAuth | 2 dias | Reduz churn no cadastro |
+| 3.6 Galeria de fotos | 4–6 dias | Engajamento + viral |
+| 3.3 Perfil condutor | 2–3 dias | Base para 3.4/3.5 |
+| 3.4 Upload CNH/CRLV | 3–4 dias | Diferencial |
+| 3.5 Alertas | 3–4 dias | Retenção |
+| 3.8 WebAuthn | 3–4 dias | UX premium |
 
 ---
 
