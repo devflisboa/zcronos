@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ΛUTOVIU | Entrar</title>
 <link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -115,25 +115,28 @@
 
   .form-group label {
     display: block;
-    font-size: .78rem;
+    font-size: .875rem;
     font-weight: 600;
-    letter-spacing: .06em;
+    letter-spacing: .04em;
     text-transform: uppercase;
     color: #4e4e4e;
     margin-bottom: .5rem;
+    line-height: 1.5;
   }
 
   .form-group input {
     width: 100%;
-    padding: .75rem 1rem;
+    padding: .875rem 1rem;
+    min-height: 48px;
     background: #0A0A0C;
     border: 1px solid rgba(255,255,255,0.07);
     border-radius: 9px;
     color: #f0f0f0;
-    font-size: .9375rem;
+    font-size: 1rem;
     font-family: 'Inter', sans-serif;
     transition: border-color .15s, box-shadow .15s;
     outline: none;
+    -webkit-appearance: none;
   }
 
   .form-group input:focus {
@@ -166,17 +169,28 @@
   .btn-login {
     width: 100%;
     padding: .875rem;
+    min-height: 52px;
     background: linear-gradient(135deg, #B8960C 0%, #D4AF37 50%, #FFD700 100%);
     border: none;
     border-radius: 9px;
     color: #000;
-    font-size: .95rem;
+    font-size: 1rem;
     font-weight: 700;
     letter-spacing: .05em;
     font-family: 'Inter', sans-serif;
     cursor: pointer;
     transition: opacity .15s, transform .1s, box-shadow .15s;
     box-shadow: 0 4px 20px rgba(212,175,55,0.25);
+  }
+
+  .btn-login:focus-visible {
+    outline: 2px solid #D4AF37;
+    outline-offset: 2px;
+  }
+
+  .btn-login:disabled {
+    opacity: .5;
+    cursor: not-allowed;
   }
 
   .btn-login:hover { opacity: .92; box-shadow: 0 6px 28px rgba(212,175,55,0.35); }
