@@ -295,19 +295,61 @@ table.auto tbody td:first-child{color:var(--text);font-weight:500}
 .empty-text{font-size:13px}
 
 /* ── RESPONSIVE ── */
+#sb-toggle{display:none}
+
+/* Overlay de sidebar mobile */
+#sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99;backdrop-filter:blur(2px);transition:opacity .2s}
+#sb-overlay.visible{display:block}
+
 @media(max-width:1100px){
   .grid-4{grid-template-columns:repeat(2,1fr)}
   .grid-3{grid-template-columns:1fr 1fr}
 }
+
 @media(max-width:768px){
-  #sidebar{transform:translateX(-100%)}
-  #sidebar.open{transform:none}
+  /* Sidebar colapsável */
+  #sb-toggle{display:flex}
+  #sidebar{transform:translateX(-100%);box-shadow:none;z-index:200}
+  #sidebar.open{transform:none;box-shadow:4px 0 32px rgba(0,0,0,.7)}
   #main{margin-left:0}
+
+  /* Grids */
   .grid-4,.grid-3,.grid-2,.grid-1-2,.grid-2-1{grid-template-columns:1fr}
+
+  /* Conteúdo e forms */
   .content{padding:16px}
   .form-row{grid-template-columns:1fr}
+  .sec-header{flex-wrap:wrap;gap:8px}
+
+  /* Veículo */
   .vehicle-specs{grid-template-columns:1fr 1fr}
-  .vehicle-hero{flex-direction:column}
-  .vehicle-hero-img img{max-width:100%}
+  .vehicle-hero{flex-direction:column;gap:16px;align-items:flex-start}
+  .vehicle-hero-img{width:100%;text-align:center}
+  .vehicle-hero-img img{max-width:60%;height:auto}
   .sb-car-thumb{display:none}
+
+  /* Modal responsivo */
+  .modal{max-width:calc(100vw - 32px);padding:20px}
+
+  /* Flash dentro da área visível */
+  #flash-container{right:12px;left:12px}
+  .flash-msg{min-width:0;width:100%;box-sizing:border-box}
+}
+
+@media(max-width:480px){
+  .content{padding:12px}
+  #topbar{padding:0 12px;gap:8px}
+  .topbar-date{display:none}
+  .kpi-value{font-size:22px;letter-spacing:-.5px}
+  .kpi{padding:14px 16px}
+  .sec-title{font-size:17px}
+  .vehicle-model-name{font-size:22px}
+  .vehicle-plate-display{font-size:14px;padding:4px 10px;letter-spacing:2px}
+  .vehicle-hero-img img{max-width:75%}
+  .gauge-svg{width:clamp(120px,55vw,180px);display:block;margin:0 auto}
+  .modal{padding:16px}
+  .modal-title{font-size:14px}
+  .chart-box{height:180px}
+  .chart-box.tall{height:240px}
+  .spec-value{font-size:13px}
 }

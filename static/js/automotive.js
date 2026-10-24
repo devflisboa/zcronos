@@ -70,6 +70,7 @@ function switchSection(id, label) {
   if (btn) btn.classList.add('active');
   document.getElementById('topbar-title').textContent = label || id;
   activeSection = id;
+  if (window.innerWidth <= 768) closeSidebar();
 }
 
 // ── COUNTER ANIMATION ─────────────────────────────────
@@ -321,10 +322,26 @@ function initFlash() {
 }
 
 // ── SIDEBAR MOBILE ────────────────────────────────────
+function openSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sb-overlay');
+  if (sidebar) sidebar.classList.add('open');
+  if (overlay) overlay.classList.add('visible');
+}
+function closeSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sb-overlay');
+  if (sidebar) sidebar.classList.remove('open');
+  if (overlay) overlay.classList.remove('visible');
+}
+
 function initSidebarToggle() {
   const toggle = document.getElementById('sb-toggle');
-  const sidebar = document.getElementById('sidebar');
-  if (toggle) toggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+  const overlay = document.getElementById('sb-overlay');
+  if (toggle) toggle.addEventListener('click', () => {
+    document.getElementById('sidebar').classList.contains('open') ? closeSidebar() : openSidebar();
+  });
+  if (overlay) overlay.addEventListener('click', closeSidebar);
 }
 
 // ── DELETE CONFIRM ────────────────────────────────────

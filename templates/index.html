@@ -26,6 +26,9 @@
 <!-- ═══════════════ APP ═══════════════ -->
 <div id="app">
 
+  <!-- Overlay para fechar sidebar no mobile -->
+  <div id="sb-overlay"></div>
+
   <!-- SIDEBAR -->
   <aside id="sidebar">
     <div class="sb-head">
@@ -97,7 +100,7 @@
 
     <!-- TOPBAR -->
     <header id="topbar">
-      <button class="btn btn-ghost btn-icon" id="sb-toggle" style="display:none">☰</button>
+      <button class="btn btn-ghost btn-icon" id="sb-toggle">☰</button>
       <h1 class="topbar-title" id="topbar-title">Dashboard</h1>
       {% if alertas %}
       <div class="status-pill warn">
