@@ -269,7 +269,8 @@ html, body { overflow-x: hidden; }
             <div class="vc-info">
               <div class="vc-name">{{ v.marca }} {{ v.modelo }}</div>
               <div class="vc-sub">
-                {%- if v.versao %}{{ v.versao }}{% elif v.motor %}{{ v.motor }}{% elif v.ano %}{{ v.ano }}{% else %}—{% endif -%}
+                {%- set sub = v.versao if (v.versao and v.versao != 'None') else (v.motor if (v.motor and v.motor != 'None') else '') -%}
+                {{ sub if sub else '—' }}
               </div>
             </div>
             {% if v.id == veiculo_ativo_id %}
@@ -286,9 +287,10 @@ html, body { overflow-x: hidden; }
             <div class="vc-placa">{{ v.placa }}</div>
             {% endif %}
           </div>
-          {% if v.ano or v.cor %}
+          {%- set cor_val = v.cor if (v.cor and v.cor != 'None') else '' -%}
+          {% if v.ano or cor_val %}
           <div class="vc-ano-cor">
-            {{ v.ano or '' }}{% if v.ano and v.cor %} · {% endif %}{{ v.cor or '' }}
+            {{ v.ano or '' }}{% if v.ano and cor_val %} · {% endif %}{{ cor_val }}
           </div>
           {% endif %}
 

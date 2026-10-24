@@ -2,7 +2,7 @@ from datetime import datetime, date
 from flask_login import UserMixin
 from extensions import db, bcrypt
 
-PLANO_LIMITES = {'free': 1, 'pro': 3, 'frota': 15, 'superadmin': 9999}
+PLANO_LIMITES = {'free': 1, 'pro': 3, 'frota': 9999, 'superadmin': 9999}
 
 
 class User(db.Model, UserMixin):
