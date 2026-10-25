@@ -42,7 +42,7 @@ describe('Fase 1 — Despesa e Manutenção', () => {
           form: true,
           failOnStatusCode: false,
           followRedirect: false,
-        }).its('status').should('be.oneOf', [404, 302])
+        }).its('status').should('eq', 404)
       })
     })
   })
@@ -81,7 +81,7 @@ describe('Fase 1 — Despesa e Manutenção', () => {
           form: true,
           failOnStatusCode: false,
           followRedirect: false,
-        }).its('status').should('be.oneOf', [404, 302])
+        }).its('status').should('eq', 404)
       })
     })
   })

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ΛUTOVIU | Gestão Automotiva</title>
 <link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
+{% include '_pwa_head.html' %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/automotive.css') }}">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
@@ -74,6 +75,7 @@
       </a>
 
       <div class="nav-group-label" style="margin-top:auto">Conta</div>
+      {% include '_conta_links.html' %}
       <a href="{{ url_for('auth.logout') }}" class="nav-item">
         <span class="ni"><i data-lucide="log-out"></i></span> Sair
       </a>
@@ -735,67 +737,68 @@
 </div>
 
 <!-- Modal: Nova Manutenção -->
-<div class="modal-overlay" id="modal-manutencao">
+{% set recuperar_nova = formulario_manutencao|default('') == 'nova' %}
+{% set manutencao_dados = dados_manutencao|default({}) %}
+<div class="modal-overlay{% if recuperar_nova %} open{% endif %}" id="modal-manutencao">
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title">Registrar Manutenção</div>
       <button class="modal-close" data-close-modal>✕</button>
     </div>
-    <form method="POST" action="{{ url_for('manutencao.add_manutencao') }}">
+    <form method="POST" action="{{ url_for('manutencao.add_manutencao') }}" data-manutencao>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="veiculo_id" value="{{ veiculo.id }}">
+      {% if recuperar_nova %}<p role="alert">{{ erro_manutencao }}</p><p><a href="{{ url_for('main.index') }}">Voltar à agenda sem salvar</a></p>{% endif %}
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Tipo</label>
           <select name="tipo" class="form-control" required>
             <option value="">Selecione...</option>
-            <option value="oleo">Troca de Óleo</option>
-            <option value="revisao">Revisão</option>
-            <option value="pneu">Pneus</option>
-            <option value="freio">Freios</option>
-            <option value="bateria">Bateria</option>
-            <option value="filtro">Filtros</option>
-            <option value="outro">Outro</option>
+            {% for codigo, rotulo in [('oleo','Troca de Óleo'), ('revisao','Revisão'), ('pneu','Pneus'), ('freio','Freios'), ('bateria','Bateria'), ('filtro','Filtros'), ('outro','Outro')] %}
+            <option value="{{ codigo }}" {% if recuperar_nova and manutencao_dados.get('tipo') == codigo %}selected{% endif %}>{{ rotulo }}</option>
+            {% endfor %}
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">Status</label>
           <select name="status" class="form-control">
-            <option value="pendente">Pendente</option>
-            <option value="realizada">Realizada</option>
+            <option value="pendente" {% if recuperar_nova and manutencao_dados.get('status') == 'pendente' %}selected{% endif %}>Pendente</option>
+            <option value="realizada" {% if recuperar_nova and manutencao_dados.get('status') == 'realizada' %}selected{% endif %}>Realizada</option>
           </select>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">Descrição</label>
-        <input type="text" name="descricao" class="form-control" required>
+        <input type="text" name="descricao" class="form-control" required maxlength="200" value="{{ manutencao_dados.get('descricao', '') if recuperar_nova else '' }}">
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Data Realizada</label>
-          <input type="date" name="data_realizada" class="form-control">
+          <input type="date" name="data_realizada" class="form-control" value="{{ manutencao_dados.get('data_realizada', '') if recuperar_nova else '' }}">
         </div>
         <div class="form-group">
           <label class="form-label">Km Realizado</label>
-          <input type="number" name="km_realizada" class="form-control">
+          <input type="number" name="km_realizada" class="form-control" min="0" max="2147483647" step="1" value="{{ manutencao_dados.get('km_realizada', '') if recuperar_nova else '' }}">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Data Prevista</label>
-          <input type="date" name="data_prevista" class="form-control">
+          <input type="date" name="data_prevista" class="form-control" value="{{ manutencao_dados.get('data_prevista', '') if recuperar_nova else '' }}">
         </div>
         <div class="form-group">
           <label class="form-label">Km Previsto</label>
-          <input type="number" name="km_previsto" class="form-control">
+          <input type="number" name="km_previsto" class="form-control" min="0" max="2147483647" step="1" value="{{ manutencao_dados.get('km_previsto', '') if recuperar_nova else '' }}">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Custo (R$)</label>
-          <input type="number" step="0.01" name="custo" class="form-control">
+          <input type="number" step="0.01" name="custo" class="form-control" min="0" max="9999999999.99" value="{{ manutencao_dados.get('custo', '') if recuperar_nova else '' }}">
         </div>
         <div class="form-group">
           <label class="form-label">Observações</label>
-          <input type="text" name="observacoes" class="form-control">
+          <input type="text" name="observacoes" class="form-control" maxlength="5000" value="{{ manutencao_dados.get('observacoes', '') if recuperar_nova else '' }}">
         </div>
       </div>
       <div class="modal-footer">
@@ -809,26 +812,30 @@
 <!-- Modais de Concluir Manutenção -->
 {% for m in manutencoes %}
 {% if m.status_calculado != 'realizada' %}
-<div class="modal-overlay" id="modal-concluir-{{ m.id }}">
+{% set recuperar_conclusao = formulario_manutencao|default('') == ('concluir-' ~ m.id) %}
+<div class="modal-overlay{% if recuperar_conclusao %} open{% endif %}" id="modal-concluir-{{ m.id }}">
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title">✓ Concluir: {{ m.descricao }}</div>
       <button class="modal-close" data-close-modal>✕</button>
     </div>
-    <form method="POST" action="{{ url_for('manutencao.concluir_manutencao', id=m.id) }}">
+    <form method="POST" action="{{ url_for('manutencao.concluir_manutencao', id=m.id) }}" data-manutencao>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="veiculo_id" value="{{ veiculo.id }}">
+      {% if recuperar_conclusao %}<p role="alert">{{ erro_manutencao }}</p><p><a href="{{ url_for('main.index') }}">Voltar à agenda sem salvar</a></p>{% endif %}
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Data de Conclusão</label>
-          <input type="date" name="data_realizada" class="form-control" required>
+          <input type="date" name="data_realizada" class="form-control" required value="{{ manutencao_dados.get('data_realizada', '') if recuperar_conclusao else '' }}">
         </div>
         <div class="form-group">
           <label class="form-label">Km na Conclusão</label>
-          <input type="number" name="km_realizada" class="form-control" value="{{ km_atual }}">
+          <input type="number" name="km_realizada" class="form-control" min="0" max="2147483647" step="1" value="{{ manutencao_dados.get('km_realizada', '') if recuperar_conclusao else km_atual }}">
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">Custo Final (R$)</label>
-        <input type="number" step="0.01" name="custo" class="form-control" value="{{ m.custo or '' }}">
+        <input type="number" step="0.01" name="custo" class="form-control" min="0" max="9999999999.99" value="{{ manutencao_dados.get('custo', '') if recuperar_conclusao else (m.custo if m.custo is not none else '') }}">
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-ghost" data-close-modal>Cancelar</button>
@@ -917,12 +924,14 @@ window.DASH = {
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://unpkg.com/lucide@0.298.0/dist/umd/lucide.min.js"></script>
 <script src="{{ url_for('static', filename='js/automotive.js') }}"></script>
+<script src="{{ url_for('static', filename='js/manutencao.js') }}"></script>
 <script>
 (function() {
   var token = document.querySelector('meta[name="csrf-token"]');
   if (!token) return;
   document.querySelectorAll('form').forEach(function(f) {
     if (f.method.toLowerCase() !== 'post') return;
+    if (f.querySelector('input[name="csrf_token"]')) return;
     var inp = document.createElement('input');
     inp.type = 'hidden'; inp.name = 'csrf_token'; inp.value = token.content;
     f.appendChild(inp);

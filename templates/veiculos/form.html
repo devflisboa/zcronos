@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{% if veiculo %}Editar Veículo{% else %}Novo Veículo{% endif %} | ΛUTOVIU</title>
 <link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
+{% include '_pwa_head.html' %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/automotive.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cadastro.css') }}">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <style>
 /* ── overflow global ── */
@@ -96,6 +98,7 @@ html, body { overflow-x: hidden; }
         <span class="ni"><i data-lucide="receipt"></i></span> Despesa
       </a>
       <div class="nav-group-label" style="margin-top:auto">Conta</div>
+      {% include '_conta_links.html' %}
       <a href="{{ url_for('auth.logout') }}" class="nav-item">
         <span class="ni"><i data-lucide="log-out"></i></span> Sair
       </a>
@@ -123,20 +126,23 @@ html, body { overflow-x: hidden; }
       </div>
 
       <div class="form-card">
+        {% if cadastro %}{% with etapa_cadastro=3 %}{% include '_cadastro_etapas.html' %}{% endwith %}{% endif %}
         <form method="POST">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
+
+          {% with tipo_documento='crlv' %}{% include '_importar_documento.html' %}{% endwith %}
           <div class="form-grid-2">
             <div class="form-group">
               <label class="form-label" for="marca">Marca *</label>
               <input class="form-control" id="marca" name="marca"
-                     value="{{ veiculo.marca if veiculo else '' }}"
+                     value="{{ request.form.get('marca', veiculo.marca or '' if veiculo else '') }}"
                      placeholder="Fiat, VW, Toyota..." required>
             </div>
             <div class="form-group">
               <label class="form-label" for="modelo">Modelo *</label>
               <input class="form-control" id="modelo" name="modelo"
-                     value="{{ veiculo.modelo if veiculo else '' }}"
+                     value="{{ request.form.get('modelo', veiculo.modelo or '' if veiculo else '') }}"
                      placeholder="Cronos, Gol, Corolla..." required>
             </div>
           </div>
@@ -144,14 +150,14 @@ html, body { overflow-x: hidden; }
           <div class="form-group">
             <label class="form-label" for="versao">Versão</label>
             <input class="form-control" id="versao" name="versao"
-                   value="{{ veiculo.versao if veiculo else '' }}"
+                   value="{{ request.form.get('versao', veiculo.versao or '' if veiculo else '') }}"
                    placeholder="Drive 1.3 Manual">
           </div>
 
           <div class="form-group">
             <label class="form-label" for="motor">Motor</label>
             <input class="form-control" id="motor" name="motor"
-                   value="{{ veiculo.motor if veiculo else '' }}"
+                   value="{{ request.form.get('motor', veiculo.motor or '' if veiculo else '') }}"
                    placeholder="Firefly 1.3 Flex 109 CV">
           </div>
 
@@ -159,13 +165,13 @@ html, body { overflow-x: hidden; }
             <div class="form-group">
               <label class="form-label" for="ano">Ano *</label>
               <input class="form-control" id="ano" name="ano" type="number"
-                     min="1950" max="2030"
-                     value="{{ veiculo.ano if veiculo else '' }}" required>
+                     min="1900" max="{{ now.year + 1 }}"
+                     value="{{ request.form.get('ano', veiculo.ano or '' if veiculo else '') }}" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="placa">Placa</label>
               <input class="form-control" id="placa" name="placa"
-                     value="{{ veiculo.placa if veiculo else '' }}"
+                     value="{{ request.form.get('placa', veiculo.placa or '' if veiculo else '') }}"
                      placeholder="ABC1D23" maxlength="8" style="text-transform:uppercase">
             </div>
           </div>
@@ -174,13 +180,13 @@ html, body { overflow-x: hidden; }
             <div class="form-group">
               <label class="form-label" for="cor">Cor</label>
               <input class="form-control" id="cor" name="cor"
-                     value="{{ veiculo.cor if veiculo else '' }}"
+                     value="{{ request.form.get('cor', veiculo.cor or '' if veiculo else '') }}"
                      placeholder="Branco, Prata...">
             </div>
             <div class="form-group">
               <label class="form-label" for="km_atual">Km atual</label>
               <input class="form-control" id="km_atual" name="km_atual" type="number" min="0"
-                     value="{{ veiculo.km_atual if veiculo else 0 }}">
+                     value="{{ request.form.get('km_atual', veiculo.km_atual if veiculo else 0) }}">
             </div>
           </div>
 
@@ -188,13 +194,13 @@ html, body { overflow-x: hidden; }
             <div class="form-group">
               <label class="form-label" for="data_compra">Data de compra</label>
               <input class="form-control" id="data_compra" name="data_compra" type="date"
-                     value="{{ veiculo.data_compra.strftime('%Y-%m-%d') if veiculo and veiculo.data_compra else '' }}">
+                     value="{{ request.form.get('data_compra', veiculo.data_compra.strftime('%Y-%m-%d') if veiculo and veiculo.data_compra else '') }}">
             </div>
             <div class="form-group">
               <label class="form-label" for="valor_compra">Valor de compra (R$)</label>
               <input class="form-control" id="valor_compra" name="valor_compra"
                      type="number" step="0.01"
-                     value="{{ veiculo.valor_compra if veiculo and veiculo.valor_compra else '' }}"
+                     value="{{ request.form.get('valor_compra', veiculo.valor_compra if veiculo and veiculo.valor_compra is not none else '') }}"
                      placeholder="0,00">
             </div>
           </div>
@@ -203,10 +209,27 @@ html, body { overflow-x: hidden; }
             <label class="form-label" for="valor_atual">Valor atual estimado (R$)</label>
             <input class="form-control" id="valor_atual" name="valor_atual"
                    type="number" step="0.01"
-                   value="{{ veiculo.valor_atual if veiculo and veiculo.valor_atual else '' }}"
+                   value="{{ request.form.get('valor_atual', veiculo.valor_atual if veiculo and veiculo.valor_atual is not none else '') }}"
                    placeholder="0,00">
           </div>
 
+<h2>Documentação e vencimentos</h2><div class="form-grid-2">
+{% for campo, rotulo, tipo, tamanho in [('ano_fabricacao', 'Ano de fabricação', 'number', 4),('chassi','Chassi','text',17),('renavam','Renavam','text',11),('proprietario','Proprietário','text',120),('crlv_validade','Vencimento do licenciamento','date',10),('seguro_validade','Vencimento do seguro','date',10)] %}
+<div class="form-group"><label class="form-label" for="{{ campo }}">{{ rotulo }}</label><input class="form-control" id="{{ campo }}" name="{{ campo }}" type="{{ tipo }}" maxlength="{{ tamanho }}" value="{{ request.form.get(campo, (veiculo|attr(campo) or '') if veiculo else '') }}"></div>{% endfor %}</div>
+          {% if veiculo %}
+          <section style="margin:24px 0" aria-label="Referência FIPE">
+            <h2>Valor de referência FIPE</h2>
+            {% if veiculo.fipe_valor is not none %}<p>R$ {{ '%.2f'|format(veiculo.fipe_valor)|replace('.', ',') }} · {{ veiculo.fipe_referencia }} · Código {{ veiculo.fipe_codigo }}.</p>{% endif %}
+            <p style="font-size:14px;color:var(--text2)">A consulta usa os dados salvos do veículo. Salve alterações de modelo ou ano antes de consultar.</p>
+            <a class="btn btn-ghost" href="{{ url_for('fipe.index', modo='meu', veiculo_id=veiculo.id) }}">Quanto vale este carro?</a>
+          </section>
+          {% endif %}
+          {% if condutor %}
+          <section class="cadastro-condutor" aria-label="Condutor do veículo">
+            <label><input type="checkbox" name="vincular_condutor" value="sim" {% if (request.method == 'POST' and request.form.get('vincular_condutor') == 'sim') or (request.method != 'POST' and (not veiculo or veiculo.condutor_id == condutor.id)) %}checked{% endif %}> Vincular {{ condutor.nome }} como condutor deste veículo</label>
+          </section>
+          {% endif %}
+          <p style="margin-top:16px;font-size:14px;color:var(--text2)">Revise as informações preenchidas pelo documento antes de confirmar o cadastro.</p>
           <div class="form-actions">
             <a href="{{ url_for('veiculo.index') }}" class="btn btn-ghost">Cancelar</a>
             <button type="submit" class="btn btn-primary">
@@ -221,6 +244,7 @@ html, body { overflow-x: hidden; }
 
 <script src="https://unpkg.com/lucide@0.298.0/dist/umd/lucide.min.js"></script>
 <script src="{{ url_for('static', filename='js/automotive.js') }}"></script>
+<script src="{{ url_for('static', filename='js/documentos.js') }}"></script>
 <script>document.getElementById('app').classList.add('ready'); if(window.lucide) lucide.createIcons();</script>
 </body>
 </html>

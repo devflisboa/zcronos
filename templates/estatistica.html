@@ -7,6 +7,7 @@
     <title>Estatísticas de Corridas</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
+    {% include '_pwa_head.html' %}
     <!--<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">-->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css">
     <meta name="csrf-token" content="{{ csrf_token() }}">

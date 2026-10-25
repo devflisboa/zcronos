@@ -1,3 +1,4 @@
+from flask_login import current_user
 import calendar
 from datetime import datetime, date, timedelta
 from sqlalchemy import func, extract
@@ -225,7 +226,7 @@ def get_gastos_fixos_vs_variaveis(veiculo_id, mes=None, ano=None):
 
 
 def get_dashboard_data(veiculo_id):
-    veiculo = Veiculo.query.get(veiculo_id)
+    veiculo = Veiculo.query.filter_by(id=veiculo_id, user_id=current_user.id, ativo=True).first_or_404()
     comp = get_comparativo_mes(veiculo_id)
     return {
         'veiculo': veiculo,

@@ -12,7 +12,7 @@ describe('Fase 1 — Veículo CRUD', () => {
     beforeEach(() => cy.visit('/veiculos/'))
 
     it('carrega a página de veículos', () => {
-      cy.contains('Meus Veículos').should('be.visible')
+      cy.contains(/Meus veículos/i).should('be.visible')
     })
 
     it('exibe botão de novo veículo se dentro do limite do plano', () => {
@@ -75,7 +75,8 @@ describe('Fase 1 — Veículo CRUD', () => {
     it('botão selecionar muda o veículo ativo', () => {
       cy.visit('/veiculos/')
       // Pode haver apenas um veículo — verificar que a página carregou
-      cy.get('.veiculo-card, .empty-state').should('exist')
+      cy.get('form[action*="/selecionar"]').first().submit()
+      cy.location('pathname').should('eq', '/')
     })
   })
 

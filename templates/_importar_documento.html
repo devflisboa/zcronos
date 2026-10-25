@@ -1,0 +1,15 @@
+{% set e_cnh = tipo_documento == 'cnh' %}
+{% set disponivel = config.get('OPENAI_API_KEY') and config.get('OPENAI_VISION_MODEL') %}
+<section class="documento-import" data-tipo="{{ tipo_documento }}" data-endpoint="{{ url_for('documento.importar', tipo=tipo_documento) }}" aria-labelledby="titulo-documento-{{ tipo_documento }}">
+  <h2 id="titulo-documento-{{ tipo_documento }}">{{ 'Preencher pela CNH' if e_cnh else 'Preencher pelo CRLV' }}</h2>
+  <p class="ajuda">{{ 'Use a CNH digital em PDF ou imagens da frente e do verso.' if e_cnh else 'Use o CRLV digital em PDF ou uma imagem legível do documento.' }} Você também pode preencher os campos manualmente.</p>
+  {% if not disponivel %}
+  <p class="documento-aviso" role="status">A leitura automática ainda não está disponível neste ambiente. O preenchimento manual continua disponível.</p>
+  {% endif %}
+  <label class="form-label" for="documentos-{{ tipo_documento }}">{{ 'CNH do condutor' if e_cnh else 'Documento do veículo (CRLV)' }}</label>
+  <input class="documento-arquivos" id="documentos-{{ tipo_documento }}" type="file" accept="image/jpeg,image/png,application/pdf" {% if e_cnh %}multiple{% endif %} aria-describedby="ajuda-documento-{{ tipo_documento }}" {% if not disponivel %}disabled{% endif %}>
+  <p id="ajuda-documento-{{ tipo_documento }}" class="ajuda">PDF com até 4 páginas, JPG ou PNG. {{ 'Até duas imagens, com 10 MB no total.' if e_cnh else 'Um arquivo de até 10 MB.' }} Os campos ilegíveis ou ausentes permanecem para preenchimento manual.</p>
+  <label class="documento-aceite"><input type="checkbox" class="documento-consentimento" {% if not disponivel %}disabled{% endif %}> <span>Autorizo o envio deste documento à OpenAI para extrair os dados. O aplicativo não guarda o arquivo.</span></label>
+  <button type="button" class="btn btn-ghost documento-enviar" {% if not disponivel %}disabled{% endif %}>{{ 'Ler CNH e preencher' if e_cnh else 'Ler CRLV e preencher' }}</button>
+  <p class="documento-status ajuda" role="status" aria-live="polite" aria-atomic="true"></p>
+</section>

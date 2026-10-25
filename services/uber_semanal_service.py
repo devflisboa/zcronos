@@ -1,29 +1,30 @@
+from flask_login import current_user
 from sqlalchemy import func
 from extensions import db
 from models import SemanalUber
 
 
-def total_ganhos():
-    val = db.session.query(func.sum(SemanalUber.ganhos)).scalar()
+def total_ganhos(user_id):
+    val = _query(user_id, func.sum(SemanalUber.ganhos)).scalar()
     return float(val) if val else 0.0
 
 
-def total_despesas_semanal():
-    val = db.session.query(func.sum(SemanalUber.despesas_reembolsos)).scalar()
+def total_despesas_semanal(user_id):
+    val = _query(user_id, func.sum(SemanalUber.despesas_reembolsos)).scalar()
     return float(val) if val else 0.0
 
 
-def media_ganhos_semanal():
-    val = db.session.query(func.avg(SemanalUber.ganhos)).scalar()
+def media_ganhos_semanal(user_id):
+    val = _query(user_id, func.avg(SemanalUber.ganhos)).scalar()
     return float(val) if val else 0.0
 
 
-def ganho_liquido_semanal():
-    return total_ganhos() - total_despesas_semanal()
+def ganho_liquido_semanal(user_id):
+    return total_ganhos(user_id) - total_despesas_semanal(user_id)
 
 
-def total_taxas():
-    taxas = db.session.query(SemanalUber.resumo_taxas).all()
+def total_taxas(user_id):
+    taxas = _query(user_id, SemanalUber.resumo_taxas).all()
     total = 0.0
     for (valor,) in taxas:
         if valor and 'Valor pago à plataforma da Uber:' in valor:
@@ -34,8 +35,8 @@ def total_taxas():
     return total
 
 
-def media_taxa_semanal():
-    val = db.session.query(
+def media_taxa_semanal(user_id):
+    val = _query(user_id, 
         func.avg(
             func.cast(
                 func.substr(SemanalUber.detalhamento_ganhos,
@@ -47,8 +48,8 @@ def media_taxa_semanal():
     return float(val) if val is not None else 0.0
 
 
-def media_promocoes_semanal():
-    val = db.session.query(
+def media_promocoes_semanal(user_id):
+    val = _query(user_id, 
         func.avg(
             func.cast(
                 func.substr(SemanalUber.detalhamento_ganhos,
@@ -60,8 +61,8 @@ def media_promocoes_semanal():
     return float(val) if val is not None else 0.0
 
 
-def ganho_dinamico():
-    val = db.session.query(
+def ganho_dinamico(user_id):
+    val = _query(user_id, 
         func.sum(
             func.cast(
                 func.substr(SemanalUber.detalhamento_ganhos,
@@ -73,8 +74,8 @@ def ganho_dinamico():
     return float(val) if val else 0.0
 
 
-def ganho_espera():
-    val = db.session.query(
+def ganho_espera(user_id):
+    val = _query(user_id, 
         func.sum(
             func.cast(
                 func.substr(SemanalUber.detalhamento_ganhos,
@@ -86,8 +87,8 @@ def ganho_espera():
     return float(val) if val is not None else 0.0
 
 
-def ganho_extras():
-    val = db.session.query(
+def ganho_extras(user_id):
+    val = _query(user_id, 
         func.sum(
             func.cast(
                 func.substr(SemanalUber.detalhamento_ganhos,
@@ -99,38 +100,42 @@ def ganho_extras():
     return float(val) if val else 0.0
 
 
-def total_transferencias():
-    val = db.session.query(func.sum(SemanalUber.transferencias)).scalar()
+def total_transferencias(user_id):
+    val = _query(user_id, func.sum(SemanalUber.transferencias)).scalar()
     return float(val) if val else 0.0
 
 
-def saldo_medio_semanal():
-    val = db.session.query(func.avg(SemanalUber.saldo_final)).scalar()
+def saldo_medio_semanal(user_id):
+    val = _query(user_id, func.avg(SemanalUber.saldo_final)).scalar()
     return float(val) if val else 0.0
 
 
-def proporcao_ganho_base():
-    ganhos = total_ganhos()
+def proporcao_ganho_base(user_id):
+    ganhos = total_ganhos(user_id)
     if ganhos <= 0:
         return 0.0
-    ganho_base = ganhos - (ganho_dinamico() + ganho_espera() + ganho_extras())
+    ganho_base = ganhos - (ganho_dinamico(user_id) + ganho_espera(user_id) + ganho_extras(user_id))
     return round((ganho_base / ganhos) * 100, 2)
 
 
-def get_estatisticas_semanais():
+def get_estatisticas_semanais(user_id):
     return {
-        'total_ganhos': total_ganhos(),
-        'total_despesas': total_despesas_semanal(),
-        'media_ganhos_semanal': media_ganhos_semanal(),
-        'ganho_liquido': ganho_liquido_semanal(),
-        'total_taxas': total_taxas(),
-        'media_taxa_semanal': media_taxa_semanal(),
+        'total_ganhos': total_ganhos(user_id),
+        'total_despesas': total_despesas_semanal(user_id),
+        'media_ganhos_semanal': media_ganhos_semanal(user_id),
+        'ganho_liquido': ganho_liquido_semanal(user_id),
+        'total_taxas': total_taxas(user_id),
+        'media_taxa_semanal': media_taxa_semanal(user_id),
         'total_promocoes': 0,
-        'media_promocoes_semanal': media_promocoes_semanal(),
-        'ganho_dinamico': ganho_dinamico(),
-        'ganho_espera': ganho_espera(),
-        'ganho_extras': ganho_extras(),
-        'proporcao_ganho_base': proporcao_ganho_base(),
-        'total_transferencias': total_transferencias(),
-        'saldo_medio_semanal': saldo_medio_semanal(),
+        'media_promocoes_semanal': media_promocoes_semanal(user_id),
+        'ganho_dinamico': ganho_dinamico(user_id),
+        'ganho_espera': ganho_espera(user_id),
+        'ganho_extras': ganho_extras(user_id),
+        'proporcao_ganho_base': proporcao_ganho_base(user_id),
+        'total_transferencias': total_transferencias(user_id),
+        'saldo_medio_semanal': saldo_medio_semanal(user_id),
     }
+
+
+def _query(user_id, *columns):
+    return db.session.query(*columns).filter(SemanalUber.user_id == user_id, SemanalUber.user_id == current_user.id)

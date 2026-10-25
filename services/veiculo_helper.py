@@ -17,7 +17,9 @@ def get_veiculo_ativo():
         ).first()
         if v:
             return v
-    v = Veiculo.query.filter_by(user_id=current_user.id, ativo=True).first()
+    v = Veiculo.query.filter_by(user_id=current_user.id, ativo=True).order_by(Veiculo.id).first()
     if v:
         session['veiculo_ativo_id'] = v.id
+    else:
+        session.pop('veiculo_ativo_id', None)
     return v

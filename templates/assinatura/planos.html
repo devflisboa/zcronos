@@ -1,0 +1,81 @@
+{% extends 'conta_base.html' %}
+{% block titulo %}Meu plano{% endblock %}
+{% block conteudo %}
+<section class="conta-card">
+  <h2>Plano atual: {{ planos[atual].nome if atual in planos else ('Conta administrativa' if atual == 'superadmin' else atual|capitalize) }}</h2>
+  <p>O período de experiência Pro dura 14 dias, sem cobrança automática. Depois dele, você continua com a gestão básica gratuita. A contratação paga exige sua confirmação.</p>
+  {% if not configurado %}<p class="ajuda" role="status">Novas contratações ainda não estão disponíveis. Você pode continuar usando seu plano atual.</p>{% endif %}
+</section>
+<section class="conta-card" aria-labelledby="comparacao-planos">
+  <h2 id="comparacao-planos">Compare os planos</h2>
+  <div class="table-scroll"><table>
+    <thead><tr><th scope="col">Recurso</th>{% for chave, plano in planos.items() %}<th scope="col">{{ plano.nome }}</th>{% endfor %}</tr></thead>
+    <tbody>
+      <tr><th scope="row">Mensalidade</th>{% for chave, plano in planos.items() %}<td>R$ {{ '%.2f'|format(plano.valor)|replace('.', ',') }}</td>{% endfor %}</tr>
+      <tr><th scope="row">Veículos ativos</th>{% for chave, plano in planos.items() %}<td>{{ 'Ilimitados' if plano.limite == 0 else plano.limite }}</td>{% endfor %}</tr>
+      <tr><th scope="row">Abastecimentos, despesas e manutenção</th>{% for chave, plano in planos.items() %}<td>Incluído</td>{% endfor %}</tr>
+      <tr><th scope="row">Relatórios e exportação CSV</th>{% for chave, plano in planos.items() %}<td>{{ 'Incluído' if chave != 'free' else 'Não incluído' }}</td>{% endfor %}</tr>
+      <tr><th scope="row">Alertas por e-mail</th>{% for chave, plano in planos.items() %}<td>{{ 'Incluído' if chave != 'free' else 'Não incluído' }}</td>{% endfor %}</tr>
+    </tbody>
+  </table></div>
+  {% if 'frota' not in planos %}<p class="ajuda">O plano Frota ainda não está disponível para novas contratações.</p>{% endif %}
+</section>
+{% if current_user.plano != 'superadmin' %}
+<section class="conta-card">
+  <h2>Contratar um plano</h2>
+  {% if tem_recorrencia %}<p>Você já tem uma contratação em andamento ou uma recorrência cadastrada. Gerencie-a abaixo antes de iniciar outra.</p>
+  {% elif configurado %}
+  <form method="post" action="{{ url_for('assinatura.contratar') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="plano-contratar">Plano e mensalidade</label>
+    <select id="plano-contratar" name="plano">{% for chave, plano in planos.items() %}{% if chave != 'free' %}<option value="{{ chave }}">{{ plano.nome }} — R$ {{ '%.2f'|format(plano.valor)|replace('.', ',') }}/mês</option>{% endif %}{% endfor %}</select>
+    <label for="cpf-pagador">CPF do pagador</label><input id="cpf-pagador" name="cpf" inputmode="numeric" maxlength="14" required autocomplete="off">
+    <label for="forma-pagamento">Forma de pagamento</label>
+    <select id="forma-pagamento" name="forma"><option value="UNDEFINED">Escolher na fatura: cartão, PIX ou boleto</option><option value="PIX">PIX</option><option value="BOLETO">Boleto</option></select>
+    <label class="check"><input type="checkbox" name="aceite" value="sim" required><span>Confirmo a contratação mensal do plano selecionado, pelo valor indicado acima.</span></label>
+    <button class="btn btn-primary" type="submit">Continuar para o pagamento</button>
+  </form>
+  <p class="ajuda">O plano é liberado após a confirmação do pagamento. No PIX e no boleto, consulte as faturas de cada mês.</p>
+  {% else %}<p>A contratação será disponibilizada em breve.</p>{% endif %}
+</section>
+{% endif %}
+<section class="conta-card">
+  <h2>Suas assinaturas</h2>
+  {% for a in assinaturas %}
+  <article class="conta-card" aria-labelledby="assinatura-{{ a.id }}">
+    <h3 id="assinatura-{{ a.id }}">{{ a.plano|capitalize }} · {{ status_assinatura.get(a.status, 'Em atualização') }}</h3>
+    {% if a.status == 'trial' %}<p>{{ 'Experiência disponível até' if a.data_renovacao and a.data_renovacao > hoje else 'Experiência encerrada em' }} {{ a.data_renovacao.strftime('%d/%m/%Y') if a.data_renovacao else '—' }}. Não há recorrência de cobrança neste período.</p>
+    {% elif a.data_renovacao %}<p>{{ 'Benefícios pagos disponíveis até' if a.data_renovacao > hoje else 'Período pago encerrado em' }} {{ a.data_renovacao.strftime('%d/%m/%Y') }}.</p>
+    {% else %}<p>O acesso pago aguarda uma confirmação de pagamento.</p>{% endif %}
+    {% if a.plano_solicitado %}<p class="ajuda">Mudança solicitada: {{ a.plano_solicitado|capitalize }}, R$ {{ '%.2f'|format(a.valor_solicitado)|replace('.', ',') }}/mês. A alteração depende da próxima cobrança gerada e confirmada.</p>{% endif %}
+    {% if a.status in ['criando', 'incerta'] %}<p class="ajuda">Estamos aguardando o resultado da contratação. Atualize a situação antes de tentar novamente.</p>{% endif %}
+    {% if a.status != 'trial' and configurado %}
+    <form method="post" action="{{ url_for('assinatura.atualizar', id=a.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-ghost" type="submit">Atualizar situação e faturas</button></form>
+    {% endif %}
+    {% if a.status == 'ativo' and a.gateway_id and configurado and (planos|length > 2 or a.plano != 'pro' or a.plano_solicitado) %}
+    <details><summary style="min-height:48px;padding:12px 0;cursor:pointer">Alterar plano na próxima cobrança</summary>
+      <form method="post" action="{{ url_for('assinatura.alterar', id=a.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="plano-alterar-{{ a.id }}">Plano e nova mensalidade</label>
+        <select id="plano-alterar-{{ a.id }}" name="plano">{% for chave, plano in planos.items() %}{% if chave != 'free' %}<option value="{{ chave }}" {% if chave == a.plano %}selected{% endif %}>{{ plano.nome }} — R$ {{ '%.2f'|format(plano.valor)|replace('.', ',') }}/mês</option>{% endif %}{% endfor %}</select>
+        <p class="ajuda">Faturas já geradas permanecem com o valor anterior. A mudança vale após a confirmação da nova cobrança.</p>
+        <button type="submit" class="btn btn-ghost">Agendar alteração</button>
+      </form>
+    </details>{% endif %}
+    {% if a.gateway_id and a.status in ['ativo', 'pendente', 'suspenso'] and configurado %}
+    <details><summary style="min-height:48px;padding:12px 0;cursor:pointer">Cancelar recorrência</summary>
+      <p>O cancelamento encerra novas cobranças e cancela faturas pendentes ou vencidas. O período já pago permanece disponível, e os dados do veículo são preservados.</p>
+      <form method="post" action="{{ url_for('assinatura.cancelar', id=a.id) }}" onsubmit="return confirm('Confirmar o cancelamento desta recorrência e das faturas pendentes ou vencidas?')">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="confirmar" value="sim"><button class="btn btn-ghost" type="submit">Confirmar cancelamento</button>
+      </form>
+    </details>{% endif %}
+  </article>
+  {% else %}<p>Nenhuma assinatura registrada.</p>{% endfor %}
+</section>
+<section class="conta-card">
+  <h2>Histórico de faturas</h2><div class="table-scroll"><table>
+    <thead><tr><th scope="col">Vencimento</th><th scope="col">Plano</th><th scope="col">Valor</th><th scope="col">Situação</th><th scope="col">Pagamento</th></tr></thead>
+    <tbody>{% for f in faturas %}<tr><td>{{ f.vencimento.strftime('%d/%m/%Y') }}</td><td>{{ f.plano|capitalize }}</td><td>R$ {{ '%.2f'|format(f.valor)|replace('.', ',') }}</td><td>{{ status_fatura.get(f.status, 'Em atualização') }}</td><td>{% if f.url %}<a href="{{ f.url }}" target="_blank" rel="noopener noreferrer">{{ 'Pagar fatura' if f.status in ['PENDING', 'OVERDUE'] else 'Ver fatura' }}</a>{% elif f.status in ['RECEIVED', 'CONFIRMED', 'RECEIVED_IN_CASH'] %}Pagamento confirmado{% else %}—{% endif %}</td></tr>{% else %}<tr><td colspan="5">Nenhuma fatura encontrada.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endblock %}

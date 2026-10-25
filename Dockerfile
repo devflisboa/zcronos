@@ -15,6 +15,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY --chown=appuser:appuser . .
 
+RUN mkdir -p /app/static/uploads/veiculos && chown -R appuser:appuser /app/static/uploads
+
 USER appuser
 
 EXPOSE 5000

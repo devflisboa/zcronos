@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, abort
 from flask_login import login_required
 from datetime import datetime
 from extensions import db
@@ -55,9 +55,8 @@ def add_despesa():
 def delete_despesa(id):
     veiculo = get_veiculo_ativo()
     despesa = db.session.get(Despesa, id)
-    if not despesa or (veiculo and despesa.veiculo_id != veiculo.id):
-        flash('Registro não encontrado.', 'danger')
-        return redirect(url_for('main.index'))
+    if not despesa or not veiculo or despesa.veiculo_id != veiculo.id:
+        abort(404)
     try:
         db.session.delete(despesa)
         db.session.commit()

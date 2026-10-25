@@ -351,6 +351,32 @@ function initSidebarToggle() {
   if (overlay) overlay.addEventListener('click', closeSidebar);
 }
 
+// ── MÁSCARA DE PLACA ──────────────────────────────────
+// Antiga: ABC-1234 · Mercosul: ABC1D23 (5º caractere letra)
+function formatPlaca(valor) {
+  const chars = valor.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  let out = '';
+  for (const c of chars) {
+    const i = out.length;
+    const ok = i < 3 ? /[A-Z]/.test(c) : i === 4 ? /[A-Z0-9]/.test(c) : /[0-9]/.test(c);
+    if (ok) out += c;
+    if (out.length === 7) break;
+  }
+  return /^[A-Z]{3}[0-9]{2}/.test(out) ? out.slice(0, 3) + '-' + out.slice(3) : out;
+}
+
+function initPlacaMask() {
+  document.querySelectorAll('input[name="placa"]').forEach(input => {
+    input.maxLength = 8;
+    input.setAttribute('autocapitalize', 'characters');
+    input.setAttribute('autocomplete', 'off');
+    input.pattern = '[A-Z]{3}(-[0-9]{4}|[0-9][A-Z][0-9]{2})';
+    input.title = 'Placa no formato ABC-1234 ou ABC1D23 (Mercosul)';
+    if (input.value) input.value = formatPlaca(input.value);
+    input.addEventListener('input', () => { input.value = formatPlaca(input.value); });
+  });
+}
+
 // ── DELETE CONFIRM ────────────────────────────────────
 function confirmDelete(formId) {
   if (confirm('Confirmar exclusão?')) {
@@ -367,6 +393,7 @@ function initAll() {
   initModals();
   initFlash();
   initSidebarToggle();
+  initPlacaMask();
 
   // Charts - data injected from template
   if (window.DASH) {

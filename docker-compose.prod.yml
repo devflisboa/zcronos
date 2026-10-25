@@ -22,6 +22,8 @@ services:
     ports:
       - "5012:5000"
     env_file: .env
+    volumes:
+      - vehicle_photos:/app/static/uploads/veiculos
     environment:
       DB_HOST: db:3306
     depends_on:
@@ -30,3 +32,4 @@ services:
 
 volumes:
   mysql_data:
+  vehicle_photos:

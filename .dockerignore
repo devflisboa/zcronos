@@ -1,0 +1,16 @@
+.git
+.venv
+venv
+node_modules
+.env
+.env.*
+cypress.env.json
+static/uploads
+backups
+Docs/*.pdf
+Docs/*.pdf.pdf
+__pycache__
+**/__pycache__
+*.pyc
+cypress/videos
+cypress/screenshots

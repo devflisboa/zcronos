@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{% block titulo %}Minha conta{% endblock %} | AUTOVIU</title>
+{% include '_pwa_head.html' %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/automotive.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/conta.css') }}">
+{% block head %}{% endblock %}</head>
+<body><div id="app" class="ready"><div id="sb-overlay"></div><aside id="sidebar"><div class="sb-head"><a href="{{ url_for('main.index') }}" class="sb-logo-brand">ΛUTOVIU</a></div><nav class="sb-nav">
+<a class="nav-item" href="{{ url_for('main.index') }}">Dashboard</a><a class="nav-item" href="{{ url_for('veiculo.index') }}">Meus veículos</a>
+{% include '_conta_links.html' %}
+<a class="nav-item" href="{{ url_for('auth.logout') }}">Sair</a></nav></aside>
+<main id="main"><header class="conta-top"><button id="sb-toggle" class="btn btn-ghost" aria-label="Abrir menu">☰</button><a href="{{ url_for('veiculo.index') }}">Meus veículos</a></header>
+<div class="conta-wrap"><h1>{{ self.titulo() }}</h1>
+{% for categoria, mensagem in get_flashed_messages(with_categories=true) %}<p class="mensagem {{ categoria }}" role="status">{{ mensagem }}</p>{% endfor %}
+{% block conteudo %}{% endblock %}</div></main></div>
+<script src="{{ url_for('static', filename='js/automotive.js') }}"></script>
+{% block scripts %}{% endblock %}</body></html>

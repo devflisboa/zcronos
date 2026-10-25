@@ -3,11 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ΛUTOVIU | Entrar</title>
+<title>ΛUTOVIU | {% block titulo %}Entrar{% endblock %}</title>
 <link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
+{% include '_pwa_head.html' %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap">
 <style>
+  .auth-links { margin-top: 1.25rem; text-align: center; line-height: 1.8; }
+  .auth-links a { color: #D4AF37; }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
@@ -19,7 +22,7 @@
     font-family: 'Inter', system-ui, sans-serif;
     color: #f0f0f0;
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
   }
 
   /* Glow ambiente dourado no fundo */
@@ -215,6 +218,7 @@
   </div>
 
   <div class="login-card">
+    {% block auth_content %}
     <h2>Acesso à plataforma</h2>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -244,10 +248,15 @@
 
       <button type="submit" class="btn-login">Entrar</button>
     </form>
+    <p class="auth-links"><a href="{{ url_for('auth.recuperar_senha') }}">Esqueci minha senha</a><br><a href="{{ url_for('auth.registro') }}">Criar conta gratuita</a><br><a href="{{ url_for('auth.reenviar_confirmacao') }}">Reenviar confirmação de e-mail</a></p>
+    {% if config.get('GOOGLE_CLIENT_ID') %}<p class="auth-links"><a href="{{ url_for('google.login') }}">Entrar com Google</a></p>{% endif %}
+    {% if config.get('WEBAUTHN_RP_ID') %}<p class="auth-links"><button id="passkey-login" type="button" class="btn-login">Entrar com digital / Face ID</button></p><p id="passkey-status" role="status" aria-live="polite"></p>{% endif %}
+    {% endblock %}
   </div>
 
   <div class="login-footer">ΛUTOVIU &copy; {{ now.year }}</div>
 </div>
 
+<script src="{{ url_for('static', filename='js/passkeys.js') }}"></script>
 </body>
 </html>

@@ -28,3 +28,8 @@ node_modules/
 cypress/videos/
 cypress/screenshots/
 cypress.env.json
+
+# Dados privados e ambiente local
+.env.local
+static/uploads/
+backups/

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Meus Veículos | ΛUTOVIU</title>
 <link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
+{% include '_pwa_head.html' %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/automotive.css') }}">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <style>
@@ -213,6 +214,7 @@ html, body { overflow-x: hidden; }
         <span class="ni"><i data-lucide="receipt"></i></span> Despesa
       </a>
       <div class="nav-group-label" style="margin-top:auto">Conta</div>
+      {% include '_conta_links.html' %}
       <a href="{{ url_for('auth.logout') }}" class="nav-item">
         <span class="ni"><i data-lucide="log-out"></i></span> Sair
       </a>
@@ -261,6 +263,7 @@ html, body { overflow-x: hidden; }
         <div class="veiculo-card {% if v.id == veiculo_ativo_id %}is-ativo{% endif %}"
              onclick="location.href='{{ url_for('veiculo.editar', id=v.id) }}'">
 
+          {% if v.fotos %}<img src="{{ url_for('galeria.imagem', id=v.id, foto_id=v.fotos[0].id, thumb=1) }}" alt="Foto de {{ v.marca }} {{ v.modelo }}" style="width:100%;height:180px;object-fit:cover" loading="lazy">{% endif %}
           <!-- Cabeçalho: ícone + nome + badge ativo -->
           <div class="vc-head">
             <div class="vc-icon">
@@ -295,7 +298,9 @@ html, body { overflow-x: hidden; }
           {% endif %}
 
           <!-- Ações -->
-          <div class="vc-actions" onclick="event.stopPropagation()">
+          <div class="vc-actions" onclick="event.stopPropagation()" style="flex-wrap:wrap">
+            <a class="vc-btn vc-btn-ghost" href="{{ url_for('galeria.index', id=v.id) }}">Fotos</a>
+            <a class="vc-btn vc-btn-ghost" href="{{ url_for('fipe.index', modo='meu', veiculo_id=v.id) }}">Valor FIPE</a>
             {% if v.id != veiculo_ativo_id %}
             <form method="POST" action="{{ url_for('veiculo.selecionar', id=v.id) }}" style="display:contents">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -311,7 +316,7 @@ html, body { overflow-x: hidden; }
               <i data-lucide="pencil" style="width:14px;height:14px"></i>
             </a>
             <form method="POST" action="{{ url_for('veiculo.deletar', id=v.id) }}"
-                  onsubmit="return confirm('Remover {{ v.marca }} {{ v.modelo }}?')" style="display:contents">
+                  onsubmit="return confirm('Desativar este veículo? Os dados serão preservados.')" style="display:contents">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="vc-btn vc-btn-icon" type="submit">
                 <i data-lucide="trash-2" style="width:15px;height:15px"></i>

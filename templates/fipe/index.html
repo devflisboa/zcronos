@@ -1,0 +1,54 @@
+{% extends 'conta_base.html' %}
+{% block titulo %}Quanto o carro está valendo?{% endblock %}
+{% block conteudo %}
+<section class="conta-card">
+  <h2>Consulte o valor de referência FIPE</h2>
+  <form method="get" action="{{ url_for('fipe.index') }}">
+    <label for="pergunta-fipe">O que você quer saber?</label>
+    <input id="pergunta-fipe" name="pergunta" maxlength="180" value="{{ pergunta }}" placeholder="Quanto meu carro está valendo? Ou: quanto vale um Toyota Corolla 2022?" required>
+    <button type="submit" class="btn btn-primary">Consultar</button>
+  </form>
+  <div class="conta-actions"><a class="btn btn-ghost" href="{{ url_for('fipe.index', modo='meu') }}">Quanto vale meu carro?</a><a class="btn btn-ghost" href="{{ url_for('fipe.index', modo='outro') }}">Consultar outro veículo</a></div>
+</section>
+{% if erro %}<p class="mensagem danger" role="alert">{{ erro }}</p>{% endif %}
+{% if modo == 'meu' and not veiculo %}<section class="conta-card"><h2>Selecione seu veículo</h2><a class="btn btn-ghost" href="{{ url_for('veiculo.index') }}">Meus veículos</a></section>{% endif %}
+{% if referencia %}
+<section class="conta-card">
+  <h2>{{ 'Seu veículo: ' + (veiculo.marca or '') + ' ' + (veiculo.modelo or '') if veiculo else 'Qual veículo você quer consultar?' }}</h2>
+  {% if veiculo %}<p>Ano modelo informado: {{ veiculo.ano or 'não informado' }}{% if veiculo.versao %} · Versão: {{ veiculo.versao }}{% endif %}.</p>{% endif %}
+  <p class="ajuda">Para responder com o valor correto, confirme a versão, o ano modelo e o combustível. Referência disponível: {{ referencia.month }}.</p>
+  <form method="get" action="{{ url_for('fipe.index') }}" id="fipe-selecao">
+    <input type="hidden" name="modo" value="{{ modo }}">
+    {% if veiculo %}<input type="hidden" name="veiculo_id" value="{{ veiculo.id }}">{% endif %}
+    <label for="fipe-tipo">Tipo do veículo</label><select id="fipe-tipo" name="tipo" data-reset="marca,modelo,ano">{% for code, nome in tipos.items() %}<option value="{{ code }}" {% if code == tipo %}selected{% endif %}>{{ nome }}</option>{% endfor %}</select>
+    <label for="fipe-marca">Marca</label><select id="fipe-marca" name="marca" data-reset="modelo,ano"><option value="">Selecione a marca</option>{% for m in marcas %}<option value="{{ m.code }}" {% if m.code == marca %}selected{% endif %}>{{ m.name }}</option>{% endfor %}</select>
+    <label for="fipe-busca">Nome do modelo ou versão</label><input type="search" id="fipe-busca" name="busca" maxlength="100" value="{{ busca }}" placeholder="Ex.: Corolla, Cronos ou Civic" data-reset="modelo,ano">
+    {% if marca %}
+    <label for="fipe-modelo">Modelo e versão exatos</label><select id="fipe-modelo" name="modelo" data-reset="ano"><option value="">Selecione a versão</option>{% for m in modelos %}{% if m in filtrados or m.code == modelo %}<option value="{{ m.code }}" {% if m.code == modelo %}selected{% endif %}>{{ m.name }}</option>{% endif %}{% endfor %}</select>
+    {% if not filtrados %}<p class="ajuda">Nenhuma versão corresponde à busca nesta marca. Ajuste o nome acima ou apague a busca para ver todas as versões.</p>{% endif %}
+    {% endif %}
+    {% if anos %}<label for="fipe-ano">Ano modelo e combustível</label><select id="fipe-ano" name="ano"><option value="">Selecione o ano e combustível</option>{% for a in anos %}<option value="{{ a.code }}" {% if a.code == ano %}selected{% endif %}>{{ a.name }}</option>{% endfor %}</select>{% endif %}
+    <button class="btn btn-ghost" type="submit">{{ 'Consultar valor' if modelo else 'Continuar seleção' }}</button>
+  </form>
+</section>
+{% endif %}
+{% if cotacao %}
+<section class="conta-card" aria-labelledby="fipe-resposta">
+  <h2 id="fipe-resposta">{{ 'Quanto vale seu carro?' if veiculo else 'Valor do veículo consultado' }}</h2>
+  <p>O valor de referência FIPE {{ 'do seu veículo' if veiculo else 'do veículo consultado' }}, <strong>{{ cotacao.marca }} {{ cotacao.modelo }}</strong>, {{ 'zero km' if cotacao.ano_modelo == 32000 else 'ano modelo ' + cotacao.ano_modelo|string }}, {{ cotacao.combustivel }}, é <strong>{{ cotacao.valor_formatado }}</strong>, referente a <strong>{{ cotacao.referencia }}</strong>.</p>
+  <p class="ajuda">Código FIPE: {{ cotacao.codigo }} · Fonte: <a href="{{ cotacao.fonte_url }}" target="_blank" rel="noopener noreferrer">{{ cotacao.fonte }}</a> · Consulta: {{ cotacao.consulta_formatada }}.</p>
+  <p class="ajuda">Esse é um valor de referência; o preço negociado do veículo pode ser diferente.</p>
+  {% if not cotacao.vigente %}<p class="mensagem" role="status">A referência disponibilizada não é do mês atual. O valor é apresentado com o mês informado e não será aplicado como estimativa atual do seu veículo.</p>{% endif %}
+  {% if veiculo and cotacao_token %}
+  <form method="post" action="{{ url_for('fipe.confirmar', id=veiculo.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="cotacao_token" value="{{ cotacao_token }}">
+    <label class="check"><input type="checkbox" name="confirmar" value="sim" required><span>Confirmo que a versão, ano e combustível acima correspondem ao meu veículo {{ veiculo.marca }} {{ veiculo.modelo }}.</span></label>
+    <label class="check"><input type="checkbox" name="atualizar_valor" value="sim" {% if not cotacao.vigente %}disabled{% endif %}><span>Também atualizar o valor estimado do cadastro para {{ cotacao.valor_formatado }}.</span></label>
+    <button class="btn btn-primary" type="submit">Salvar referência confirmada</button>
+    <p class="ajuda">Sem marcar a atualização, o valor estimado que você informou permanece igual. O valor de compra não será alterado.</p>
+  </form>
+  {% else %}<p class="ajuda">Esta consulta não cadastrou um veículo e não alterou os dados da sua conta.</p>{% endif %}
+</section>
+{% elif referencia and not erro %}<p class="ajuda" role="status">Selecione os dados acima para obter a resposta com o preço. Nenhum valor foi estimado ou inventado.</p>{% endif %}
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/fipe.js') }}"></script>{% endblock %}

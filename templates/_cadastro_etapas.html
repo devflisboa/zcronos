@@ -1,0 +1,7 @@
+<nav class="cadastro-etapas" aria-label="Etapas do cadastro">
+  <ol>
+    <li><span aria-hidden="true">1</span> Conta confirmada</li>
+    <li {% if etapa_cadastro == 2 %}aria-current="step"{% endif %}><span aria-hidden="true">2</span> Condutor <small>opcional</small></li>
+    <li {% if etapa_cadastro == 3 %}aria-current="step"{% endif %}><span aria-hidden="true">3</span> Veículo</li>
+  </ol>
+</nav>

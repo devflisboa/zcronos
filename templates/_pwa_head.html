@@ -1,0 +1,12 @@
+<link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+<meta name="theme-color" content="#0A0A0C">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AUTOVIU">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='image/icons/apple-touch-icon.png') }}">
+<script>
+if ('serviceWorker' in navigator) {
+  addEventListener('load', () => navigator.serviceWorker.register('{{ url_for("main.service_worker") }}').catch(() => {}));
+}
+</script>

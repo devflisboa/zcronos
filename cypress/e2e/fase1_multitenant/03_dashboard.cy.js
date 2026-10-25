@@ -25,9 +25,9 @@ describe('Fase 1 — Dashboard', () => {
 
   context('KPIs e métricas (quando há veículo)', () => {
     it('não exibe dados de outro usuário', () => {
-      // Só verifica que a página carregou sem erro de servidor
-      cy.get('body').should('not.contain', 'Internal Server Error')
-      cy.get('body').should('not.contain', 'INTERNAL SERVER ERROR')
+      cy.get('body').should('not.contain', 'Despesa privada B')
+      cy.get('body').should('not.contain', 'Posto privado B')
+      cy.get('body').should('not.contain', 'Manutenção privada B')
     })
 
     it('exibe data atual', () => {

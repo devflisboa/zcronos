@@ -1,8 +1,9 @@
-from models import Abastecimento
+from flask_login import current_user
+from models import Abastecimento, Veiculo
 
 
-def obter_dados_abastecimento():
-    abastecimentos = Abastecimento.query.all()
+def obter_dados_abastecimento(veiculo_id):
+    abastecimentos = Abastecimento.query.join(Veiculo).filter(Veiculo.user_id == current_user.id, Veiculo.id == veiculo_id, Veiculo.ativo.is_(True)).order_by(Abastecimento.data, Abastecimento.id).all()
     quilometragens = [a.quilometragem for a in abastecimentos]
     litros_abastecidos = [a.litros_abastecidos for a in abastecimentos]
     valores_totais = [a.valor_total for a in abastecimentos]

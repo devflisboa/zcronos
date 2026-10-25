@@ -1,0 +1,19 @@
+{% extends 'conta_base.html' %}{% block titulo %}Perfil do condutor{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/cadastro.css') }}">{% endblock %}
+{% block conteudo %}
+{% if cadastro %}
+{% with etapa_cadastro=2 %}{% include '_cadastro_etapas.html' %}{% endwith %}
+<p class="ajuda">Complete os dados do condutor usando a CNH ou preencha manualmente. Esta etapa é opcional; você pode voltar a ela depois.</p>
+{% endif %}
+<form method="post" class="conta-card" id="condutor-form" action="{{ url_for('condutor.perfil', cadastro=1) if cadastro else url_for('condutor.perfil') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{% include '_importar_cnh.html' %}
+<div class="conta-grid">
+{% for campo, rotulo, tipo, tamanho in [('nome','Nome completo','text',120),('cpf','CPF','text',14),('data_nascimento','Data de nascimento','date',10),('cnh_numero','Registro da CNH','text',20),('cnh_validade','Validade da CNH','date',10),('cnh_primeira_habilitacao','Primeira habilitação','date',10)] %}
+<div><label for="{{ campo }}">{{ rotulo }}</label><input id="{{ campo }}" name="{{ campo }}" type="{{ tipo }}" maxlength="{{ tamanho }}" value="{{ request.form.get(campo, (condutor|attr(campo) or '') if condutor else (current_user.nome if campo == 'nome' else '')) }}" {% if campo == 'nome' %}required autocomplete="name"{% endif %}></div>{% endfor %}
+<div><label for="cnh_categoria">Categoria CNH</label><select id="cnh_categoria" name="cnh_categoria"><option value="">Não informada</option>{% for cat in categorias %}<option value="{{ cat }}" {% if request.form.get('cnh_categoria', condutor.cnh_categoria if condutor else '') == cat %}selected{% endif %}>{{ cat }}</option>{% endfor %}</select></div></div>
+<fieldset><legend>Veículos conduzidos</legend>{% for v in veiculos %}<label class="check"><input type="checkbox" name="veiculos" value="{{ v.id }}" {% if (request.method == 'POST' and v.id|string in request.form.getlist('veiculos')) or (request.method != 'POST' and condutor and v.condutor_id == condutor.id) %}checked{% endif %}>{{ v.marca }} {{ v.modelo }} — {{ v.placa or 'Sem placa' }}</label>{% else %}<p>Cadastre um veículo para vinculá-lo.</p>{% endfor %}</fieldset>
+<p class="ajuda">Confira os dados antes de salvar. A leitura do documento não confirma sua autenticidade.</p>
+<div class="conta-actions"><button class="btn btn-primary" type="submit">{{ 'Salvar e cadastrar veículo' if cadastro else 'Salvar perfil' }}</button></div></form>
+{% if cadastro %}<form class="cadastro-pular" method="post" action="{{ url_for('condutor.pular') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-ghost" type="submit">Informar condutor depois</button></form>{% endif %}
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/documentos.js') }}"></script>{% endblock %}

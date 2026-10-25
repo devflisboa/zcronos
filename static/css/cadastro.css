@@ -1,0 +1,21 @@
+.cadastro-etapas { margin: 0 0 24px; max-width: 640px; }
+.cadastro-etapas ol { display: flex; flex-wrap: wrap; list-style: none; gap: 12px; padding: 0; }
+.cadastro-etapas li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--text2); font-size: 14px; min-height: 44px; }
+.cadastro-etapas li[aria-current="step"] { color: var(--gold); font-weight: 700; }
+.cadastro-etapas li > span { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid currentColor; border-radius: 50%; }
+.documento-import { margin-bottom: 24px; padding: 16px; border: 1px solid var(--gold-border); border-radius: 12px; background: var(--gold-d); }
+.documento-import h2 { margin-bottom: 12px; font-size: 20px; }
+.documento-import .ajuda { color: var(--text2); font-size: 14px; line-height: 1.5; margin: 8px 0 16px; }
+.documento-import label { font-size: 14px; }
+.documento-import .documento-arquivos { display: block; max-width: 100%; width: 100%; padding: 12px; min-height: 48px; color: var(--text); border: 1px solid #555; border-radius: 8px; background: var(--bg); }
+.documento-import .documento-aceite { display: flex; align-items: flex-start; gap: 12px; margin: 16px 0; min-height: 48px; line-height: 1.5; }
+.documento-import .documento-consentimento { width: 20px; height: 20px; flex: 0 0 20px; margin-top: 2px; accent-color: var(--gold); }
+.documento-import button { min-height: 48px; white-space: normal; }
+.documento-import button:disabled { opacity: .55; cursor: not-allowed; }
+.documento-aviso { margin: 12px 0; padding: 12px; border: 1px solid #8a9099; border-radius: 8px; font-size: 14px; }
+[data-extraido="true"] { outline: 1px solid var(--gold); outline-offset: 1px; }
+.cadastro-pular { margin-top: 16px; }
+.cadastro-condutor { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+.cadastro-condutor label { display: flex; align-items: center; gap: 12px; min-height: 48px; font-size: 16px; }
+.cadastro-condutor input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--gold); }
+@media (max-width: 480px) { .cadastro-etapas ol { gap: 8px; } .cadastro-etapas li { font-size: 13px; } .documento-import { padding: 12px; } }

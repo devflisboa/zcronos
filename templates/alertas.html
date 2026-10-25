@@ -1,0 +1,19 @@
+{% extends 'conta_base.html' %}{% block titulo %}Alertas{% endblock %}{% block conteudo %}
+<section class="conta-card"><h2>Como você quer receber avisos?</h2><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label class="check"><input type="checkbox" name="email" value="sim" {% if preferencia and preferencia.email %}checked{% endif %}>Receber alertas por e-mail</label><button class="btn btn-primary" type="submit">Salvar preferência</button></form>
+<p class="ajuda">Envios por e-mail exigem endereço confirmado e configuração do servidor.</p>
+<div id="push-config" data-vapid="{{ vapid_public }}" data-url="{{ url_for('alerta.push') }}" data-remove="{{ url_for('alerta.remover_push') }}"><button class="btn btn-ghost" type="button" id="ativar-push" {% if not vapid_public %}disabled{% endif %}>Ativar notificações neste dispositivo</button><button class="btn btn-ghost" type="button" id="desativar-push">Desativar neste dispositivo</button><p id="push-status" role="status">{% if not vapid_public %}Notificações push aguardam configuração do servidor.{% endif %}</p></div></section>
+<section aria-labelledby="alertas-pendentes">
+  <h2 id="alertas-pendentes">Avisos para revisar ({{ alertas|length }})</h2>
+  <p class="ajuda">Avisos urgentes aparecem primeiro. As datas e a quilometragem seguem os dados informados no cadastro e na agenda.</p>
+  <div class="conta-grid">
+    {% for alerta in alertas %}
+    <article class="conta-card">
+      <p><strong>{{ alerta.prioridade|capitalize }}</strong></p>
+      <h3>{{ alerta.titulo }}</h3>
+      <p>{{ alerta.texto }}</p>
+      {% if alerta.url %}<a class="btn btn-ghost" href="{{ alerta.url }}">{{ alerta.acao }}</a>{% endif %}
+    </article>
+    {% else %}<p>Nenhum alerta pendente. Mantenha datas e quilometragem atualizadas.</p>{% endfor %}
+  </div>
+</section>
+{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='js/alertas.js') }}"></script>{% endblock %}

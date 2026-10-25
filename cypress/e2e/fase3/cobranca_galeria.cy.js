@@ -1,0 +1,96 @@
+describe('Faturamento com transporte simulado no servidor', () => {
+  beforeEach(() => {
+    cy.e2eControle('cenario',{assinatura:true,asaas_sucesso:true})
+    cy.login('b@example.test','TesteSenha123!')
+  })
+  it('pagamento pendente não libera relatório e bloqueia nova contratação', () => {
+    cy.postSeguro('/plano/1/atualizar')
+    cy.visit('/plano')
+    cy.contains('Aguardando pagamento').should('exist')
+    cy.get('form[action="/plano/contratar"]').should('not.exist')
+    cy.request({url:'/relatorios/',followRedirect:false}).its('status').should('eq',302)
+  })
+  it('conciliação confirmada libera plano e relatório', () => {
+    cy.e2eControle('cenario',{pagamento_status:'CONFIRMED'})
+    cy.postSeguro('/plano/1/atualizar')
+    cy.visit('/plano')
+    cy.contains('Plano atual: Pro').should('be.visible')
+    cy.contains('Confirmada').should('exist')
+    cy.request('/relatorios/3/exportar.csv').its('status').should('eq',200)
+  })
+  it('cancelamento preserva período pago e histórico', () => {
+    cy.e2eControle('cenario',{pagamento_status:'CONFIRMED'})
+    cy.postSeguro('/plano/1/atualizar')
+    cy.postSeguro('/plano/1/cancelar',{confirmar:'sim'})
+    cy.visit('/plano')
+    cy.contains('Recorrência cancelada').should('exist')
+    cy.contains('Plano atual: Pro').should('be.visible')
+    cy.contains('Confirmada').should('exist')
+  })
+  it('cancelamento de pendência remove link de pagamento', () => {
+    cy.postSeguro('/plano/1/atualizar')
+    cy.postSeguro('/plano/1/cancelar',{confirmar:'sim'})
+    cy.visit('/plano')
+    cy.get('a[href="https://sandbox.asaas.com/i/mock"]').should('not.exist')
+    cy.contains('Cancelada').should('exist')
+  })
+  it('webhook repetido não consulta ou credita duas vezes', () => {
+    cy.e2eControle('cenario',{pagamento_status:'CONFIRMED'})
+    const evento={id:'evt_mock',event:'PAYMENT_CONFIRMED',payment:{id:'pay_mock'}}
+    const opcoes={method:'POST',url:'/webhooks/asaas',headers:{'asaas-access-token':'webhook-sintetico-cypress-1234567890'},body:evento}
+    cy.request(opcoes).its('status').should('eq',200)
+    cy.request(opcoes).its('status').should('eq',200)
+    cy.e2eControle().its('body.chamadas').should('have.length',1)
+    cy.visit('/plano')
+    cy.contains('Plano atual: Pro').should('be.visible')
+  })
+  it('reembolso revoga relatório sem apagar veículo', () => {
+    cy.e2eControle('cenario',{pagamento_status:'CONFIRMED'})
+    cy.postSeguro('/plano/1/atualizar')
+    cy.e2eControle('cenario',{pagamento_status:'REFUNDED'})
+    cy.postSeguro('/plano/1/atualizar')
+    cy.request({url:'/relatorios/',followRedirect:false}).its('status').should('eq',302)
+    cy.visit('/veiculos/')
+    cy.contains('Segredo do usuário B').should('exist')
+  })
+  it('outra conta não concilia ou cancela a assinatura', () => {
+    cy.logout()
+    cy.login()
+    cy.postSeguro('/plano/1/atualizar').its('status').should('eq',404)
+    cy.postSeguro('/plano/1/cancelar',{confirmar:'sim'}).its('status').should('eq',404)
+  })
+})
+
+describe('Galeria e limites adicionais', () => {
+  it('remove foto e bloqueia leitura do arquivo removido', () => {
+    cy.login()
+    cy.visit('/veiculos/1/fotos')
+    cy.get('#fotos').selectFile('static/image/icons/icon-192.png')
+    cy.contains('button','Adicionar fotos').click()
+    cy.get('.foto-item').should('have.length',1).invoke('attr','data-url').then(url=>{
+      cy.on('window:confirm',()=>true)
+      cy.contains('button','Remover foto').click()
+      cy.get('.foto-item').should('not.exist')
+      cy.request({url,failOnStatusCode:false}).its('status').should('eq',404)
+    })
+  })
+  it('sem CSRF não aceita upload nem preferência de notificação', () => {
+    cy.login()
+    cy.request({method:'POST',url:'/veiculos/1/fotos',failOnStatusCode:false}).its('status').should('eq',400)
+    cy.request({method:'POST',url:'/alertas/',form:true,body:{email:'sim'},failOnStatusCode:false}).its('status').should('eq',400)
+  })
+  it('trial expirado bloqueia Pro preservando gestão básica', () => {
+    cy.e2eControle('cenario',{trial_expirado:true})
+    cy.login('b@example.test','TesteSenha123!')
+    cy.request({url:'/relatorios/',followRedirect:false}).its('status').should('eq',302)
+    cy.visit('/veiculos/')
+    cy.contains('Segredo do usuário B').should('exist')
+  })
+  it('referência FIPE histórica não pode atualizar estimativa atual', () => {
+    cy.e2eControle('cenario',{fipe_historica:true})
+    cy.login()
+    cy.visit('/fipe/?modo=meu&veiculo_id=1&tipo=cars&marca=1&modelo=101&ano=2022-1')
+    cy.contains('janeiro de 2000').should('be.visible')
+    cy.get('[name=atualizar_valor]').should('be.disabled')
+  })
+})

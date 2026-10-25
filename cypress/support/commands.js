@@ -6,7 +6,7 @@ Cypress.Commands.add('login', (email, senha) => {
   const testSenha = senha || Cypress.env('TEST_USER_SENHA')
 
   cy.session(
-    [testEmail],
+    [testEmail, testSenha],
     () => {
       cy.visit('/auth/login')
       cy.get('input[name="email"]').clear().type(testEmail)
@@ -27,6 +27,20 @@ Cypress.Commands.add('login', (email, senha) => {
       },
     }
   )
+})
+
+Cypress.Commands.add('e2eControle', (acao = 'estado', body) => cy.request({
+  method: body ? 'POST' : 'GET', url: '/__e2e/' + acao,
+  headers: {'X-E2E-Key': 'somente-cypress-local'}, body,
+}))
+
+Cypress.Commands.add('postSeguro', (url, body = {}, options = {}) => {
+  return cy.request('/condutor/').then(resposta => {
+    const token = resposta.body.match(/name="csrf-token" content="([^"]+)"/)?.[1]
+    expect(token, 'token CSRF obtido do servidor').to.be.a('string')
+    return cy.request({method: 'POST', url, form: true, body: {...body, csrf_token: token},
+      failOnStatusCode: false, followRedirect: false, ...options})
+  })
 })
 
 /**

@@ -1,0 +1,15 @@
+{% extends 'auth/login.html' %}
+{% block titulo %}Criar conta{% endblock %}
+{% block auth_content %}
+<h2>Crie sua conta gratuita</h2>
+{% with messages = get_flashed_messages(with_categories=true) %}{% for cat, msg in messages %}<div class="alert alert-{{ cat }}" role="alert">{{ msg }}</div>{% endfor %}{% endwith %}
+<form method="POST" action="{{ url_for('auth.registro') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<div class="form-group"><label for="nome">Nome</label><input id="nome" name="nome" autocomplete="name" minlength="2" maxlength="100" value="{{ request.form.get('nome', '') }}" required autofocus></div>
+<div class="form-group"><label for="email">E-mail</label><input type="email" id="email" name="email" autocomplete="email" maxlength="120" value="{{ request.form.get('email', '') }}" required></div>
+<div class="form-group"><label for="senha">Senha</label><input type="password" id="senha" name="senha" autocomplete="new-password" minlength="12" maxlength="72" aria-describedby="senha-ajuda" required><p id="senha-ajuda">Use ao menos 12 caracteres (até 72 bytes).</p></div>
+<div class="form-group"><label for="confirmar_senha">Confirme a senha</label><input type="password" id="confirmar_senha" name="confirmar_senha" autocomplete="new-password" required></div>
+<button type="submit" class="btn-login">Criar conta gratuita</button>
+</form>
+<p class="auth-links">Após confirmar o e-mail, você poderá preencher o perfil pela CNH e cadastrar o veículo pelo CRLV. O envio dos documentos é opcional.<br><a href="{{ url_for('auth.login') }}">Já tenho conta</a></p>
+{% endblock %}

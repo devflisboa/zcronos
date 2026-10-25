@@ -19,6 +19,24 @@ Fase 6 — Mobile app              (crescimento)
 
 ---
 
+## Acompanhamento local — Fases 1, 2 e 3 (24/10/2026)
+
+**Implantação local:** aplicação construída e iniciada pelo `docker-compose.local.yml`; MySQL local atualizado até a004 após backup e auditoria, preservando as contagens verificadas. Procedimento e evidências em [DOCKER_LOCAL.md](DOCKER_LOCAL.md); índice geral no `README.md`. Produção permanece sem alteração. Referências anteriores a migrações não executadas descrevem o estado daquela implementação; o registro operacional mais recente distingue a aplicação local da homologação/produção ainda pendentes.
+
+O estado histórico e os checklists originais abaixo são referências de escopo. A implementação local atual está detalhada em `FASE3_ROADMAP.md`, inclusive os complementos de isolamento e recuperação de senha das Fases 1 e 2. Por orientação do usuário, a execução dos testes restantes foi transferida para depois da conclusão das implementações dessas três fases. Não considerar esta atualização como aprovação de produção, comprovação de migração dos dados reais ou confirmação de pagamento real.
+
+| Fase | Implementação local | Pendências antes de encerrar a entrega |
+|---|---|---|
+| 1 | Cadastro, confirmação, recuperação de senha, isolamento de relatórios/alterações, vínculos obrigatórios e auditoria | Configurar SMTP, backup e auditoria dos dados reais, aplicar migrações em homologação e validar isolamento na etapa final |
+| 2 | Gestão de múltiplos veículos, veículo ativo, validação de placas/documentos, limites por plano, seed só de categorias e consulta FIPE do veículo próprio ou avulsa | Aplicar a migração a004 em homologação; validar FIPE, concorrência, alternância e dados migrados na etapa final |
+| 3 | Assinaturas Asaas, faturas, webhook, trial, planos, proteção de recursos pagos, administração; perfil, OCR, galeria, Google, push e passkeys conforme roadmap detalhado | Decisão comercial Frota e vínculo Google, credenciais dos provedores, homologação de cobrança/autenticação/envios e validação final |
+
+Fases 4, 5 e 6 estão fora desta entrega, conforme delimitação expressa do usuário. Não criar o serviço OBD/FastAPI nem iniciar IA preditiva nesta execução.
+
+Complementos operacionais preparados em `FASE3_ROADMAP.md`: formulários de manutenção preservam campos com JavaScript em caso de falha, conferem o veículo exibido e evitam reenvio automático de resultado incerto; o comando `configuracao-diagnosticar` lista presença/formato e pendências sem exibir valores de segredos nem contatar provedores. Configuração comercial Frota inválida mantém a venda desabilitada. Esses complementos ainda não foram executados/validados; o diagnóstico não substitui homologação.
+
+---
+
 ## Fase 0 — Segurança imediata
 **Objetivo:** Proteger os dados antes de abrir para outros usuários.  
 **Estimativa:** 1 semana de desenvolvimento  
@@ -84,12 +102,42 @@ Fase 6 — Mobile app              (crescimento)
 - [ ] **2.4** — Criar tela de seleção de veículo ativo (select no header ou página dedicada)
 - [ ] **2.5** — Adicionar verificação de limite de veículos por plano
 - [ ] **2.6** — Adaptar `_seed()` para criar apenas as categorias globais (manter seed de categorias)
+- [ ] **2.7** — Implementar consulta à Tabela FIPE para responder “Quanto meu carro está valendo?” e “Quanto o carro Y está valendo?”, usando o veículo ativo ou uma busca avulsa por marca/modelo/versão/ano/combustível.
+
+### 2.7 — Quanto o veículo está valendo? (Tabela FIPE)
+
+**Solicitação do usuário:** a funcionalidade precisa responder às perguntas “Quanto meu carro está valendo?” e “Quanto aquele carro Y está valendo?”. Esta tarefa detalha a integração FIPE já prevista nesta documentação e em `ARQUITETURA_SAAS.md`; não é um módulo paralelo de avaliação.
+
+**Caso 1 — Meu carro:**
+- Identificar o veículo ativo da sessão, verificando a propriedade pelo usuário autenticado.
+- Reaproveitar marca, modelo e ano do cadastro e os campos revisados após a leitura do CRLV.
+- Se já houver identificação FIPE confirmada, usá-la. Caso contrário, solicitar a versão, ano modelo e combustível necessários para identificar o registro correto; não escolher automaticamente entre versões parecidas.
+- Apresentar uma resposta direta: “O valor de referência FIPE do seu {veículo/versão}, ano modelo {ano}, {combustível}, é {valor}, referente a {mês/ano}.”
+- Oferecer atualizar o valor estimado do cadastro somente após confirmação; preservar o valor manual até essa confirmação.
+
+**Caso 2 — Outro carro:**
+- Permitir a pergunta ou busca “Quanto o carro Y está valendo?”, mesmo que o veículo não esteja cadastrado na conta.
+- Identificar marca/modelo e pedir os dados que faltarem: versão, ano modelo e combustível. Havendo mais de uma correspondência, mostrar opções para o usuário selecionar.
+- Consultar e apresentar o mesmo conjunto de informações do caso anterior, sem criar um veículo nem alterar o veículo ativo.
+
+**Resposta e interface:**
+- Mostrar marca, modelo/versão, ano modelo, combustível, valor em reais, código FIPE, mês/ano de referência, fonte e data da consulta.
+- Disponibilizar ações visíveis “Quanto vale meu carro?” e “Consultar outro veículo”, além de reconhecer as duas intenções quando recebidas como pergunta. A solução para reconhecer perguntas deve respeitar a arquitetura existente; não presumir necessidade de uma nova integração de IA.
+- Identificar o resultado como valor de referência FIPE, distinguindo-o do valor de compra e do preço de venda informado pelo usuário.
+- Tratar ausência de veículo ativo, cadastro incompleto, versão ambígua, resultado não encontrado, dados desatualizados e indisponibilidade do provedor. Não fabricar preços nem substituir uma referência antiga por uma suposta cotação atual.
+- Usar backend/serviço Flask existente para consultar o provedor, com timeout, cache por identificação/referência e isolamento dos dados da conta. Provedor, condições de uso, limites e eventual necessidade de credenciais devem ser verificados antes da implementação.
+- Prever os campos de identificação FIPE e referência necessários em migração incremental, sem remover nem reinterpretar os valores atuais do cadastro.
+
+**Critérios de entrega:** as duas perguntas precisam resultar em uma cotação identificada ou em uma solicitação clara dos dados faltantes; nunca apenas em uma tabela de marcas sem conduzir à resposta. Consulta avulsa não cadastra veículo; atualização do veículo próprio exige confirmação. Validação funcional e de integração fica na etapa final, conforme orientação do usuário.
+
+**Status:** implementado no código local em 24/10/2026, com validação pendente. Tela autenticada `/fipe/`, serviço de catálogo/cotação no backend, cache e confirmação separada para o cadastro. Migração incremental `a004_fipe.py` preparada, ainda não executada. Nenhum valor real foi consultado e nenhum teste foi executado nesta atualização. Detalhes e limitações em `FASE3_ROADMAP.md`, seção “Consulta FIPE”. O checklist permanece aberto até a validação final.
 
 ### Entrega da Fase 2
 
 - Usuário pode cadastrar N veículos (limitado pelo plano)
 - Dashboard mostra dados do veículo selecionado
 - Alternância entre veículos sem perder contexto
+- Consulta FIPE do veículo ativo e de outro veículo, com valor e referência identificados
 
 ---
 

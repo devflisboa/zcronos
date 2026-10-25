@@ -1,0 +1,8 @@
+<a class="nav-item" href="{{ url_for('relatorio.index') }}">Relatórios e exportação</a>
+<a class="nav-item" href="{{ url_for('fipe.index') }}">Quanto vale o carro? · FIPE</a>
+<div class="nav-group-label">Minha conta</div>
+<a class="nav-item" href="{{ url_for('condutor.perfil') }}">Perfil do condutor</a>
+<a class="nav-item" href="{{ url_for('alerta.index') }}">Alertas</a>
+<a class="nav-item" href="{{ url_for('assinatura.planos') }}">Meu plano</a>
+<a class="nav-item" href="{{ url_for('seguranca.index') }}">Segurança</a>
+{% if current_user.plano == 'superadmin' %}<a class="nav-item" href="{{ url_for('assinatura.admin') }}">Administração</a>{% endif %}

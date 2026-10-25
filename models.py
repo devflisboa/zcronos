@@ -17,28 +17,53 @@ class User(db.Model, UserMixin):
     ativo            = db.Column(db.Boolean, default=True)
     created_at       = db.Column(db.DateTime, default=datetime.utcnow)
     last_login_at    = db.Column(db.DateTime)
+    auth_version     = db.Column(db.Integer, nullable=False, default=0)
+    google_id        = db.Column(db.String(100))
+    __table_args__ = (db.Index('uq_usuarios_google_id', 'google_id', unique=True),)
+    avatar_url       = db.Column(db.String(300))
 
     veiculos = db.relationship('Veiculo', backref='dono', lazy='dynamic',
                                foreign_keys='Veiculo.user_id')
 
     def set_password(self, senha):
+        if self.password_hash:
+            self.auth_version = (self.auth_version or 0) + 1
         self.password_hash = bcrypt.generate_password_hash(senha).decode('utf-8')
 
     def check_password(self, senha):
-        return bcrypt.check_password_hash(self.password_hash, senha)
+        if not self.password_hash:
+            return False
+        try:
+            return bcrypt.check_password_hash(self.password_hash, senha)
+        except (ValueError, TypeError):
+            return False
 
     def get_id(self):
-        return str(self.id)
+        return f'{self.id}:{self.auth_version or 0}'
 
-    def pode_adicionar_veiculo(self):
-        limite = PLANO_LIMITES.get(self.plano or 'free', 1)
-        return self.veiculos.filter_by(ativo=True).count() < limite
+    def pode_adicionar_veiculo(self, bloquear=False):
+        from flask import current_app
+        plano = self.plano_efetivo
+        limite = PLANO_LIMITES.get(plano, 1)
+        limite_configurado = current_app.config.get('FROTA_LIMITE')
+        if plano == 'frota' and type(limite_configurado) is int and limite_configurado >= 0:
+            limite = limite_configurado
+            if limite == 0:
+                return True
+        query = self.veiculos.filter_by(ativo=True)
+        quantidade = len(query.with_for_update().all()) if bloquear else query.count()
+        return quantidade < limite
+
+    @property
+    def plano_efetivo(self):
+        from services.assinatura_service import plano_efetivo
+        return plano_efetivo(self)
 
 
 class Veiculo(db.Model):
     __tablename__ = 'veiculo'
     id          = db.Column(db.Integer, primary_key=True)
-    user_id     = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True, index=True)
+    user_id     = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False, index=True)
     ativo       = db.Column(db.Boolean, default=True)
     marca       = db.Column(db.String(50))
     modelo      = db.Column(db.String(50))
@@ -51,6 +76,23 @@ class Veiculo(db.Model):
     data_compra = db.Column(db.Date)
     valor_compra = db.Column(db.Float)
     valor_atual  = db.Column(db.Float)
+    ano_fabricacao = db.Column(db.Integer)
+    chassi = db.Column(db.String(17))
+    renavam = db.Column(db.String(11))
+    proprietario = db.Column(db.String(120))
+    condutor_id = db.Column(db.Integer, db.ForeignKey('condutor.id'), nullable=True)
+    crlv_validade = db.Column(db.Date)
+    seguro_validade = db.Column(db.Date)
+    fipe_tipo = db.Column(db.String(20))
+    fipe_marca_id = db.Column(db.String(20))
+    fipe_modelo_id = db.Column(db.String(20))
+    fipe_ano_id = db.Column(db.String(20))
+    fipe_codigo = db.Column(db.String(12))
+    fipe_referencia = db.Column(db.String(60))
+    fipe_valor = db.Column(db.Numeric(12, 2))
+    fipe_consultado_em = db.Column(db.DateTime)
+
+    fotos = db.relationship('FotoVeiculo', order_by='FotoVeiculo.ordem', lazy='select')
 
     abastecimentos = db.relationship('Abastecimento', backref='veiculo', lazy='dynamic')
     despesas       = db.relationship('Despesa', backref='veiculo', lazy='dynamic')
@@ -70,7 +112,7 @@ class Veiculo(db.Model):
 class Abastecimento(db.Model):
     __tablename__ = 'abastecimentos'
     id                  = db.Column(db.Integer, primary_key=True)
-    veiculo_id          = db.Column(db.Integer, db.ForeignKey('veiculo.id'), nullable=True, index=True)
+    veiculo_id          = db.Column(db.Integer, db.ForeignKey('veiculo.id'), nullable=False, index=True)
     data                = db.Column(db.Date, default=datetime.utcnow)
     quilometragem       = db.Column(db.Integer, nullable=False)
     litros_abastecidos  = db.Column(db.Float, nullable=False)
@@ -204,3 +246,112 @@ class SemanalUber(db.Model):
     resumo_taxas          = db.Column(db.Text)
     transacoes_detalhadas = db.Column(db.Text)
     nome_arquivo          = db.Column(db.String(255))
+
+
+class Condutor(db.Model):
+    __tablename__ = 'condutor'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False, unique=True)
+    nome = db.Column(db.String(120), nullable=False)
+    cpf = db.Column(db.String(11))
+    data_nascimento = db.Column(db.Date)
+    cnh_numero = db.Column(db.String(20))
+    cnh_categoria = db.Column(db.String(5))
+    cnh_validade = db.Column(db.Date)
+    cnh_primeira_habilitacao = db.Column(db.Date)
+
+
+class FotoVeiculo(db.Model):
+    __tablename__ = 'foto_veiculo'
+    id = db.Column(db.Integer, primary_key=True)
+    veiculo_id = db.Column(db.Integer, db.ForeignKey('veiculo.id'), nullable=False, index=True)
+    filename = db.Column(db.String(200), nullable=False)
+    legenda = db.Column(db.String(200))
+    ordem = db.Column(db.Integer, nullable=False, default=0)
+    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class PreferenciaAlerta(db.Model):
+    __tablename__ = 'preferencia_alerta'
+    user_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), primary_key=True)
+    email = db.Column(db.Boolean, nullable=False, default=False)
+
+
+class PushSubscription(db.Model):
+    __tablename__ = 'push_subscription'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False, index=True)
+    endpoint_hash = db.Column(db.String(64), unique=True, nullable=False)
+    dados = db.Column(db.JSON, nullable=False)
+
+
+class EnvioAlerta(db.Model):
+    __tablename__ = 'envio_alerta'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    chave = db.Column(db.String(160), nullable=False)
+    canal = db.Column(db.String(10), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='processando')
+    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+    __table_args__ = (db.UniqueConstraint('user_id', 'chave', 'canal', name='uq_envio_alerta'),)
+
+
+class WebAuthnCredential(db.Model):
+    __tablename__ = 'webauthn_credential'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False, index=True)
+    credential_id = db.Column(db.String(1400), nullable=False)
+    credential_hash = db.Column(db.String(64), nullable=False, unique=True)
+    public_key = db.Column(db.LargeBinary, nullable=False)
+    sign_count = db.Column(db.Integer, nullable=False, default=0)
+    device_name = db.Column(db.String(100), nullable=False)
+    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class WebAuthnDesafio(db.Model):
+    __tablename__ = 'webauthn_desafio'
+    id = db.Column(db.String(64), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    tipo = db.Column(db.String(20), nullable=False)
+    challenge = db.Column(db.LargeBinary, nullable=False)
+    expira_em = db.Column(db.DateTime, nullable=False)
+    consumido = db.Column(db.Boolean, nullable=False, default=False)
+
+
+class Assinatura(db.Model):
+    __tablename__ = 'assinaturas'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False, index=True)
+    plano = db.Column(db.String(20), nullable=False)
+    status = db.Column(db.String(20), default='trial')
+    data_inicio = db.Column(db.Date, nullable=False)
+    data_renovacao = db.Column(db.Date)
+    gateway_id = db.Column(db.String(100))
+    valor = db.Column(db.Numeric(10, 2), nullable=False, default=0)
+    plano_solicitado = db.Column(db.String(20))
+    valor_solicitado = db.Column(db.Numeric(10, 2))
+
+
+class ContaCobranca(db.Model):
+    __tablename__ = 'conta_cobranca'
+    user_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), primary_key=True)
+    customer_id = db.Column(db.String(100))
+
+
+class Fatura(db.Model):
+    __tablename__ = 'fatura'
+    id = db.Column(db.Integer, primary_key=True)
+    assinatura_id = db.Column(db.Integer, db.ForeignKey('assinaturas.id'), nullable=False, index=True)
+    plano = db.Column(db.String(20), nullable=False)
+    gateway_id = db.Column(db.String(100), nullable=False, unique=True)
+    valor = db.Column(db.Numeric(10, 2), nullable=False)
+    status = db.Column(db.String(30), nullable=False)
+    vencimento = db.Column(db.Date, nullable=False)
+    confirmacao = db.Column(db.Date)
+    url = db.Column(db.String(500))
+
+
+class EventoGateway(db.Model):
+    __tablename__ = 'evento_gateway'
+    id = db.Column(db.String(100), primary_key=True)
+    criado_em = db.Column(db.DateTime, default=datetime.utcnow)

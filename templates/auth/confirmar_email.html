@@ -1,0 +1,10 @@
+{% extends 'auth/login.html' %}
+{% block titulo %}Confirmar e-mail{% endblock %}
+{% block auth_content %}
+<h2>Confirme seu e-mail para ativar sua conta</h2>
+<form method="POST" action="{{ url_for('auth.confirmar_email', token=token) }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<button type="submit" class="btn-login">Confirmar e-mail</button>
+</form>
+<p class="auth-links"><a href="{{ url_for('auth.login') }}">Voltar ao login</a></p>
+{% endblock %}

@@ -15,12 +15,12 @@ alembic_config = context.config
 if alembic_config.config_file_name is not None:
     fileConfig(alembic_config.config_file_name)
 
-flask_app = create_app(os.environ.get('FLASK_ENV', 'production'))
+flask_app = create_app(os.environ.get('FLASK_ENV', 'production'), initialize_database=False, start_scheduler=False)
 target_metadata = db.metadata
 
 alembic_config.set_main_option(
     'sqlalchemy.url',
-    flask_app.config['SQLALCHEMY_DATABASE_URI']
+    flask_app.config['SQLALCHEMY_DATABASE_URI'].replace('%', '%%')
 )
 
 

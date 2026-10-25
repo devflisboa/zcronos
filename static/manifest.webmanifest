@@ -1,0 +1,23 @@
+{
+  "name": "AUTOVIU — Gestão Automotiva",
+  "short_name": "AUTOVIU",
+  "description": "Controle de abastecimento, despesas e manutenção do seu veículo.",
+  "lang": "pt-BR",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A0A0C",
+  "theme_color": "#0A0A0C",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    { "src": "/static/image/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/static/image/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/static/image/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/static/image/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Novo abastecimento", "url": "/abastecimento/cadastrar", "icons": [{ "src": "/static/image/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Nova despesa", "url": "/despesa/cadastrar", "icons": [{ "src": "/static/image/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

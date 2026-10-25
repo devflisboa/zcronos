@@ -1,9 +1,16 @@
 // Importa commands customizados
 import './commands'
 
-// Suprimir erros de JS não-críticos do app (ex: Chart.js warnings)
+beforeEach(() => {
+  cy.e2eControle('reset', {}).its('body.ambiente').should('eq', 'autoviu-cypress-descartavel')
+  // Bibliotecas visuais não são o objeto desta suíte; evitar dependência de CDN.
+  cy.intercept('https://cdn.jsdelivr.net/**', {headers: {'content-type': 'application/javascript'},
+    body: 'window.Chart=function(){this.destroy=function(){};}; window.Chart.defaults={font:{}}; window.Chart.getChart=function(){return null;};'})
+  cy.intercept('https://unpkg.com/lucide@*/**', {headers: {'content-type': 'application/javascript'},
+    body: 'window.lucide={createIcons:function(){}};'})
+})
+
+// Ignorar somente o aviso conhecido do observador de layout, sem ocultar falhas da aplicação.
 Cypress.on('uncaught:exception', (err) => {
-  // Ignora erros não-críticos do app que não afetam os testes
-  const ignored = ['ResizeObserver', 'Non-Error', 'Chart is not defined', 'lucide']
-  if (ignored.some(msg => err.message.includes(msg))) return false
+  if (err.message.includes('ResizeObserver loop')) return false
 })
