@@ -112,7 +112,7 @@ function initGauges() {
     const pct = parseFloat(el.dataset.gauge) / 100;
     const fill = el.querySelector('.gauge-fill');
     if (!fill) return;
-    const total = 251;
+    const total = 283;
     const offset = total - (total * pct);
     setTimeout(() => {
       fill.style.strokeDashoffset = offset;
@@ -215,7 +215,7 @@ function initChartCategorias(data) {
       responsive: true, maintainAspectRatio: false,
       cutout: '68%',
       plugins: {
-        legend: { position: 'right', labels: { padding: 12, boxWidth: 10 } },
+        legend: { position: window.innerWidth < 500 ? 'bottom' : 'right', labels: { padding: 12, boxWidth: 10 } },
         tooltip: { callbacks: {
           label: ctx => ' R$ ' + ctx.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 })
         }}

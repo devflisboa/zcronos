@@ -1,4 +1,13 @@
 {% extends 'conta_base.html' %}{% block titulo %}Fotos do veículo{% endblock %}
+{% block head %}<style>
+#foto-lightbox{padding:16px;overflow-y:auto;display:flex;flex-direction:column;align-items:center;gap:12px}
+#foto-lightbox::backdrop{background:rgba(0,0,0,.85)}
+#foto-ampliada{object-fit:contain;border-radius:8px;max-width:90vw;max-height:72vh;display:block}
+.lb-btn{background:#1e1e24;border:1px solid #444;color:#f0f0f0;border-radius:8px;padding:10px 20px;min-height:44px;font-size:.875rem;cursor:pointer;transition:background .15s}
+.lb-btn:hover{background:#2a2a34}
+.lb-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.lb-nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%}
+</style>{% endblock %}
 {% block conteudo %}<p>{{ veiculo.marca }} {{ veiculo.modelo }} {{ veiculo.ano or '' }}</p>
 <section class="conta-card"><h2>Adicionar fotos</h2><p class="ajuda">Até 20 fotos por veículo, em JPG, PNG ou HEIC. A primeira é a capa. Fotos são privadas; você escolhe quando exportar uma imagem para compartilhar.</p>
 <form id="foto-upload" data-url="{{ url_for('galeria.upload', id=veiculo.id) }}"><label for="fotos">Fotos da câmera ou galeria</label><input id="fotos" type="file" accept="image/jpeg,image/png,image/heic,image/heif" multiple required><button class="btn btn-primary" type="submit">Adicionar fotos</button></form>
@@ -9,6 +18,6 @@
 <label for="legenda-{{ foto.id }}">Legenda{% if loop.first %} · Foto de capa{% endif %}</label><input id="legenda-{{ foto.id }}" maxlength="200" value="{{ foto.legenda or '' }}" class="foto-legenda">
 <div class="conta-actions"><button type="button" class="foto-salvar btn btn-ghost">Salvar legenda</button><button type="button" class="foto-capa btn btn-ghost">Usar como capa</button><button type="button" class="foto-compartilhar btn btn-ghost">Compartilhar</button><button type="button" class="foto-remover btn btn-ghost">Remover foto</button></div></article>
 {% else %}<p>Nenhuma foto adicionada. Comece registrando seu veículo.</p>{% endfor %}</section>
-<dialog id="foto-lightbox" style="max-width:96vw;max-height:96vh;background:#111116;color:white;border:1px solid #555;border-radius:12px"><button type="button" id="foto-fechar">Fechar</button><img id="foto-ampliada" alt="Foto ampliada do veículo" style="display:block;max-width:90vw;max-height:75vh"><button type="button" id="foto-anterior">Anterior</button><button type="button" id="foto-proxima">Próxima</button></dialog>
+<dialog id="foto-lightbox" style="max-width:96vw;max-height:96vh;background:#111116;color:white;border:1px solid #555;border-radius:12px"><button type="button" id="foto-fechar" class="lb-btn">Fechar ✕</button><img id="foto-ampliada" alt="Foto ampliada do veículo"><div class="lb-nav"><button type="button" id="foto-anterior" class="lb-btn">← Anterior</button><button type="button" id="foto-proxima" class="lb-btn">Próxima →</button></div></dialog>
 <div id="galeria-dados" data-nome="{{ veiculo.marca }} {{ veiculo.modelo }} {{ veiculo.ano or '' }}" data-km="{{ veiculo.km_atual or 0 }}" data-custo="{{ custo }}" data-consumo="{{ consumo }}"></div>
 {% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='js/galeria.js') }}"></script>{% endblock %}
