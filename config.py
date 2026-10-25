@@ -70,6 +70,9 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     DEBUG = False
     SQLALCHEMY_ECHO = False
+    # NPM (Nginx Proxy Manager) não repassa o Referer header em HTTPS → desabilita
+    # só a checagem de Referer, mantendo a proteção CSRF intacta
+    WTF_CSRF_SSL_STRICT = False
 
 
 config = {
