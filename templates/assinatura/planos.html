@@ -1,5 +1,9 @@
 {% extends 'conta_base.html' %}
 {% block titulo %}Meu plano{% endblock %}
+{% block head %}<style>
+.table-scroll table th{white-space:nowrap}
+.table-scroll table th[scope="row"]{white-space:normal;min-width:140px}
+</style>{% endblock %}
 {% block conteudo %}
 <section class="conta-card">
   <h2>Plano atual: {{ planos[atual].nome if atual in planos else ('Conta administrativa' if atual == 'superadmin' else atual|capitalize) }}</h2>
