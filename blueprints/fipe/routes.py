@@ -4,7 +4,7 @@ import re
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_required, current_user
 from itsdangerous import URLSafeTimedSerializer, BadData
 from sqlalchemy.exc import SQLAlchemyError
@@ -144,3 +144,54 @@ def confirmar(id):
         current_app.logger.warning('Falha ao salvar referência FIPE: %s', type(exc).__name__)
         flash('Não foi possível salvar a referência. Tente novamente.', 'danger')
     return redirect(url_for('fipe.index', modo='meu', veiculo_id=id))
+
+
+@fipe_bp.route('/<int:id>/atualizar', methods=['GET'])
+@login_required
+@limiter.limit('20/hour', key_func=lambda: str(current_user.id))
+def atualizar(id):
+    """Atualiza silenciosamente o valor FIPE do veículo se estiver desatualizado.
+
+    Retorna JSON consumido pelo dashboard via fetch. Só busca da API quando
+    o registro salvo é de um mês diferente do atual (FIPE é tabela mensal).
+    """
+    veiculo = Veiculo.query.filter_by(id=id, user_id=current_user.id, ativo=True).first_or_404()
+
+    if not veiculo.fipe_codigo:
+        return jsonify(atualizado=False, motivo='sem_configuracao')
+
+    agora = datetime.now(timezone.utc)
+    consultado = veiculo.fipe_consultado_em
+    if consultado and consultado.year == agora.year and consultado.month == agora.month:
+        return jsonify(
+            atualizado=False, motivo='vigente',
+            valor=float(veiculo.fipe_valor or 0),
+            referencia=veiculo.fipe_referencia,
+        )
+
+    try:
+        referencia = fipe.referencia_atual()
+        cotacao = fipe.consultar_valor(
+            veiculo.fipe_tipo, veiculo.fipe_marca_id,
+            veiculo.fipe_modelo_id, veiculo.fipe_ano_id,
+            referencia,
+        )
+        veiculo.fipe_valor = Decimal(cotacao['valor'])
+        veiculo.fipe_referencia = cotacao['referencia']
+        veiculo.fipe_consultado_em = (
+            datetime.fromisoformat(cotacao['consultado_em'])
+            .astimezone(timezone.utc)
+            .replace(tzinfo=None)
+        )
+        db.session.commit()
+        return jsonify(
+            atualizado=True,
+            valor=float(veiculo.fipe_valor),
+            referencia=veiculo.fipe_referencia,
+        )
+    except fipe.FipeIndisponivel:
+        return jsonify(atualizado=False, motivo='api_indisponivel')
+    except SQLAlchemyError:
+        db.session.rollback()
+        current_app.logger.warning('Falha ao salvar atualização FIPE automática')
+        return jsonify(atualizado=False, motivo='erro_db')
