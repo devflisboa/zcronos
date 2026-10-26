@@ -66,6 +66,9 @@
       <button class="nav-item" data-section="historico" data-label="Histórico do Veículo">
         <span class="ni"><i data-lucide="history"></i></span> Histórico
       </button>
+      <a href="{{ url_for('abastecimento.mapa') }}" class="nav-item">
+        <span class="ni"><i data-lucide="map-pin"></i></span> Mapa
+      </a>
       <a href="{{ url_for('veiculo.index') }}" class="nav-item">
         <span class="ni"><i data-lucide="car"></i></span> Meus Veículos
       </a>
@@ -126,12 +129,28 @@
       <!-- ──────────── HOME ──────────── -->
       <section id="sec-home" class="section active">
 
+        <!-- Filtro de Período -->
+        <div style="display:flex;align-items:center;gap:10px;margin-top:16px;margin-bottom:4px">
+          <span style="font-size:13px;color:var(--text3)">Período:</span>
+          <form method="GET" action="{{ url_for('main.index') }}" style="display:flex;gap:6px;align-items:center">
+            <select name="periodo" class="form-control" style="padding:4px 8px;font-size:13px;height:32px;width:auto"
+                    onchange="this.form.submit()">
+              {% for val, label, sel in opcoes_periodo %}
+              <option value="{{ val }}" {% if sel %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+            {% if periodo_filtrado %}
+            <a href="{{ url_for('main.index') }}" class="btn btn-ghost btn-sm" style="height:32px;font-size:12px">Hoje</a>
+            {% endif %}
+          </form>
+        </div>
+
         <!-- KPI Row -->
         <div class="grid-4 gap-top">
 
           <div class="kpi" style="--accent-c:var(--red-d)" onclick="switchSection('despesas','Despesas')" title="Ver despesas do mês">
             <div class="kpi-icon"><i data-lucide="dollar-sign" style="width:22px;height:22px;stroke:var(--danger)"></i></div>
-            <div class="kpi-label">Custo do Mês</div>
+            <div class="kpi-label">{% set meses_pt = ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'] %}Custo — {{ meses_pt[periodo_mes] }}/{{ periodo_ano }}</div>
             <div class="kpi-value red" data-count="{{ custo_mes }}" data-prefix="R$ " data-dec="2">R$ 0</div>
             <div class="kpi-delta {% if custo_mes_delta > 0 %}up{% elif custo_mes_delta < 0 %}down{% else %}neutral{% endif %}">
               {% if custo_mes_delta > 0 %}▲{% elif custo_mes_delta < 0 %}▼{% else %}–{% endif %}
@@ -144,7 +163,11 @@
             <div class="kpi-icon"><i data-lucide="calendar" style="width:22px;height:22px;stroke:var(--blue)"></i></div>
             <div class="kpi-label">Custo do Ano</div>
             <div class="kpi-value blue" data-count="{{ custo_ano }}" data-prefix="R$ " data-dec="2">R$ 0</div>
+            {% if projecao_ano > 0 %}
+            <div class="kpi-delta neutral" title="Projeção até dezembro baseada na média mensal">⟶ R$ {{ '%.0f'|format(projecao_ano) }} até dez</div>
+            {% else %}
             <div class="kpi-delta neutral">Acumulado {{ current_date[-4:] }}</div>
+            {% endif %}
             <div class="kpi-bar" style="background:var(--blue)"></div>
           </div>
 
@@ -162,6 +185,43 @@
             <div class="kpi-value" style="color:var(--gold)" data-count="{{ custo_por_km }}" data-prefix="R$ " data-dec="2">R$ 0</div>
             <div class="kpi-delta neutral">Baseado no ano atual</div>
             <div class="kpi-bar" style="background:var(--gold)"></div>
+          </div>
+        </div>
+
+        <!-- Segunda linha de KPIs -->
+        <div class="grid-4 gap-top">
+          <div class="kpi" style="--accent-c:#2a2a2d">
+            <div class="kpi-icon"><i data-lucide="history" style="width:22px;height:22px;stroke:var(--text2)"></i></div>
+            <div class="kpi-label">Total Histórico</div>
+            <div class="kpi-value" style="color:var(--text1)" data-count="{{ custo_historico }}" data-prefix="R$ " data-dec="2">R$ 0</div>
+            <div class="kpi-delta neutral">Desde o primeiro registro</div>
+            <div class="kpi-bar" style="background:var(--text3)"></div>
+          </div>
+          <div class="kpi" style="--accent-c:#2a2a2d" onclick="switchSection('combustivel','Combustível')" title="Ver histórico de abastecimento">
+            <div class="kpi-icon"><i data-lucide="fuel" style="width:22px;height:22px;stroke:var(--gold)"></i></div>
+            <div class="kpi-label">Último Abastecimento</div>
+            {% if ultimo_abastecimento %}
+            <div class="kpi-value" style="color:var(--text1);font-size:1.1rem">{{ ultimo_abastecimento.data.strftime('%d/%m/%Y') if ultimo_abastecimento.data else '—' }}</div>
+            <div class="kpi-delta neutral">{{ ultimo_abastecimento.posto or '—' }}</div>
+            {% else %}
+            <div class="kpi-value" style="color:var(--text3)">—</div>
+            <div class="kpi-delta neutral">Nenhum registro</div>
+            {% endif %}
+            <div class="kpi-bar" style="background:var(--gold)"></div>
+          </div>
+          <div class="kpi" style="--accent-c:#2a2a2d" onclick="switchSection('combustivel','Combustível')" title="Ver consumo">
+            <div class="kpi-icon"><i data-lucide="gauge" style="width:22px;height:22px;stroke:var(--ok)"></i></div>
+            <div class="kpi-label">Consumo Médio</div>
+            <div class="kpi-value ok" data-count="{{ consumo_medio }}" data-suffix=" km/L" data-dec="1">—</div>
+            <div class="kpi-delta neutral">Histórico</div>
+            <div class="kpi-bar" style="background:var(--ok)"></div>
+          </div>
+          <div class="kpi" style="--accent-c:#2a2a2d" onclick="switchSection('combustivel','Combustível')" title="Ver preços de combustível">
+            <div class="kpi-icon"><i data-lucide="droplets" style="width:22px;height:22px;stroke:#60aaff"></i></div>
+            <div class="kpi-label">Preço Médio/Litro</div>
+            <div class="kpi-value" style="color:#60aaff" data-count="{{ preco_medio_litro }}" data-prefix="R$ " data-dec="3">—</div>
+            <div class="kpi-delta neutral">Histórico de abastecimentos</div>
+            <div class="kpi-bar" style="background:#60aaff"></div>
           </div>
         </div>
 
@@ -352,32 +412,49 @@
         </div>
 
         <div class="card gap-top">
+          <div class="card-title">Evolução do Consumo (km/L)</div>
+          <div class="chart-box tall"><canvas id="chart-consumo"></canvas></div>
+        </div>
+
+        <div class="card gap-top">
+          <div class="card-title">Preço Médio por Litro (R$/L)</div>
+          <div class="chart-box tall"><canvas id="chart-preco-combustivel"></canvas></div>
+        </div>
+
+        <div class="card gap-top">
           <div class="card-title-row">
             <div class="card-title">Histórico de Abastecimentos</div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input type="search" id="busca-abastecimentos" placeholder="Buscar..." style="background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:6px;padding:5px 10px;font-size:13px;width:140px" oninput="filtrarTabela('tabela-abastecimentos',this.value)">
+              <a href="{{ url_for('abastecimento.mapa') }}" class="btn btn-ghost btn-sm" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="map-pin" style="width:13px;height:13px"></i> Mapa</a>
+            </div>
           </div>
           <div class="table-wrap">
-            <table class="auto">
+            <table class="auto" id="tabela-abastecimentos">
               <thead><tr>
-                <th>Data</th><th>Posto</th><th>Km</th><th>Litros</th><th>R$/L</th><th>Total</th><th>Consumo</th><th></th>
+                <th>Data</th><th>Combustível</th><th>Posto</th><th>Km</th><th>Litros</th><th>R$/L</th><th>Total</th><th>Consumo</th><th></th>
               </tr></thead>
               <tbody>
                 {% for a in abastecimentos %}
                 <tr>
                   <td>{{ a.data }}</td>
+                  <td>{% if a.tipo_combustivel %}<span class="pill pill-gray" style="font-size:10px">{{ a.tipo_combustivel }}</span>{% else %}<span style="color:var(--text3)">—</span>{% endif %}</td>
                   <td>{{ a.posto }}</td>
                   <td>{{ '{:,}'.format(a.quilometragem).replace(',','.') }}</td>
                   <td>{{ '%.2f'|format(a.litros) }} L</td>
                   <td>R$ {{ a.preco_litro }}</td>
                   <td style="color:var(--red);font-weight:600">R$ {{ '%.2f'|format(a.valor) }}</td>
                   <td>{% if a.consumo %}<span class="pill pill-ok">{{ a.consumo }} km/L</span>{% else %}<span class="pill pill-gray">—</span>{% endif %}</td>
-                  <td>
-                    <form id="del-abast-{{ a.id }}" method="POST" action="{{ url_for('abastecimento.delete_abastecimento', id=a.id) }}">
-                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-abast-{{ a.id }}')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
+                  <td style="white-space:nowrap">
+                    {% if a.latitude %}<span title="Localização registrada" style="color:var(--gold);margin-right:4px"><i data-lucide="map-pin" style="width:12px;height:12px"></i></span>{% endif %}
+                    <a href="{{ url_for('abastecimento.editar_abastecimento', id=a.id) }}" class="btn btn-ghost btn-sm btn-icon" title="Editar" style="margin-right:2px"><i data-lucide="pencil" style="width:14px;height:14px"></i></a>
+                    <form id="del-abast-{{ a.id }}" method="POST" action="{{ url_for('abastecimento.delete_abastecimento', id=a.id) }}" style="display:inline">
+                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-abast-{{ a.id }}')" title="Excluir"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
                     </form>
                   </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="8" class="table-empty">Nenhum abastecimento registrado</td></tr>
+                <tr><td colspan="9" class="table-empty">Nenhum abastecimento registrado</td></tr>
                 {% endfor %}
               </tbody>
             </table>
@@ -410,9 +487,10 @@
         <div class="card gap-top">
           <div class="card-title-row">
             <div class="card-title">Todas as Despesas</div>
+            <input type="search" id="busca-despesas" placeholder="Buscar..." style="background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:6px;padding:5px 10px;font-size:13px;width:160px" oninput="filtrarTabela('tabela-despesas',this.value)">
           </div>
           <div class="table-wrap">
-            <table class="auto">
+            <table class="auto" id="tabela-despesas">
               <thead><tr>
                 <th>Data</th><th>Categoria</th><th>Descrição</th><th>Km</th><th>Pagamento</th><th>Valor</th><th></th>
               </tr></thead>
@@ -425,9 +503,10 @@
                   <td>{{ '{:,}'.format(d.quilometragem).replace(',','.') if d.quilometragem else '—' }}</td>
                   <td>{{ d.forma_pagamento or '—' }}</td>
                   <td style="color:var(--red);font-weight:600">R$ {{ '%.2f'|format(d.valor) }}</td>
-                  <td>
-                    <form id="del-desp-{{ d.id }}" method="POST" action="{{ url_for('despesa.delete_despesa', id=d.id) }}">
-                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-desp-{{ d.id }}')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
+                  <td style="white-space:nowrap">
+                    <a href="{{ url_for('despesa.editar_despesa', id=d.id) }}" class="btn btn-ghost btn-sm btn-icon" title="Editar" style="margin-right:2px"><i data-lucide="pencil" style="width:14px;height:14px"></i></a>
+                    <form id="del-desp-{{ d.id }}" method="POST" action="{{ url_for('despesa.delete_despesa', id=d.id) }}" style="display:inline">
+                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-desp-{{ d.id }}')" title="Excluir"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
                     </form>
                   </td>
                 </tr>
@@ -446,6 +525,46 @@
           <div><h2 class="sec-title">Manutenção</h2><p class="sec-sub">Preventiva e corretiva</p></div>
           <button class="btn btn-primary" onclick="openModal('manutencao')">+ Registrar</button>
         </div>
+
+        <!-- Odômetro Inteligente -->
+        {% if km_por_dia %}
+        <div class="card gap-top" style="border-color:var(--gold-border)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+            <div style="width:36px;height:36px;border-radius:9px;background:var(--gold-d);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <i data-lucide="gauge" style="width:18px;height:18px;stroke:var(--gold)"></i>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--gold)">Odômetro Inteligente</div>
+              <div style="font-size:12px;color:var(--text3)">Ritmo atual: <strong style="color:var(--text2)">{{ km_por_dia }} km/dia</strong> · {{ (km_por_dia * 30)|int }} km/mês estimado</div>
+            </div>
+          </div>
+          {% set tem_previsao = namespace(v=false) %}
+          {% for m in manutencoes %}
+            {% if m.km_previsto and m.status_calculado != 'realizada' %}
+              {% set tem_previsao.v = true %}
+              {% set km_rest = m.km_previsto - km_atual %}
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+                <div style="font-size:13px;color:var(--text2)">
+                  {{ m.descricao or m.tipo|capitalize }}
+                  <span style="font-size:11px;color:var(--text3);margin-left:6px">{{ '{:,}'.format(m.km_previsto).replace(',','.') }} km</span>
+                </div>
+                {% if km_rest <= 0 %}
+                <span style="font-size:12px;font-weight:700;color:var(--danger)">Km atingido!</span>
+                {% else %}
+                  {% set dias_est = (km_rest / km_por_dia)|int %}
+                  <div style="text-align:right">
+                    <div style="font-size:13px;font-weight:700;color:{% if dias_est <= 30 %}var(--danger){% elif dias_est <= 90 %}var(--warn){% else %}var(--ok){% endif %}">~{{ dias_est }} dia{{ 's' if dias_est != 1 }}</div>
+                    <div style="font-size:11px;color:var(--text3)">Faltam {{ '{:,}'.format(km_rest).replace(',','.') }} km</div>
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endfor %}
+          {% if not tem_previsao.v %}
+          <div style="font-size:13px;color:var(--text3)">Nenhuma manutenção com km previsto cadastrada.</div>
+          {% endif %}
+        </div>
+        {% endif %}
 
         <!-- Alertas -->
         {% if alertas %}
@@ -466,9 +585,12 @@
         {% endif %}
 
         <div class="card gap-top">
-          <div class="card-title">Histórico e Agenda</div>
+          <div class="card-title-row">
+            <div class="card-title">Histórico e Agenda</div>
+            <input type="search" id="busca-manutencoes" placeholder="Buscar..." style="background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:6px;padding:5px 10px;font-size:13px;width:160px" oninput="filtrarTabela('tabela-manutencoes',this.value)">
+          </div>
           <div class="table-wrap">
-            <table class="auto">
+            <table class="auto" id="tabela-manutencoes">
               <thead><tr>
                 <th>Tipo</th><th>Descrição</th><th>Realizada em</th><th>Km Realizado</th><th>Prevista</th><th>Km Previsto</th><th>Custo</th><th>Status</th><th></th>
               </tr></thead>
@@ -491,12 +613,13 @@
                   <td>{{ '{:,}'.format(m.km_previsto).replace(',','.') if m.km_previsto else '—' }}</td>
                   <td>{% if m.custo %}R$ {{ '%.2f'|format(m.custo) }}{% else %}—{% endif %}</td>
                   <td><span class="maint-badge badge-{{ st }}">{{ st|capitalize }}</span></td>
-                  <td style="display:flex;gap:4px">
+                  <td style="display:flex;gap:4px;white-space:nowrap">
                     {% if st != 'realizada' %}
-                    <button class="btn btn-ghost btn-sm" onclick="openModal('concluir-{{ m.id }}')"><i data-lucide="check" style="width:14px;height:14px"></i></button>
+                    <button class="btn btn-ghost btn-sm" onclick="openModal('concluir-{{ m.id }}')" title="Concluir"><i data-lucide="check" style="width:14px;height:14px"></i></button>
                     {% endif %}
+                    <button class="btn btn-ghost btn-sm btn-icon" onclick="openModal('editar-{{ m.id }}')" title="Editar"><i data-lucide="pencil" style="width:14px;height:14px"></i></button>
                     <form id="del-maint-{{ m.id }}" method="POST" action="{{ url_for('manutencao.delete_manutencao', id=m.id) }}">
-                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-maint-{{ m.id }}')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
+                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-maint-{{ m.id }}')" title="Excluir"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
                     </form>
                   </td>
                 </tr>
@@ -533,6 +656,35 @@
           <div class="chart-box tall"><canvas id="chart-anual"></canvas></div>
         </div>
 
+        <!-- Metas de Gasto -->
+        <div class="card gap-top">
+          <div class="card-title-row">
+            <div class="card-title">Metas de Gasto (Mês)</div>
+            <button class="btn btn-ghost btn-sm" onclick="openModal('nova-meta')">+ Meta</button>
+          </div>
+          {% if metas %}
+          {% for meta in metas %}
+          <div style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+              <span style="color:var(--text2)">{{ meta.rotulo }}</span>
+              <div style="display:flex;gap:10px;align-items:center">
+                <span style="color:var(--{% if meta.status == 'danger' %}danger{% elif meta.status == 'warn' %}warn{% else %}ok{% endif %});font-weight:600">R$ {{ '%.0f'|format(meta.gasto) }} / {{ '%.0f'|format(meta.limite) }}</span>
+                <form id="del-meta-{{ meta.id }}" method="POST" action="{{ url_for('meta.delete_meta', id=meta.id) }}" style="display:inline">
+                  <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-meta-{{ meta.id }}')" title="Remover"><i data-lucide="x" style="width:12px;height:12px"></i></button>
+                </form>
+              </div>
+            </div>
+            <div class="prog-bar">
+              <div class="prog-fill" style="width:{{ [meta.pct, 100]|min }}%;background:var(--{% if meta.status == 'danger' %}red{% elif meta.status == 'warn' %}warn{% else %}ok{% endif %})"></div>
+            </div>
+            <div style="font-size:11px;color:var(--text3);margin-top:3px">{{ meta.pct }}% do limite</div>
+          </div>
+          {% endfor %}
+          {% else %}
+          <div class="empty"><div class="empty-text">Nenhuma meta definida. Clique em "+ Meta" para adicionar.</div></div>
+          {% endif %}
+        </div>
+
         <div class="grid-2 gap-top">
           <div class="card">
             <div class="card-title">Por Categoria (Mês Atual)</div>
@@ -557,6 +709,12 @@
               <li class="stat-item"><span class="stat-key">Total gasto</span><span class="stat-val">R$ {{ '%.2f'|format(custo_ano) }}</span></li>
               <li class="stat-item"><span class="stat-key">Média mensal</span><span class="stat-val">R$ {{ '%.2f'|format(media_mensal) }}</span></li>
               <li class="stat-item"><span class="stat-key">Custo por km</span><span class="stat-val">R$ {{ '%.2f'|format(custo_por_km) }}</span></li>
+              {% if projecao_ano > 0 %}
+              <li class="stat-item" style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px">
+                <span class="stat-key" style="color:var(--gold)">⟶ Projeção Dez/{{ current_date[-4:] }}</span>
+                <span class="stat-val" style="color:var(--gold)">R$ {{ '%.0f'|format(projecao_ano) }}</span>
+              </li>
+              {% endif %}
               <li class="stat-item"><span class="stat-key">Abastecimentos</span><span class="stat-val">{{ abastecimentos|length }}x</span></li>
               <li class="stat-item"><span class="stat-key">Total combustível</span><span class="stat-val">R$ {{ '%.2f'|format(gastos_combustivel_mes) }}/mês</span></li>
               <li class="stat-item"><span class="stat-key">Consumo médio</span><span class="stat-val">{{ consumo_medio }} km/L</span></li>
@@ -645,6 +803,45 @@
   </div>
 </div>
 
+<!-- Modal: Nova Meta de Gasto -->
+<div class="modal-overlay" id="modal-nova-meta">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Nova Meta de Gasto</div>
+      <button class="modal-close" data-close-modal>✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('meta.add_meta') }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select name="tipo" id="meta-tipo" class="form-control" onchange="toggleMetaCategoria(this.value)">
+            <option value="categoria">Por Categoria</option>
+            <option value="combustivel">Combustível</option>
+            <option value="total">Total do Mês</option>
+          </select>
+        </div>
+        <div class="form-group" id="meta-cat-group">
+          <label class="form-label">Categoria</label>
+          <select name="categoria_id" class="form-control">
+            <option value="">Selecione...</option>
+            {% for cat in categorias %}
+            <option value="{{ cat.id }}">{{ cat.icone }} {{ cat.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Limite Mensal (R$)</label>
+        <input type="number" step="0.01" name="valor_limite" class="form-control" placeholder="Ex: 500" required>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar Meta</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Modal: Abastecer -->
 <div class="modal-overlay" id="modal-abastecimento">
   <div class="modal">
@@ -653,6 +850,7 @@
       <button class="modal-close" data-close-modal>✕</button>
     </div>
     <form method="POST" action="{{ url_for('abastecimento.add_abastecimento') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Data</label>
@@ -666,21 +864,45 @@
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Litros Abastecidos</label>
-          <input type="number" step="0.01" name="litros_abastecidos" class="form-control" required>
+          <input type="number" step="0.01" name="litros_abastecidos" id="abast-litros" class="form-control" required>
         </div>
         <div class="form-group">
           <label class="form-label">Preço por Litro (R$)</label>
-          <input type="number" step="0.001" name="preco_combustivel" class="form-control" required>
+          <input type="number" step="0.001" name="preco_combustivel" id="abast-preco" class="form-control" required>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Valor Total (R$)</label>
-          <input type="number" step="0.01" name="valor_total" class="form-control" required>
+          <input type="number" step="0.01" name="valor_total" id="abast-total" class="form-control" required>
         </div>
         <div class="form-group">
           <label class="form-label">Posto</label>
-          <input type="text" name="posto" class="form-control" required>
+          <input type="text" name="posto" class="form-control" list="postos-list" autocomplete="off">
+          <datalist id="postos-list">
+            {% for a in abastecimentos if a.posto %}
+            <option value="{{ a.posto }}">
+            {% endfor %}
+          </datalist>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Combustível</label>
+          <select name="tipo_combustivel" class="form-control">
+            <option value="">Selecione...</option>
+            <option value="Gasolina">Gasolina</option>
+            <option value="Gasolina Aditivada">Gasolina Aditivada</option>
+            <option value="Etanol">Etanol</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Diesel S10">Diesel S10</option>
+            <option value="GNV">GNV</option>
+            <option value="Elétrico">Elétrico</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Observação</label>
+          <input type="text" name="observacao" class="form-control" maxlength="200">
         </div>
       </div>
       <div class="modal-footer">
@@ -725,7 +947,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Quilometragem</label>
-          <input type="number" name="quilometragem" class="form-control">
+          <input type="number" name="quilometragem" class="form-control" value="{{ km_atual or '' }}">
         </div>
       </div>
       <div class="form-row">
@@ -861,6 +1083,75 @@
 {% endif %}
 {% endfor %}
 
+<!-- Modais de Editar Manutenção -->
+{% for m in manutencoes %}
+<div class="modal-overlay" id="modal-editar-{{ m.id }}">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Editar: {{ m.descricao }}</div>
+      <button class="modal-close" data-close-modal>✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('manutencao.editar_manutencao', id=m.id) }}" data-manutencao>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="veiculo_id" value="{{ veiculo.id }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select name="tipo" class="form-control" required>
+            {% for codigo, rotulo in [('oleo','Troca de Óleo'), ('revisao','Revisão'), ('pneu','Pneus'), ('freio','Freios'), ('bateria','Bateria'), ('filtro','Filtros'), ('outro','Outro')] %}
+            <option value="{{ codigo }}" {% if m.tipo == codigo %}selected{% endif %}>{{ rotulo }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select name="status" class="form-control">
+            <option value="pendente" {% if m.status == 'pendente' %}selected{% endif %}>Pendente</option>
+            <option value="realizada" {% if m.status == 'realizada' %}selected{% endif %}>Realizada</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descrição *</label>
+        <input type="text" name="descricao" class="form-control" required maxlength="200" value="{{ m.descricao or '' }}">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Data Prevista</label>
+          <input type="date" name="data_prevista" class="form-control" value="{{ m.data_prevista.strftime('%Y-%m-%d') if m.data_prevista else '' }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Km Previsto</label>
+          <input type="number" name="km_previsto" class="form-control" min="0" max="2147483647" step="1" value="{{ m.km_previsto if m.km_previsto is not none else '' }}">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Data Realizada</label>
+          <input type="date" name="data_realizada" class="form-control" value="{{ m.data_realizada.strftime('%Y-%m-%d') if m.data_realizada else '' }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Km Realizado</label>
+          <input type="number" name="km_realizada" class="form-control" min="0" max="2147483647" step="1" value="{{ m.km_realizada if m.km_realizada is not none else '' }}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Custo (R$)</label>
+        <input type="number" step="0.01" name="custo" class="form-control" min="0" max="9999999999.99" value="{{ m.custo if m.custo is not none else '0' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Observações</label>
+        <input type="text" name="observacoes" class="form-control" maxlength="5000" value="{{ m.observacoes or '' }}">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endfor %}
+
 <!-- Modal: Editar Veículo -->
 <div class="modal-overlay" id="modal-veiculo">
   <div class="modal">
@@ -933,6 +1224,7 @@ window.DASH = {
   gastos_por_mes: {{ gastos_por_mes_json | safe }},
   gastos_por_categoria: {{ gastos_por_categoria_json | safe }},
   combustivel_por_mes: {{ combustivel_por_mes_json | safe }},
+  consumo: {{ consumo_json | safe }},
 };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -952,6 +1244,41 @@ window.DASH = {
   });
 })();
 if(window.lucide) lucide.createIcons();
+// Controla visibilidade do select de categoria no modal de meta
+function toggleMetaCategoria(tipo) {
+  var g = document.getElementById('meta-cat-group');
+  if (g) g.style.display = tipo === 'categoria' ? '' : 'none';
+}
+// Preenche campos de data com hoje ao abrir modais
+(function() {
+  var hoje = new Date().toISOString().split('T')[0];
+  document.querySelectorAll('#modal-abastecimento input[type="date"], #modal-despesa input[type="date"]').forEach(function(el) {
+    if (!el.value) el.value = hoje;
+  });
+})();
+// Filtro de busca nas tabelas
+function filtrarTabela(tabelaId, termo) {
+  var t = document.getElementById(tabelaId);
+  if (!t) return;
+  var q = termo.toLowerCase().trim();
+  Array.from(t.tBodies[0].rows).forEach(function(row) {
+    row.style.display = q === '' || row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+// Auto-calc valor total no modal de abastecimento
+(function() {
+  function recalcTotal() {
+    var l = parseFloat(document.getElementById('abast-litros').value) || 0;
+    var p = parseFloat(document.getElementById('abast-preco').value) || 0;
+    if (l > 0 && p > 0) {
+      document.getElementById('abast-total').value = (l * p).toFixed(2);
+    }
+  }
+  ['abast-litros', 'abast-preco'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', recalcTotal);
+  });
+})();
 </script>
 
 {% if veiculo.fipe_codigo %}

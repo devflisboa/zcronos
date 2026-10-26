@@ -66,6 +66,16 @@ def create_app(config_name='default', *, test_config=None, initialize_database=T
     def inject_now():
         return {'now': datetime.utcnow()}
 
+    @app.context_processor
+    def inject_sidebar_alertas():
+        from flask_login import current_user
+        if current_user.is_authenticated:
+            from services.alerta_service import listar_alertas
+            count = sum(1 for a in listar_alertas(current_user.id)
+                        if a['prioridade'] in ('urgente', 'atenção'))
+            return {'sidebar_alertas_count': count}
+        return {}
+
     app.config['SCHEDULER_API_ENABLED'] = False
     if start_scheduler:
         scheduler.init_app(app)
@@ -98,6 +108,8 @@ def create_app(config_name='default', *, test_config=None, initialize_database=T
 
     from blueprints.relatorio.routes import relatorio_bp
     app.register_blueprint(relatorio_bp, url_prefix='/relatorios')
+    from blueprints.meta.routes import meta_bp
+    app.register_blueprint(meta_bp, url_prefix='/meta')
     from blueprints.condutor.routes import condutor_bp
     from blueprints.documento.routes import documento_bp
     from blueprints.galeria.routes import galeria_bp

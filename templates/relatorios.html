@@ -1,1 +1,86 @@
-{% extends 'conta_base.html' %}{% block titulo %}Relatórios{% endblock %}{% block conteudo %}<div class="conta-grid">{% for linha in linhas %}<section class="conta-card"><h2>{{ linha.veiculo.marca }} {{ linha.veiculo.modelo }}</h2><p>Custo no mês: R$ {{ '%.2f'|format(linha.custo_mes)|replace('.', ',') }}</p><p>Custo no ano: R$ {{ '%.2f'|format(linha.custo_ano)|replace('.', ',') }}</p><p>Consumo médio: {{ linha.consumo }} km/L</p><div class="conta-actions">{% for tipo,rotulo in [('abastecimentos','Abastecimentos'),('despesas','Despesas'),('manutencoes','Manutenções')] %}<a class="btn btn-ghost" href="{{ url_for('relatorio.exportar', id=linha.veiculo.id, tipo=tipo) }}">CSV {{ rotulo }}</a>{% endfor %}</div></section>{% else %}<p>Cadastre um veículo para gerar relatórios.</p>{% endfor %}</div>{% endblock %}
+{% extends 'conta_base.html' %}{% block titulo %}Relatórios{% endblock %}
+{% block head %}
+<style>
+@media print {
+  body { background:#fff !important; color:#000 !important; }
+  .conta-sidebar, .conta-topbar, .conta-actions, details, .no-print { display:none !important; }
+  .conta-main { margin:0 !important; padding:0 !important; }
+  .conta-card { border:1px solid #ccc !important; background:#fff !important; break-inside:avoid; }
+  .conta-grid { grid-template-columns:1fr !important; }
+  h2 { color:#000 !important; }
+  div[style*="color:var(--gold)"] { color:#000 !important; }
+  div[style*="color:var(--text1)"], div[style*="color:var(--text2)"] { color:#000 !important; }
+  div[style*="background:var(--bg3)"] { background:#f5f5f5 !important; }
+}
+</style>
+{% endblock %}{% block conteudo %}
+<div style="margin-bottom:12px;display:flex;gap:8px" class="no-print">
+  <button class="btn btn-primary" onclick="window.print()">
+    <i data-lucide="printer" style="width:15px;height:15px"></i> Imprimir / PDF
+  </button>
+  <span style="font-size:12px;color:var(--text3);align-self:center">Use Ctrl+P → Salvar como PDF</span>
+</div>
+<div class="conta-grid">
+{% for linha in linhas %}
+<section class="conta-card">
+  <h2>{{ linha.veiculo.marca }} {{ linha.veiculo.modelo }}</h2>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
+    <div style="background:var(--bg3);border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Este mês</div>
+      <div style="font-size:18px;font-weight:700;color:var(--gold);margin-top:4px">R$ {{ '%.0f'|format(linha.custo_mes)|replace('.', ',') }}</div>
+    </div>
+    <div style="background:var(--bg3);border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Este ano</div>
+      <div style="font-size:18px;font-weight:700;color:var(--text1);margin-top:4px">R$ {{ '%.0f'|format(linha.custo_ano)|replace('.', ',') }}</div>
+    </div>
+    <div style="background:var(--bg3);border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Consumo</div>
+      <div style="font-size:18px;font-weight:700;color:var(--text1);margin-top:4px">{{ linha.consumo }} km/L</div>
+    </div>
+  </div>
+  <details style="margin-bottom:12px;border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+    <summary style="cursor:pointer;color:var(--text2);font-size:13px;list-style:none;display:flex;align-items:center;gap:6px;user-select:none">
+      Exportar com filtro de período
+    </summary>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:flex-end">
+      <div>
+        <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">De</label>
+        <input type="date" class="relatorio-de-{{ linha.veiculo.id }}" style="background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:6px;padding:6px 10px;font-size:13px">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">Até</label>
+        <input type="date" class="relatorio-ate-{{ linha.veiculo.id }}" style="background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:6px;padding:6px 10px;font-size:13px">
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        {% for tipo,rotulo in [('abastecimentos','Abastecimentos'),('despesas','Despesas'),('manutencoes','Manutenções')] %}
+        <a class="btn btn-ghost" style="font-size:13px"
+           href="#" onclick="exportarCSV({{ linha.veiculo.id }}, '{{ tipo }}', '{{ url_for('relatorio.exportar', id=linha.veiculo.id, tipo=tipo) }}');return false">
+          ↓ {{ rotulo }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </details>
+  <div class="conta-actions">
+    {% for tipo,rotulo in [('abastecimentos','Abastecimentos'),('despesas','Despesas'),('manutencoes','Manutenções')] %}
+    <a class="btn btn-ghost" href="{{ url_for('relatorio.exportar', id=linha.veiculo.id, tipo=tipo) }}">CSV {{ rotulo }}</a>
+    {% endfor %}
+  </div>
+</section>
+{% else %}
+<p>Cadastre um veículo para gerar relatórios.</p>
+{% endfor %}
+</div>
+<script>
+function exportarCSV(id, tipo, base) {
+  var de = document.querySelector('.relatorio-de-' + id);
+  var ate = document.querySelector('.relatorio-ate-' + id);
+  var url = base;
+  var params = [];
+  if (de && de.value) params.push('de=' + de.value);
+  if (ate && ate.value) params.push('ate=' + ate.value);
+  if (params.length) url += (url.includes('?') ? '&' : '?') + params.join('&');
+  window.open(url, '_blank');
+}
+</script>
+{% endblock %}

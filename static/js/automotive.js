@@ -12,6 +12,7 @@ const CHART_DEFAULTS = {
   bg_red: 'rgba(206,43,55,0.12)',
   bg_blue: 'rgba(138,144,153,0.12)',
   bg_ok: 'rgba(0,146,70,0.12)',
+  bg_gold: 'rgba(201,168,76,0.15)',
 };
 
 if (typeof Chart !== 'undefined') {
@@ -265,6 +266,76 @@ function initChartCombustivel(data) {
   });
 }
 
+function initChartPrecoCombustivel(data) {
+  const filtered = (data || []).filter(d => d.preco_medio != null);
+  if (!filtered.length) return;
+  mkChart('chart-preco-combustivel', {
+    type: 'line',
+    data: {
+      labels: filtered.map(d => d.mes),
+      datasets: [{
+        label: 'R$/L',
+        data: filtered.map(d => d.preco_medio),
+        borderColor: CHART_DEFAULTS.gold,
+        backgroundColor: CHART_DEFAULTS.bg_gold,
+        borderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: CHART_DEFAULTS.gold,
+        tension: .35,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' R$ ' + ctx.raw.toFixed(3) + '/L' } }
+      },
+      scales: {
+        x: { grid: gridOpts(), ticks: tickOpts() },
+        y: { grid: gridOpts(), ticks: { ...tickOpts(), callback: v => 'R$' + v }, beginAtZero: false },
+      }
+    }
+  });
+}
+
+function initChartConsumo(data) {
+  if (!data || !data.length) return;
+  mkChart('chart-consumo', {
+    type: 'line',
+    data: {
+      labels: data.map(d => d.data),
+      datasets: [{
+        label: 'Consumo (km/L)',
+        data: data.map(d => d.consumo),
+        borderColor: CHART_DEFAULTS.ok,
+        backgroundColor: CHART_DEFAULTS.bg_ok,
+        borderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: CHART_DEFAULTS.ok,
+        tension: .35,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: {
+          title: ctx => data[ctx[0].dataIndex].data + (data[ctx[0].dataIndex].posto ? ' · ' + data[ctx[0].dataIndex].posto : ''),
+          label: ctx => ' ' + ctx.raw.toFixed(2) + ' km/L',
+        }}
+      },
+      scales: {
+        x: { grid: gridOpts(), ticks: tickOpts() },
+        y: { grid: gridOpts(), ticks: { ...tickOpts(), callback: v => v + ' km/L' }, beginAtZero: false },
+      }
+    }
+  });
+}
+
 function initChartAnual(data) {
   if (!data || !data.length) return;
   mkChart('chart-anual', {
@@ -400,6 +471,8 @@ function initAll() {
     initChartGastosMes(window.DASH.gastos_por_mes);
     initChartCategorias(window.DASH.gastos_por_categoria);
     initChartCombustivel(window.DASH.combustivel_por_mes);
+    initChartPrecoCombustivel(window.DASH.combustivel_por_mes);
+    initChartConsumo(window.DASH.consumo);
     initChartAnual(window.DASH.gastos_por_mes);
   }
 }

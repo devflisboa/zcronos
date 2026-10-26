@@ -6,13 +6,14 @@
  * - Imagens e CDNs com versão fixa (lucide@x.y.z): cache primeiro
  * Ao alterar este arquivo, incrementar VERSION para descartar caches antigos.
  */
-const VERSION = 'autoviu-v3';
+const VERSION = 'autoviu-v5';
 const CACHE = VERSION + '-static';
 const OFFLINE_URL = '/static/offline.html';
 const PRECACHE = [
   OFFLINE_URL,
   '/static/css/automotive.css',
   '/static/js/automotive.js',
+  '/static/js/manutencao.js',
   '/static/image/favicon.ico',
   '/static/image/icons/icon-192.png',
 ];

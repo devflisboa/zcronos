@@ -69,6 +69,29 @@ def concluir_manutencao(id):
         return _responder('Não foi possível confirmar a conclusão. Confira a agenda antes de tentar novamente.', 'danger', 503)
 
 
+@manutencao_bp.route('/editar/<int:id>', methods=['POST'])
+@login_required
+def editar_manutencao(id):
+    veiculo = get_veiculo_ativo()
+    m = db.session.get(Manutencao, id)
+    if not m or not veiculo or m.veiculo_id != veiculo.id:
+        abort(404)
+    try:
+        campos = validar_manutencao(request.form)
+        for campo, valor in campos.items():
+            setattr(m, campo, valor)
+        db.session.commit()
+        flash('Manutenção atualizada!', 'success')
+    except ValueError as erro:
+        db.session.rollback()
+        flash(str(erro), 'danger')
+    except SQLAlchemyError as erro:
+        db.session.rollback()
+        current_app.logger.warning('Falha ao editar manutenção: %s', type(erro).__name__)
+        flash('Não foi possível atualizar a manutenção. Tente novamente.', 'danger')
+    return redirect(url_for('main.index'))
+
+
 @manutencao_bp.route('/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_manutencao(id):

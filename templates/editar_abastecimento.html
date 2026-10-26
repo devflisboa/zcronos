@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Editar Abastecimento | ΛUTOVIU</title>
+<link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
+{% include '_pwa_head.html' %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/automotive.css') }}">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<style>
+html, body { overflow-x: hidden; }
+#main { overflow-x: hidden; max-width: 100%; }
+.page-wrap { padding:24px; box-sizing:border-box; width:100%; }
+.page-header { margin-bottom:24px; }
+.page-title { font-size:20px; font-weight:700; color:var(--gold); }
+.form-card { width:100%; max-width:560px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
+.form-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-actions { display:flex; gap:12px; justify-content:flex-end; margin-top:24px; padding-top:20px; border-top:1px solid var(--border); }
+.flash-wrap { margin-bottom:20px; max-width:560px; }
+.flash { padding:12px 16px; border-radius:var(--radius-s); font-size:14px; margin-bottom:8px; }
+.flash-success { background:#1a3a1a; border:1px solid #2d5a2d; color:#90ee90; }
+.flash-danger  { background:#3a1a1a; border:1px solid #5a2d2d; color:#ff8080; }
+.page-topbar { display:none; height:56px; background:var(--bg2); border-bottom:1px solid var(--border); align-items:center; padding:0 16px; gap:12px; position:sticky; top:0; z-index:50; }
+.page-topbar-title { font-size:16px; font-weight:600; flex:1; }
+@media(max-width:768px){
+  .page-topbar { display:flex; }
+  .page-wrap { padding:16px; }
+  .page-header { display:none; }
+  .form-card { padding:16px; }
+}
+@media(max-width:480px){
+  .page-wrap { padding:12px; }
+  .form-grid-2 { grid-template-columns:1fr; }
+  .form-actions { flex-direction:column-reverse; }
+  .form-actions .btn { width:100%; justify-content:center; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sb-overlay"></div>
+  <aside id="sidebar">
+    <div class="sb-head">
+      <div class="sb-logo">
+        <img src="{{ url_for('static', filename='image/logo-icon.png') }}" alt="AUTOVIU" class="sb-logo-icon">
+        <div class="sb-logo-text">
+          <div class="sb-logo-brand">ΛUTOVIU</div>
+          <div class="sb-logo-model">Gestão Automotiva</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="nav-group-label">Principal</div>
+      <a href="{{ url_for('main.index') }}" class="nav-item">
+        <span class="ni"><i data-lucide="layout-dashboard"></i></span> Dashboard
+      </a>
+      <div class="nav-group-label">Registros</div>
+      <a href="{{ url_for('abastecimento.cadastrar_abastecimento') }}" class="nav-item active">
+        <span class="ni"><i data-lucide="fuel"></i></span> Abastecimento
+      </a>
+      <a href="{{ url_for('despesa.cadastrar_despesa') }}" class="nav-item">
+        <span class="ni"><i data-lucide="receipt"></i></span> Despesa
+      </a>
+      <div class="nav-group-label" style="margin-top:auto">Conta</div>
+      <a href="{{ url_for('auth.logout') }}" class="nav-item">
+        <span class="ni"><i data-lucide="log-out"></i></span> Sair
+      </a>
+    </nav>
+  </aside>
+
+  <main id="main">
+    <div class="page-topbar">
+      <button class="btn btn-ghost btn-icon" id="sb-toggle"><i data-lucide="menu"></i></button>
+      <span class="page-topbar-title">Editar Abastecimento</span>
+    </div>
+
+    <div class="page-wrap">
+      <div class="page-header">
+        <div class="page-title">Editar Abastecimento</div>
+        <div style="font-size:13px;color:var(--text3);margin-top:4px">{{ veiculo.marca }} {{ veiculo.modelo }} — {{ veiculo.placa or '' }}</div>
+      </div>
+
+      <div class="flash-wrap">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in messages %}
+          <div class="flash flash-{{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+      </div>
+
+      <div class="form-card">
+        <form action="{{ url_for('abastecimento.editar_abastecimento', id=a.id) }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="data">Data</label>
+              <input class="form-control" type="date" id="data" name="data"
+                     value="{{ a.data.strftime('%Y-%m-%d') if a.data else '' }}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="quilometragem">Quilometragem</label>
+              <input class="form-control" type="number" id="quilometragem" name="quilometragem"
+                     value="{{ a.quilometragem }}" min="0" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="tipo_combustivel">Combustível</label>
+            <select class="form-control" id="tipo_combustivel" name="tipo_combustivel">
+              <option value="">Selecione</option>
+              {% for opt in ['Gasolina','Etanol','Flex (Gasolina)','Flex (Etanol)','Diesel','GNV','Elétrico'] %}
+              <option value="{{ opt }}" {% if a.tipo_combustivel == opt %}selected{% endif %}>{{ opt }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="litros_abastecidos">Litros</label>
+              <input class="form-control" type="number" step="0.01" id="litros_abastecidos"
+                     name="litros_abastecidos" value="{{ a.litros_abastecidos }}" min="0" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="preco_combustivel">Preço por Litro (R$)</label>
+              <input class="form-control" type="number" step="0.001" id="preco_combustivel"
+                     name="preco_combustivel" value="{{ a.preco_combustivel }}" min="0" required>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="valor_total">Valor Total (R$) <span id="calc-hint" style="color:var(--gold);font-size:11px"></span></label>
+              <input class="form-control" type="number" step="0.01" id="valor_total"
+                     name="valor_total" value="{{ a.valor_total }}" min="0" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="posto">Posto</label>
+              <input class="form-control" type="text" id="posto" name="posto"
+                     value="{{ a.posto or '' }}" placeholder="Nome do posto">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="observacao">Observação</label>
+            <input class="form-control" type="text" id="observacao" name="observacao"
+                   value="{{ a.observacao or '' }}" placeholder="Tanque cheio, reserva..." maxlength="200">
+          </div>
+
+          {% if a.latitude and a.longitude %}
+          <div style="font-size:12px;color:var(--gold);margin-bottom:8px">
+            📍 Localização registrada ({{ '%.4f'|format(a.latitude) }}, {{ '%.4f'|format(a.longitude) }})
+          </div>
+          {% endif %}
+          <input type="hidden" id="latitude" name="latitude">
+          <input type="hidden" id="longitude" name="longitude">
+
+          <div class="form-actions">
+            <a href="{{ url_for('main.index') }}" class="btn btn-ghost">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/lucide@0.298.0/dist/umd/lucide.min.js"></script>
+<script src="{{ url_for('static', filename='js/automotive.js') }}"></script>
+<script>
+document.getElementById('app').classList.add('ready');
+if(window.lucide) lucide.createIcons();
+
+(function(){
+  const litros = document.getElementById('litros_abastecidos');
+  const preco  = document.getElementById('preco_combustivel');
+  const total  = document.getElementById('valor_total');
+  const hint   = document.getElementById('calc-hint');
+
+  function calcTotal() {
+    const l = parseFloat(litros.value), p = parseFloat(preco.value);
+    if (l > 0 && p > 0) {
+      total.value = (l * p).toFixed(2);
+      hint.textContent = '← calculado';
+    }
+  }
+  litros.addEventListener('input', calcTotal);
+  preco.addEventListener('input', calcTotal);
+})();
+</script>
+</body>
+</html>

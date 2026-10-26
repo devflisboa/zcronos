@@ -2,7 +2,7 @@
 <a class="nav-item" href="{{ url_for('fipe.index') }}">Quanto vale o carro? · FIPE</a>
 <div class="nav-group-label">Minha conta</div>
 <a class="nav-item" href="{{ url_for('condutor.perfil') }}">Perfil do condutor</a>
-<a class="nav-item" href="{{ url_for('alerta.index') }}">Alertas</a>
+<a class="nav-item" href="{{ url_for('alerta.index') }}">Alertas{% if sidebar_alertas_count %}&nbsp;<span style="background:#c9a84c;color:#000;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700;vertical-align:middle">{{ sidebar_alertas_count }}</span>{% endif %}</a>
 <a class="nav-item" href="{{ url_for('assinatura.planos') }}">Meu plano</a>
 <a class="nav-item" href="{{ url_for('seguranca.index') }}">Segurança</a>
 {% if current_user.plano == 'superadmin' %}<a class="nav-item" href="{{ url_for('assinatura.admin') }}">Administração</a>{% endif %}
