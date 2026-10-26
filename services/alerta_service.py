@@ -117,9 +117,13 @@ def processar_alertas():
                     else:
                         for sub in subscriptions[:]:
                             try:
-                                # Nunca colocar dados de CNH/CPF na tela bloqueada.
                                 webpush(subscription_info=sub.dados,
-                                    data=json.dumps({'title': 'ΛUTOVIU', 'body': 'Você tem alertas para revisar no aplicativo.'}),
+                                    data=json.dumps({
+                                        'title': 'ΛUTOVIU — ' + alerta['titulo'],
+                                        'body': alerta['texto'][:120],
+                                        'url': '/alertas/',
+                                        'tag': 'autoviu-' + alerta['chave'],
+                                    }),
                                     vapid_private_key=current_app.config['VAPID_PRIVATE_KEY'],
                                     vapid_claims={'sub': current_app.config['VAPID_SUBJECT']}, timeout=10)
                                 entregas += 1

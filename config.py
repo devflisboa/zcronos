@@ -35,7 +35,7 @@ class Config:
     WEBAUTHN_RP_ID = os.environ.get('WEBAUTHN_RP_ID', '')
     WEBAUTHN_ORIGIN = os.environ.get('WEBAUTHN_ORIGIN', '')
     VAPID_PUBLIC_KEY = os.environ.get('VAPID_PUBLIC_KEY', '')
-    VAPID_PRIVATE_KEY = os.environ.get('VAPID_PRIVATE_KEY', '')
+    VAPID_PRIVATE_KEY = os.environ.get('VAPID_PRIVATE_KEY', '').replace('\\n', '\n')
     VAPID_SUBJECT = os.environ.get('VAPID_SUBJECT', '')
     ALERTAS_AUTOMATICOS = os.environ.get('ALERTAS_AUTOMATICOS', 'false').lower() == 'true'
     ASAAS_API_KEY = os.environ.get('ASAAS_API_KEY', '')

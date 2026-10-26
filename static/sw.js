@@ -1,4 +1,4 @@
-/* ── AUTOVIU Service Worker ──
+/* ── AUTOVIU Service Worker v6 ──
  * Servido em /sw.js (rota main.service_worker) para ter escopo "/".
  * - Páginas HTML: sempre rede (dados por usuário nunca vão para o cache);
  *   sem conexão → /static/offline.html
@@ -6,7 +6,7 @@
  * - Imagens e CDNs com versão fixa (lucide@x.y.z): cache primeiro
  * Ao alterar este arquivo, incrementar VERSION para descartar caches antigos.
  */
-const VERSION = 'autoviu-v5';
+const VERSION = 'autoviu-v6';
 const CACHE = VERSION + '-static';
 const OFFLINE_URL = '/static/offline.html';
 const PRECACHE = [
@@ -75,13 +75,16 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('push', event => {
-  event.waitUntil(self.registration.showNotification('ΛUTOVIU', {
-    body: 'Você tem alertas para revisar no aplicativo.',
-    icon: '/static/image/icons/icon-192.png', tag: 'autoviu-alertas',
-    data: {url: '/alertas/'}
+  const data = event.data ? event.data.json() : {};
+  event.waitUntil(self.registration.showNotification(data.title || 'ΛUTOVIU', {
+    body: data.body || 'Você tem alertas para revisar no aplicativo.',
+    icon: '/static/image/icons/icon-192.png',
+    tag: data.tag || 'autoviu-alertas',
+    data: {url: data.url || '/alertas/'}
   }));
 });
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  event.waitUntil(clients.openWindow('/alertas/'));
+  const dest = (event.notification.data && event.notification.data.url) || '/alertas/';
+  event.waitUntil(clients.openWindow(dest));
 });
