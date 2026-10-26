@@ -170,6 +170,70 @@ html, body { overflow-x: hidden; }
 }
 .page-topbar-title { font-size: 16px; font-weight: 600; flex: 1; }
 
+/* ── Hero foto — fundo escuro ── */
+.vc-hero-bg {
+  width: 100%; height: 190px;
+  background: linear-gradient(160deg, #0d0d14 0%, #111118 100%);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; position: relative;
+}
+.vc-hero-glow {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 30%, rgba(212,175,55,.13) 0%, transparent 70%);
+}
+
+/* ── 3D tilt wrapper ── */
+.vc-hero-3d {
+  position: relative; z-index: 1;
+  perspective: 700px;
+  width: 86%; cursor: default;
+}
+.vc-hero-3d-inner {
+  border-radius: 16px;
+  overflow: hidden;
+  will-change: transform;
+  transition: transform .5s cubic-bezier(.25,.46,.45,.94),
+              box-shadow .5s ease;
+  transform-style: preserve-3d;
+}
+.vc-hero-img {
+  width: 100%; max-height: 165px;
+  object-fit: contain; display: block;
+  filter: drop-shadow(0 8px 20px rgba(0,0,0,.9));
+}
+
+/* ── Placa Mercosul ── */
+.vc-placa-mercosul {
+  border: 1.5px solid #111;
+  border-radius: 6px;
+  background: #f8f8f8;
+  padding: 0 5px 4px;
+  min-width: 88px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 5px rgba(0,0,0,.55);
+  line-height: 1;
+  user-select: none;
+}
+.vpc-topo {
+  background: #1455B7;
+  border-radius: 3px 3px 0 0;
+  display: flex; align-items: center; justify-content: center;
+  gap: 3px; padding: 2px 5px;
+  margin: 0 -5px 3px;
+}
+.vpc-flag  { font-size: 9px; line-height: 1; }
+.vpc-brasil {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 7.5px; font-weight: 800;
+  color: #fff; letter-spacing: .8px;
+}
+.vpc-numero {
+  font-family: 'Arial Black', Arial, Helvetica, sans-serif;
+  font-size: 14px; font-weight: 900;
+  color: #111; text-align: center;
+  letter-spacing: 1.5px;
+}
+
 /* ── MOBILE ── */
 @media(max-width: 768px) {
   .page-topbar  { display: flex; }
@@ -181,6 +245,7 @@ html, body { overflow-x: hidden; }
 
 @media(max-width: 480px) {
   .btn-add { min-height: 38px; font-size: 12px; padding: 0 12px; }
+  .vpc-numero { font-size: 12px; }
 }
 </style>
 </head>
@@ -264,13 +329,15 @@ html, body { overflow-x: hidden; }
              onclick="location.href='{{ url_for('veiculo.editar', id=v.id) }}'">
 
           {% if v.foto_capa %}
-          <div style="width:100%;height:190px;background:linear-gradient(160deg,#0d0d14 0%,#111118 100%);
-                      display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">
-            <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(212,175,55,.12) 0%,transparent 70%);pointer-events:none"></div>
-            <img src="{{ url_for('veiculo.capa', id=v.id) }}" alt="{{ v.marca }} {{ v.modelo }}"
-                 style="max-width:88%;max-height:170px;object-fit:contain;
-                        filter:drop-shadow(0 8px 20px rgba(0,0,0,.9));position:relative;z-index:1"
-                 loading="lazy">
+          <div class="vc-hero-bg">
+            <div class="vc-hero-glow"></div>
+            <div class="vc-hero-3d">
+              <div class="vc-hero-3d-inner">
+                <img src="{{ url_for('veiculo.capa', id=v.id) }}"
+                     alt="{{ v.marca }} {{ v.modelo }}"
+                     class="vc-hero-img" loading="lazy">
+              </div>
+            </div>
           </div>
           {% elif v.fotos %}
           <div style="width:100%;height:190px;overflow:hidden">
@@ -308,7 +375,13 @@ html, body { overflow-x: hidden; }
               {{ '{:,}'.format(v.km_atual or 0).replace(',', '.') }}<span>km</span>
             </div>
             {% if v.placa %}
-            <div class="vc-placa">{{ v.placa }}</div>
+            <div class="vc-placa-mercosul">
+              <div class="vpc-topo">
+                <span class="vpc-flag">🇧🇷</span>
+                <span class="vpc-brasil">BRASIL</span>
+              </div>
+              <div class="vpc-numero">{{ v.placa }}</div>
+            </div>
             {% endif %}
           </div>
           {%- set cor_val = v.cor if (v.cor and v.cor != 'None') else '' -%}
@@ -365,5 +438,48 @@ html, body { overflow-x: hidden; }
 <script src="https://unpkg.com/lucide@0.298.0/dist/umd/lucide.min.js"></script>
 <script src="{{ url_for('static', filename='js/automotive.js') }}"></script>
 <script>document.getElementById('app').classList.add('ready'); if(window.lucide) lucide.createIcons();</script>
+<script>
+(function () {
+  'use strict';
+  // Respeita preferência de movimento reduzido
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var MAX_DEG = 13; // graus máximos de inclinação
+
+  document.querySelectorAll('.vc-hero-3d').forEach(function (wrap) {
+    var inner = wrap.querySelector('.vc-hero-3d-inner');
+    if (!inner) return;
+
+    function applyTilt(clientX, clientY) {
+      var r = wrap.getBoundingClientRect();
+      var cx = ((clientX - r.left) / r.width  - 0.5);  // -0.5 … +0.5
+      var cy = ((clientY - r.top)  / r.height - 0.5);
+      var rotX = -cy * MAX_DEG;
+      var rotY =  cx * MAX_DEG;
+      var shadowX = cx * 8;
+      var shadowY = 10 + Math.abs(cy) * 12;
+      inner.style.transition = 'transform .12s ease, box-shadow .12s ease';
+      inner.style.transform  = 'rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg) scale(1.05)';
+      inner.style.boxShadow  = shadowX + 'px ' + shadowY + 'px 32px rgba(0,0,0,.75)';
+    }
+
+    function reset() {
+      inner.style.transition = 'transform .5s cubic-bezier(.25,.46,.45,.94), box-shadow .5s ease';
+      inner.style.transform  = 'rotateX(0deg) rotateY(0deg) scale(1)';
+      inner.style.boxShadow  = '';
+    }
+
+    wrap.addEventListener('mousemove',  function (e) { applyTilt(e.clientX, e.clientY); });
+    wrap.addEventListener('mouseleave', reset);
+
+    wrap.addEventListener('touchmove', function (e) {
+      if (e.touches.length !== 1) return;
+      e.preventDefault();
+      applyTilt(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: false });
+    wrap.addEventListener('touchend', reset);
+  });
+}());
+</script>
 </body>
 </html>
