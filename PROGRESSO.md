@@ -17,10 +17,13 @@
 | `47df64d` | filtro de período (mês/ano) nos KPIs do dashboard |
 | `8e9528a` | botão Imprimir/PDF na página de relatórios (window.print() + CSS de impressão) |
 | `bdff110` | modal de abastecimento com tipo_combustivel, observacao e csrf_token |
+| `4df1563` | gráfico preço médio/L por mês + auto-calc valor total no modal de abastecimento |
+| `74c2570` | busca nas tabelas, projeção anual, autocomplete de postos, data padrão=hoje, km padrão modal despesa |
+| `57fcdd6` | busca na tabela manutenção, projeção anual na análise, SW v5, shortcut relatórios no PWA |
 
 ## Testes Cypress
 - Baseline: 167/167 passando (master)
-- **Último run: 173/173 ✅** (dev, 26/10/2026, pós-commit bdff110)
+- **Último run: 173/173 ✅** (dev, 26/10/2026, pós-commit 57fcdd6)
 - Causa de falhas anteriores: servidor E2E com DEBUG=False cacheia templates; resolver com restart
 
 ## Funcionalidades entregues
@@ -48,9 +51,18 @@
 | Filtro de período (mês/ano) nos KPIs do dashboard | ✅ em dev | 47df64d |
 | Botão Imprimir/PDF na página de relatórios | ✅ em dev | 8e9528a |
 | Modal abastecimento: tipo_combustivel + observacao + csrf_token | ✅ em dev | bdff110 |
+| Gráfico preço médio combustível por mês (R$/L) | ✅ em dev | 4df1563 |
+| Auto-cálculo valor total no modal (litros × preço/L) | ✅ em dev | 4df1563 |
+| Busca rápida nas tabelas (despesas, abastecimentos, manutenções) | ✅ em dev | 74c2570 |
+| Projeção de gasto anual no KPI "Custo do Ano" | ✅ em dev | 74c2570 |
+| Autocomplete de postos no modal de abastecimento | ✅ em dev | 74c2570 |
+| Data padrão = hoje nos modais de abastecimento e despesa | ✅ em dev | 74c2570 |
+| Km padrão = atual no modal de despesa | ✅ em dev | 74c2570 |
+| Projeção anual destacada na seção Análise | ✅ em dev | 57fcdd6 |
+| Service Worker v5 + shortcut "Relatórios" no PWA | ✅ em dev | 57fcdd6 |
 
 ## Backlog pendente (Fase 2)
-- [ ] Relatório: exportar PDF por veículo com filtro avançado (período + categorias)
-- [ ] Dashboard: widget de previsão de gastos (baseado em média mensal)
-- [ ] Notificações push (PWA) para alertas de manutenção
 - [ ] Compartilhamento de veículo entre usuários (multi-condutor)
+- [ ] Notificações push (PWA) para alertas de manutenção (backend push_subscription)
+- [ ] Tela de metas/orçamento por categoria
+- [ ] Exportar relatório completo com gráficos (screenshot + PDF server-side)
