@@ -139,6 +139,31 @@ html, body { overflow-x: hidden; }
   text-align: center;
 }
 
+/* ── Loading overlay (rembg pode demorar ~60s no primeiro uso) ── */
+#foto-loading-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(8,8,16,.85);
+  backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 20px;
+}
+#foto-loading-overlay.ativo { display: flex; }
+.foto-loading-spinner {
+  width: 48px; height: 48px;
+  border: 3px solid rgba(212,175,55,.2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.foto-loading-title {
+  font-size: 18px; font-weight: 700; color: var(--gold);
+}
+.foto-loading-sub {
+  font-size: 13px; color: var(--text2); text-align: center; max-width: 280px;
+}
+
 /* ── MOBILE ── */
 @media(max-width:900px){
   .form-and-preview { grid-template-columns: 1fr; }
@@ -162,6 +187,11 @@ html, body { overflow-x: hidden; }
 </style>
 </head>
 <body>
+<div id="foto-loading-overlay">
+  <div class="foto-loading-spinner"></div>
+  <div class="foto-loading-title">Removendo fundo da foto...</div>
+  <div class="foto-loading-sub">Este processo pode levar até 1 minuto na primeira vez. Aguarde.</div>
+</div>
 <div id="app">
   <div id="sb-overlay"></div>
   <aside id="sidebar">
@@ -381,6 +411,20 @@ window.GARAGE_CAPA_URL = "{{ url_for('veiculo.capa', id=veiculo.id) if veiculo a
 <script src="{{ url_for('static', filename='js/garage-preview.js') }}"></script>
 <script>document.getElementById('app').classList.add('ready'); if(window.lucide) lucide.createIcons();</script>
 <script>
+(function(){
+  // Mostra overlay de loading ao submeter form com foto selecionada
+  var fotoInp = document.getElementById('foto_capa');
+  var overlay = document.getElementById('foto-loading-overlay');
+  if (fotoInp && overlay) {
+    document.querySelectorAll('form[enctype]').forEach(function(frm) {
+      frm.addEventListener('submit', function() {
+        if (fotoInp.files && fotoInp.files.length > 0) {
+          overlay.classList.add('ativo');
+        }
+      });
+    });
+  }
+})();
 (function(){
   var inp = document.getElementById('placa');
   if(!inp) return;
