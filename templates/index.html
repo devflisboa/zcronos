@@ -760,6 +760,7 @@
       <button class="modal-close" data-close-modal>✕</button>
     </div>
     <form method="POST" action="{{ url_for('abastecimento.add_abastecimento') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Data</label>
@@ -787,7 +788,26 @@
         </div>
         <div class="form-group">
           <label class="form-label">Posto</label>
-          <input type="text" name="posto" class="form-control" required>
+          <input type="text" name="posto" class="form-control">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Combustível</label>
+          <select name="tipo_combustivel" class="form-control">
+            <option value="">Selecione...</option>
+            <option value="Gasolina">Gasolina</option>
+            <option value="Gasolina Aditivada">Gasolina Aditivada</option>
+            <option value="Etanol">Etanol</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Diesel S10">Diesel S10</option>
+            <option value="GNV">GNV</option>
+            <option value="Elétrico">Elétrico</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Observação</label>
+          <input type="text" name="observacao" class="form-control" maxlength="200">
         </div>
       </div>
       <div class="modal-footer">
