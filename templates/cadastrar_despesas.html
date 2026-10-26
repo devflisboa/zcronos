@@ -106,11 +106,12 @@ html, body { overflow-x: hidden; }
           <div class="form-grid-2">
             <div class="form-group">
               <label class="form-label" for="valor">Valor (R$) *</label>
-              <input class="form-control" type="number" step="0.01" id="valor" name="valor" required placeholder="0,00">
+              <input class="form-control" type="number" step="0.01" id="valor" name="valor" required placeholder="0,00" min="0">
             </div>
             <div class="form-group">
               <label class="form-label" for="data">Data *</label>
-              <input class="form-control" type="date" id="data" name="data" required>
+              <input class="form-control" type="date" id="data" name="data"
+                     value="{{ hoje.strftime('%Y-%m-%d') }}" required>
             </div>
           </div>
 
@@ -124,6 +125,24 @@ html, body { overflow-x: hidden; }
             </select>
           </div>
 
+          <div class="form-group">
+            <label class="form-label" for="km_na_despesa">Quilometragem (opcional)</label>
+            <input class="form-control" type="number" id="km_na_despesa" name="km_na_despesa"
+                   value="{{ veiculo.km_atual if veiculo else '' }}"
+                   placeholder="Km no momento da despesa" min="0">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="observacao">Observação</label>
+            <input class="form-control" type="text" id="observacao" name="observacao"
+                   placeholder="Detalhe opcional..." maxlength="200">
+          </div>
+
+          <div id="geo-status" style="font-size:12px;color:var(--muted);margin-bottom:8px;display:none"></div>
+
+          <input type="hidden" id="latitude" name="latitude">
+          <input type="hidden" id="longitude" name="longitude">
+
           <div class="form-actions">
             <a href="{{ url_for('main.index') }}" class="btn btn-ghost">Cancelar</a>
             <button type="submit" class="btn btn-primary">Salvar Despesa</button>
@@ -136,6 +155,27 @@ html, body { overflow-x: hidden; }
 
 <script src="https://unpkg.com/lucide@0.298.0/dist/umd/lucide.min.js"></script>
 <script src="{{ url_for('static', filename='js/automotive.js') }}"></script>
-<script>document.getElementById('app').classList.add('ready'); if(window.lucide) lucide.createIcons();</script>
+<script>
+document.getElementById('app').classList.add('ready');
+if(window.lucide) lucide.createIcons();
+
+(function(){
+  const geoStatus = document.getElementById('geo-status');
+  const latEl = document.getElementById('latitude');
+  const lngEl = document.getElementById('longitude');
+  if (!navigator.geolocation) return;
+  geoStatus.style.display = 'block';
+  geoStatus.textContent = 'Capturando localização...';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      latEl.value = pos.coords.latitude.toFixed(6);
+      lngEl.value = pos.coords.longitude.toFixed(6);
+      geoStatus.textContent = `📍 Localização capturada (±${Math.round(pos.coords.accuracy)}m)`;
+    },
+    () => { geoStatus.textContent = ''; geoStatus.style.display = 'none'; },
+    { timeout: 10000, maximumAge: 60000 }
+  );
+})();
+</script>
 </body>
 </html>

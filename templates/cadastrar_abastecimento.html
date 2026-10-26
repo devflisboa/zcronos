@@ -101,35 +101,65 @@ html, body { overflow-x: hidden; }
           <div class="form-grid-2">
             <div class="form-group">
               <label class="form-label" for="data">Data</label>
-              <input class="form-control" type="date" id="data" name="data" required>
+              <input class="form-control" type="date" id="data" name="data"
+                     value="{{ hoje.strftime('%Y-%m-%d') }}" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="quilometragem">Quilometragem</label>
-              <input class="form-control" type="number" id="quilometragem" name="quilometragem" required>
+              <input class="form-control" type="number" id="quilometragem" name="quilometragem"
+                     value="{{ veiculo.km_atual if veiculo else '' }}" min="0" required>
             </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="tipo_combustivel">Combustível</label>
+            <select class="form-control" id="tipo_combustivel" name="tipo_combustivel">
+              <option value="">Selecione</option>
+              <option value="Gasolina">Gasolina</option>
+              <option value="Etanol">Etanol</option>
+              <option value="Flex (Gasolina)">Flex — Gasolina</option>
+              <option value="Flex (Etanol)">Flex — Etanol</option>
+              <option value="Diesel">Diesel</option>
+              <option value="GNV">GNV</option>
+              <option value="Elétrico">Elétrico</option>
+            </select>
           </div>
 
           <div class="form-grid-2">
             <div class="form-group">
-              <label class="form-label" for="litros_abastecidos">Litros Abastecidos</label>
-              <input class="form-control" type="number" step="0.01" id="litros_abastecidos" name="litros_abastecidos" required>
+              <label class="form-label" for="litros_abastecidos">Litros</label>
+              <input class="form-control" type="number" step="0.01" id="litros_abastecidos"
+                     name="litros_abastecidos" placeholder="0,00" min="0" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="preco_combustivel">Preço por Litro (R$)</label>
-              <input class="form-control" type="number" step="0.001" id="preco_combustivel" name="preco_combustivel" required>
+              <input class="form-control" type="number" step="0.001" id="preco_combustivel"
+                     name="preco_combustivel" placeholder="0,000" min="0" required>
             </div>
           </div>
 
           <div class="form-grid-2">
             <div class="form-group">
-              <label class="form-label" for="valor_total">Valor Total (R$)</label>
-              <input class="form-control" type="number" step="0.01" id="valor_total" name="valor_total" required>
+              <label class="form-label" for="valor_total">Valor Total (R$) <span id="calc-hint" style="color:var(--gold);font-size:11px"></span></label>
+              <input class="form-control" type="number" step="0.01" id="valor_total"
+                     name="valor_total" placeholder="0,00" min="0" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="posto">Posto</label>
               <input class="form-control" type="text" id="posto" name="posto" placeholder="Nome do posto">
             </div>
           </div>
+
+          <div class="form-group">
+            <label class="form-label" for="observacao">Observação</label>
+            <input class="form-control" type="text" id="observacao" name="observacao"
+                   placeholder="Tanque cheio, reserva..." maxlength="200">
+          </div>
+
+          <div id="geo-status" style="font-size:12px;color:var(--muted);margin-bottom:8px;display:none"></div>
+
+          <input type="hidden" id="latitude" name="latitude">
+          <input type="hidden" id="longitude" name="longitude">
 
           <div class="form-actions">
             <a href="{{ url_for('main.index') }}" class="btn btn-ghost">Cancelar</a>
@@ -143,6 +173,54 @@ html, body { overflow-x: hidden; }
 
 <script src="https://unpkg.com/lucide@0.298.0/dist/umd/lucide.min.js"></script>
 <script src="{{ url_for('static', filename='js/automotive.js') }}"></script>
-<script>document.getElementById('app').classList.add('ready'); if(window.lucide) lucide.createIcons();</script>
+<script>
+document.getElementById('app').classList.add('ready');
+if(window.lucide) lucide.createIcons();
+
+// Captura geolocalização ao abrir o formulário
+(function(){
+  const geoStatus = document.getElementById('geo-status');
+  const latEl = document.getElementById('latitude');
+  const lngEl = document.getElementById('longitude');
+  if (!navigator.geolocation) return;
+  geoStatus.style.display = 'block';
+  geoStatus.textContent = 'Capturando localização...';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      latEl.value = pos.coords.latitude.toFixed(6);
+      lngEl.value = pos.coords.longitude.toFixed(6);
+      geoStatus.textContent = `📍 Localização capturada (±${Math.round(pos.coords.accuracy)}m)`;
+    },
+    () => { geoStatus.textContent = ''; geoStatus.style.display = 'none'; },
+    { timeout: 10000, maximumAge: 60000 }
+  );
+})();
+
+// Auto-cálculo: litros × preço → total (e vice-versa)
+(function(){
+  const litros = document.getElementById('litros_abastecidos');
+  const preco  = document.getElementById('preco_combustivel');
+  const total  = document.getElementById('valor_total');
+  const hint   = document.getElementById('calc-hint');
+
+  function calcTotal() {
+    const l = parseFloat(litros.value), p = parseFloat(preco.value);
+    if (l > 0 && p > 0) {
+      total.value = (l * p).toFixed(2);
+      hint.textContent = '← calculado';
+    }
+  }
+  function calcPreco() {
+    const l = parseFloat(litros.value), t = parseFloat(total.value);
+    if (l > 0 && t > 0 && !preco.value) {
+      preco.value = (t / l).toFixed(3);
+    }
+    if (litros.value && preco.value) hint.textContent = '';
+  }
+  litros.addEventListener('input', calcTotal);
+  preco.addEventListener('input', calcTotal);
+  total.addEventListener('input', calcPreco);
+})();
+</script>
 </body>
 </html>

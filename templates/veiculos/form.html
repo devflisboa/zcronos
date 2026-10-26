@@ -247,5 +247,58 @@ html, body { overflow-x: hidden; }
 <script src="{{ url_for('static', filename='js/automotive.js') }}"></script>
 <script src="{{ url_for('static', filename='js/documentos.js') }}"></script>
 <script>document.getElementById('app').classList.add('ready'); if(window.lucide) lucide.createIcons();</script>
+<script>
+(function(){
+  var inp = document.getElementById('placa');
+  if(!inp) return;
+  var hint = document.createElement('small');
+  hint.style.cssText='display:block;margin-top:4px;font-size:12px;color:var(--text3)';
+  inp.parentNode.appendChild(hint);
+
+  var RE_ANTIGA   = /^[A-Z]{3}-\d{4}$/;
+  var RE_MERCOSUL = /^[A-Z]{3}\d[A-Z]\d{2}$/;
+
+  function raw(v){ return v.replace(/[^A-Z0-9]/g,''); }
+
+  function format(v){
+    v = raw(v.toUpperCase());
+    if(v.length <= 3) return v;
+    // Mercosul: 4º char é dígito → sem hífen
+    if(/\d/.test(v[3])){
+      inp.maxLength = 7;
+      return v.slice(0,7);
+    }
+    // Padrão: 4º char é dígito depois das 3 letras (mas 4º é letra = ainda digitando)
+    // hífen após 3 letras
+    inp.maxLength = 8;
+    var letras = v.slice(0,3);
+    var resto  = v.slice(3).replace(/\D/g,'').slice(0,4);
+    return resto.length ? letras + '-' + resto : letras;
+  }
+
+  function validate(v){
+    if(!v) { inp.style.borderColor=''; hint.textContent=''; return; }
+    var ok = RE_ANTIGA.test(v) || RE_MERCOSUL.test(v);
+    inp.style.borderColor = ok ? '#2d5a2d' : '#5a2d2d';
+    hint.style.color = ok ? '#90ee90' : '#ff8080';
+    hint.textContent = ok
+      ? (RE_MERCOSUL.test(v) ? '✓ Placa Mercosul' : '✓ Placa padrão')
+      : 'Formato inválido — use ABC1234 ou ABC-1234';
+  }
+
+  inp.addEventListener('input', function(){
+    var pos = inp.selectionStart;
+    var formatted = format(inp.value);
+    inp.value = formatted;
+    // restaura cursor (compensa hífen inserido)
+    try{ inp.setSelectionRange(pos,pos); }catch(e){}
+  });
+
+  inp.addEventListener('blur', function(){ validate(inp.value); });
+
+  // valida valor já preenchido ao carregar
+  if(inp.value) validate(inp.value);
+})();
+</script>
 </body>
 </html>

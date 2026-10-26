@@ -119,6 +119,10 @@ class Abastecimento(db.Model):
     valor_total         = db.Column(db.Float, nullable=False)
     preco_combustivel   = db.Column(db.Float, nullable=False)
     posto               = db.Column(db.String(250), nullable=False)
+    tipo_combustivel    = db.Column(db.String(30))
+    observacao          = db.Column(db.String(200))
+    latitude            = db.Column(db.Float)
+    longitude           = db.Column(db.Float)
 
     def to_dict(self):
         return {
@@ -128,6 +132,10 @@ class Abastecimento(db.Model):
             'data': self.data.strftime('%Y-%m-%d'),
             'preco_combustivel': self.preco_combustivel,
             'posto': self.posto,
+            'tipo_combustivel': self.tipo_combustivel or '',
+            'observacao': self.observacao or '',
+            'latitude': self.latitude,
+            'longitude': self.longitude,
         }
 
 
@@ -152,6 +160,8 @@ class Despesa(db.Model):
     quilometragem   = db.Column(db.Integer)
     forma_pagamento = db.Column(db.String(50))
     observacoes     = db.Column(db.Text)
+    latitude        = db.Column(db.Float)
+    longitude       = db.Column(db.Float)
     categoria_id    = db.Column(db.Integer, db.ForeignKey('categorias.id'), nullable=False)
     categoria       = db.relationship('Categoria', backref='despesas')
 

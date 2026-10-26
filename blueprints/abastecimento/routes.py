@@ -11,7 +11,8 @@ abastecimento_bp = Blueprint('abastecimento', __name__)
 @abastecimento_bp.route('/cadastrar')
 @login_required
 def cadastrar_abastecimento():
-    return render_template('cadastrar_abastecimento.html')
+    veiculo = get_veiculo_ativo()
+    return render_template('cadastrar_abastecimento.html', veiculo=veiculo, hoje=date.today())
 
 
 @abastecimento_bp.route('/add', methods=['POST'])
@@ -23,6 +24,7 @@ def add_abastecimento():
         return redirect(url_for('veiculo.index'))
     try:
         data_str = request.form.get('data')
+        def _float(v): return float(v) if v else None
         novo = Abastecimento(
             veiculo_id=veiculo.id,
             quilometragem=int(request.form.get('quilometragem') or 0),
@@ -31,6 +33,10 @@ def add_abastecimento():
             posto=request.form.get('posto') or '',
             preco_combustivel=float(request.form.get('preco_combustivel') or 0),
             data=date.fromisoformat(data_str) if data_str else None,
+            tipo_combustivel=request.form.get('tipo_combustivel') or None,
+            observacao=request.form.get('observacao') or None,
+            latitude=_float(request.form.get('latitude')),
+            longitude=_float(request.form.get('longitude')),
         )
         db.session.add(novo)
         db.session.commit()

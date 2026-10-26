@@ -44,7 +44,7 @@
       ctx.strokeStyle='#D4AF37';ctx.lineWidth=10;ctx.strokeRect(5,5,canvas.width-10,canvas.height-10);const data=document.getElementById('galeria-dados').dataset;
       ctx.fillStyle='#fff';ctx.font='bold 36px sans-serif';ctx.fillText(data.nome,40,canvas.height-130,canvas.width-80);
       ctx.font='28px sans-serif';ctx.fillText(Number(data.km).toLocaleString('pt-BR')+' km · R$ '+Number(data.custo||0).toFixed(2).replace('.',',')+'/km',40,canvas.height-85);
-      ctx.font='22px sans-serif';ctx.fillText('Consumo: '+Number(data.consumo||0).toFixed(1).replace('.',',')+' km/L',40,canvas.height-45);ctx.fillStyle='#D4AF37';ctx.textAlign='right';ctx.fillText('ΛUTOVIU',canvas.width-40,canvas.height-45);
+      ctx.font='22px sans-serif';ctx.fillText('Consumo: '+Number(data.consumo||0).toFixed(1).replace('.',',')+' km/L',40,canvas.height-45);try{const logo=new Image();logo.src='/static/image/logo-icon.png';await logo.decode();const lsz=54;ctx.drawImage(logo,canvas.width-lsz-20,canvas.height-lsz-15,lsz,lsz);}catch(_){ctx.fillStyle='#D4AF37';ctx.textAlign='right';ctx.fillText('ΛUTOVIU',canvas.width-40,canvas.height-45);}
       const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.92)), file=new File([blob],'autoviu.jpg',{type:'image/jpeg'});
       if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:data.nome});}catch(err){if(err.name!=='AbortError')throw err;}}
       else {const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='autoviu.jpg';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}

@@ -11,8 +11,10 @@ despesa_bp = Blueprint('despesa', __name__)
 @despesa_bp.route('/cadastrar')
 @login_required
 def cadastrar_despesa():
+    from datetime import date
     categorias = Categoria.query.all()
-    return render_template('cadastrar_despesas.html', categorias=categorias)
+    veiculo = get_veiculo_ativo()
+    return render_template('cadastrar_despesas.html', categorias=categorias, veiculo=veiculo, hoje=date.today())
 
 
 @despesa_bp.route('/add', methods=['POST'])
@@ -34,12 +36,18 @@ def add_despesa():
             flash('Categoria inválida.', 'danger')
             return redirect(url_for('despesa.cadastrar_despesa'))
 
+        def _float(v): return float(v) if v else None
+        km_str = request.form.get('km_na_despesa')
         nova = Despesa(
             veiculo_id=veiculo.id,
             descricao=request.form.get('descricao'),
             valor=request.form.get('valor'),
             data=datetime.strptime(request.form.get('data'), '%Y-%m-%d'),
             categoria=categoria,
+            quilometragem=int(km_str) if km_str else None,
+            observacoes=request.form.get('observacao') or None,
+            latitude=_float(request.form.get('latitude')),
+            longitude=_float(request.form.get('longitude')),
         )
         db.session.add(nova)
         db.session.commit()
