@@ -344,7 +344,7 @@
 }
 .gp-car-wrap.has-photo {
   animation: gpFloat 4s ease-in-out infinite;
-  height: 155px;
+  height: 128px;
 }
 .gp-reflection.has-photo {
   animation: gpFloatRef 4s ease-in-out infinite;
@@ -380,12 +380,12 @@
   .gp-stage { height: 220px; }
   .gp-car-wrap, .gp-reflection { width: 90%; }
   .gp-turntable { margin-bottom: 30px; }
-  .gp-car-wrap.has-photo { height: 125px; }
+  .gp-car-wrap.has-photo { height: 90px; }
 }
 @media(max-width: 600px) {
   .gp-stage { height: 190px; }
   .gp-label-brand { font-size: 12px; }
-  .gp-car-wrap.has-photo { height: 105px; }
+  .gp-car-wrap.has-photo { height: 76px; }
 }
 `;
 
