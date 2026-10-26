@@ -66,6 +66,9 @@
       <button class="nav-item" data-section="historico" data-label="Histórico do Veículo">
         <span class="ni"><i data-lucide="history"></i></span> Histórico
       </button>
+      <a href="{{ url_for('abastecimento.mapa') }}" class="nav-item">
+        <span class="ni"><i data-lucide="map-pin"></i></span> Mapa
+      </a>
       <a href="{{ url_for('veiculo.index') }}" class="nav-item">
         <span class="ni"><i data-lucide="car"></i></span> Meus Veículos
       </a>
@@ -354,16 +357,18 @@
         <div class="card gap-top">
           <div class="card-title-row">
             <div class="card-title">Histórico de Abastecimentos</div>
+            <a href="{{ url_for('abastecimento.mapa') }}" class="btn btn-ghost btn-sm" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="map-pin" style="width:13px;height:13px"></i> Mapa</a>
           </div>
           <div class="table-wrap">
             <table class="auto">
               <thead><tr>
-                <th>Data</th><th>Posto</th><th>Km</th><th>Litros</th><th>R$/L</th><th>Total</th><th>Consumo</th><th></th>
+                <th>Data</th><th>Combustível</th><th>Posto</th><th>Km</th><th>Litros</th><th>R$/L</th><th>Total</th><th>Consumo</th><th></th>
               </tr></thead>
               <tbody>
                 {% for a in abastecimentos %}
                 <tr>
                   <td>{{ a.data }}</td>
+                  <td>{% if a.tipo_combustivel %}<span class="pill pill-gray" style="font-size:10px">{{ a.tipo_combustivel }}</span>{% else %}<span style="color:var(--text3)">—</span>{% endif %}</td>
                   <td>{{ a.posto }}</td>
                   <td>{{ '{:,}'.format(a.quilometragem).replace(',','.') }}</td>
                   <td>{{ '%.2f'|format(a.litros) }} L</td>
@@ -371,13 +376,14 @@
                   <td style="color:var(--red);font-weight:600">R$ {{ '%.2f'|format(a.valor) }}</td>
                   <td>{% if a.consumo %}<span class="pill pill-ok">{{ a.consumo }} km/L</span>{% else %}<span class="pill pill-gray">—</span>{% endif %}</td>
                   <td>
+                    {% if a.latitude %}<span title="Localização registrada" style="color:var(--gold);margin-right:4px"><i data-lucide="map-pin" style="width:12px;height:12px"></i></span>{% endif %}
                     <form id="del-abast-{{ a.id }}" method="POST" action="{{ url_for('abastecimento.delete_abastecimento', id=a.id) }}">
                       <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-abast-{{ a.id }}')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
                     </form>
                   </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="8" class="table-empty">Nenhum abastecimento registrado</td></tr>
+                <tr><td colspan="9" class="table-empty">Nenhum abastecimento registrado</td></tr>
                 {% endfor %}
               </tbody>
             </table>

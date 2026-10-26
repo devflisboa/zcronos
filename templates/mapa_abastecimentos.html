@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mapa de Abastecimentos | ΛUTOVIU</title>
+<link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
+{% include '_pwa_head.html' %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/automotive.css') }}">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<style>
+html, body { overflow-x: hidden; height: 100%; }
+#main { overflow-x: hidden; max-width: 100%; }
+
+.page-wrap { padding: 24px; box-sizing: border-box; width: 100%; }
+.page-header { margin-bottom: 20px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.page-title { font-size: 20px; font-weight: 700; color: var(--gold); }
+.page-sub { font-size: 13px; color: var(--text3); }
+
+/* Mapa */
+#mapa { width: 100%; height: 480px; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; background: #111; }
+#mapa.leaflet-container { background: #1a1a1a; }
+
+/* Legenda de KPIs acima do mapa */
+.mapa-kpis { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.mapa-kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-s); padding: 12px 16px; flex: 1; min-width: 120px; }
+.mapa-kpi-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; }
+.mapa-kpi-value { font-size: 18px; font-weight: 700; color: var(--gold); margin-top: 4px; }
+
+/* Empty state */
+.mapa-empty { text-align: center; padding: 64px 24px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
+.mapa-empty p { color: var(--text2); margin: 16px 0 24px; }
+
+/* Popup customizado */
+.leaflet-popup-content-wrapper { background: #111113 !important; border: 1px solid rgba(212,175,55,.3) !important; border-radius: 12px !important; color: var(--text) !important; box-shadow: 0 8px 24px rgba(0,0,0,.6) !important; }
+.leaflet-popup-tip { background: #111113 !important; }
+.leaflet-popup-content { margin: 12px 14px !important; }
+.popup-title { font-weight: 700; color: #D4AF37; font-size: 13px; margin-bottom: 6px; }
+.popup-row { font-size: 12px; color: #ccc; line-height: 1.7; }
+.popup-row strong { color: #fff; }
+
+.page-topbar { display:none; height:56px; background:var(--bg2); border-bottom:1px solid var(--border); align-items:center; padding:0 16px; gap:12px; position:sticky; top:0; z-index:50; }
+.page-topbar-title { font-size:16px; font-weight:600; flex:1; }
+
+@media(max-width:768px){
+  .page-topbar { display:flex; }
+  .page-wrap { padding:12px; }
+  .page-header { display:none; }
+  #mapa { height: 340px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sb-overlay"></div>
+  <aside id="sidebar">
+    <div class="sb-head">
+      <div class="sb-logo">
+        <img src="{{ url_for('static', filename='image/logo-icon.png') }}" alt="AUTOVIU" class="sb-logo-icon">
+        <div class="sb-logo-text">
+          <div class="sb-logo-brand">ΛUTOVIU</div>
+          <div class="sb-logo-model">Gestão Automotiva</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="nav-group-label">Principal</div>
+      <a href="{{ url_for('main.index') }}" class="nav-item">
+        <span class="ni"><i data-lucide="layout-dashboard"></i></span> Dashboard
+      </a>
+      <div class="nav-group-label">Veículo</div>
+      <a href="{{ url_for('veiculo.index') }}" class="nav-item">
+        <span class="ni"><i data-lucide="car"></i></span> Meus Veículos
+      </a>
+      <div class="nav-group-label">Registros</div>
+      <a href="{{ url_for('abastecimento.cadastrar_abastecimento') }}" class="nav-item">
+        <span class="ni"><i data-lucide="fuel"></i></span> Abastecimento
+      </a>
+      <a href="{{ url_for('abastecimento.mapa') }}" class="nav-item active">
+        <span class="ni"><i data-lucide="map-pin"></i></span> Mapa
+      </a>
+      <a href="{{ url_for('despesa.cadastrar_despesa') }}" class="nav-item">
+        <span class="ni"><i data-lucide="receipt"></i></span> Despesa
+      </a>
+      <div class="nav-group-label" style="margin-top:auto">Conta</div>
+      <a href="{{ url_for('auth.logout') }}" class="nav-item">
+        <span class="ni"><i data-lucide="log-out"></i></span> Sair
+      </a>
+    </nav>
+  </aside>
+
+  <main id="main">
+    <div class="page-topbar">
+      <button class="btn btn-ghost btn-icon" id="sb-toggle"><i data-lucide="menu"></i></button>
+      <span class="page-topbar-title">Mapa de Abastecimentos</span>
+    </div>
+
+    <div class="page-wrap">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Mapa de Abastecimentos</div>
+          <div class="page-sub">{{ veiculo.marca }} {{ veiculo.modelo }} — postos visitados com geolocalização</div>
+        </div>
+        <a href="{{ url_for('abastecimento.cadastrar_abastecimento') }}" class="btn btn-primary">+ Abastecer</a>
+      </div>
+
+      <div class="mapa-kpis" id="mapa-kpis">
+        <div class="mapa-kpi">
+          <div class="mapa-kpi-label">Postos no mapa</div>
+          <div class="mapa-kpi-value" id="kpi-total">—</div>
+        </div>
+        <div class="mapa-kpi">
+          <div class="mapa-kpi-label">Total gasto (locais)</div>
+          <div class="mapa-kpi-value" id="kpi-valor">—</div>
+        </div>
+        <div class="mapa-kpi">
+          <div class="mapa-kpi-label">Total de litros</div>
+          <div class="mapa-kpi-value" id="kpi-litros">—</div>
+        </div>
+      </div>
+
+      <div id="mapa-container">
+        <div id="mapa"></div>
+      </div>
+
+      <div id="mapa-empty" class="mapa-empty" style="display:none">
+        <i data-lucide="map-pin" style="width:52px;height:52px;opacity:.3;stroke:var(--gold)"></i>
+        <p>Nenhum abastecimento com localização registrada ainda.<br>Ao abastecer, permita o acesso à localização para aparecer aqui.</p>
+        <a href="{{ url_for('abastecimento.cadastrar_abastecimento') }}" class="btn btn-primary">Registrar Abastecimento</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/lucide@0.298.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
+<script src="{{ url_for('static', filename='js/automotive.js') }}"></script>
+<script>
+document.getElementById('app').classList.add('ready');
+if(window.lucide) lucide.createIcons();
+
+(function(){
+  fetch('{{ url_for("abastecimento.mapa_pontos") }}')
+    .then(r => r.json())
+    .then(pontos => {
+      if (!pontos || pontos.length === 0) {
+        document.getElementById('mapa-container').style.display = 'none';
+        document.getElementById('mapa-empty').style.display = 'block';
+        document.getElementById('mapa-kpis').style.display = 'none';
+        return;
+      }
+
+      // KPIs
+      const totalValor = pontos.reduce((s, p) => s + p.valor, 0);
+      const totalLitros = pontos.reduce((s, p) => s + p.litros, 0);
+      document.getElementById('kpi-total').textContent = pontos.length;
+      document.getElementById('kpi-valor').textContent = 'R$ ' + totalValor.toFixed(2).replace('.', ',');
+      document.getElementById('kpi-litros').textContent = totalLitros.toFixed(1).replace('.', ',') + ' L';
+
+      // Inicializa mapa
+      const mapa = L.map('mapa', { zoomControl: true });
+
+      // Tile escuro (OpenStreetMap gratuito com filtro CSS)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 18,
+      }).addTo(mapa);
+
+      // Aplica filtro escuro ao tile layer via CSS
+      const mapaEl = document.getElementById('mapa');
+      mapaEl.style.filter = 'hue-rotate(170deg) invert(1) brightness(0.82) saturate(0.7)';
+      mapaEl.querySelectorAll('.leaflet-tile-pane').forEach(el => {
+        el.style.filter = 'invert(1) hue-rotate(170deg)';
+      });
+
+      // Ícone customizado dourado
+      const iconOuro = L.divIcon({
+        className: '',
+        html: '<div style="width:28px;height:28px;background:#D4AF37;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5)"></div>',
+        iconSize: [28, 28],
+        iconAnchor: [14, 28],
+        popupAnchor: [0, -32],
+      });
+
+      const bounds = [];
+      pontos.forEach(p => {
+        bounds.push([p.lat, p.lng]);
+        const popup = `
+          <div class="popup-title">⛽ ${p.posto}</div>
+          <div class="popup-row"><strong>Data:</strong> ${p.data}</div>
+          <div class="popup-row"><strong>Litros:</strong> ${p.litros.toFixed(2).replace('.', ',')} L</div>
+          <div class="popup-row"><strong>Valor:</strong> R$ ${p.valor.toFixed(2).replace('.', ',')}</div>
+          <div class="popup-row"><strong>R$/L:</strong> R$ ${p.preco_litro.toFixed(3).replace('.', ',')}</div>
+          ${p.tipo ? `<div class="popup-row"><strong>Combustível:</strong> ${p.tipo}</div>` : ''}
+        `;
+        L.marker([p.lat, p.lng], { icon: iconOuro })
+          .addTo(mapa)
+          .bindPopup(popup, { maxWidth: 240 });
+      });
+
+      if (bounds.length === 1) {
+        mapa.setView(bounds[0], 15);
+      } else {
+        mapa.fitBounds(bounds, { padding: [40, 40] });
+      }
+
+      // Escurece tiles após carregamento
+      mapa.on('layeradd', function() {
+        document.querySelectorAll('.leaflet-tile').forEach(tile => {
+          tile.style.filter = 'invert(1) hue-rotate(170deg) brightness(0.88) saturate(0.75)';
+        });
+      });
+    })
+    .catch(() => {
+      document.getElementById('mapa-container').style.display = 'none';
+      document.getElementById('mapa-empty').style.display = 'block';
+    });
+})();
+</script>
+</body>
+</html>

@@ -151,6 +151,10 @@ def get_abastecimentos_com_consumo(veiculo_id):
             'quilometragem': a.quilometragem, 'litros': a.litros_abastecidos,
             'valor': a.valor_total, 'preco_litro': a.preco_combustivel,
             'posto': a.posto, 'consumo': consumo,
+            'tipo_combustivel': a.tipo_combustivel or '',
+            'observacao': a.observacao or '',
+            'latitude': a.latitude,
+            'longitude': a.longitude,
         })
     return list(reversed(resultado))
 
@@ -207,6 +211,18 @@ def get_combustivel_por_mes(veiculo_id, ultimos=6):
     return resultado
 
 
+def get_custo_historico(veiculo_id):
+    d = db.session.query(func.sum(Despesa.valor)).filter(Despesa.veiculo_id == veiculo_id).scalar() or 0
+    c = db.session.query(func.sum(Abastecimento.valor_total)).filter(Abastecimento.veiculo_id == veiculo_id).scalar() or 0
+    return round(float(d) + float(c), 2)
+
+
+def get_ultimo_abastecimento(veiculo_id):
+    return Abastecimento.query.filter_by(veiculo_id=veiculo_id).order_by(
+        Abastecimento.data.desc()
+    ).first()
+
+
 def get_gastos_fixos_vs_variaveis(veiculo_id, mes=None, ano=None):
     m, a = mes or _mes_ano()[0], ano or _mes_ano()[1]
     fixo = db.session.query(func.sum(Despesa.valor)).join(Categoria).filter(
@@ -245,6 +261,8 @@ def get_dashboard_data(veiculo_id):
         'gastos_por_categoria': get_gastos_por_categoria(veiculo_id),
         'combustivel_por_mes': get_combustivel_por_mes(veiculo_id, 6),
         'fixo_vs_variavel': get_gastos_fixos_vs_variaveis(veiculo_id),
+        'custo_historico': get_custo_historico(veiculo_id),
+        'ultimo_abastecimento': get_ultimo_abastecimento(veiculo_id),
         'alertas': get_alertas_manutencao(veiculo_id),
         'abastecimentos': get_abastecimentos_com_consumo(veiculo_id),
         'despesas': Despesa.query.filter_by(veiculo_id=veiculo_id).order_by(

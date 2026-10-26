@@ -1,5 +1,5 @@
 from datetime import date
-from flask import Blueprint, render_template, redirect, url_for, request, flash, abort
+from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, jsonify
 from flask_login import login_required
 from extensions import db
 from models import Abastecimento
@@ -45,6 +45,40 @@ def add_abastecimento():
         db.session.rollback()
         flash(f'Erro ao adicionar abastecimento: {e}', 'danger')
     return redirect(url_for('main.index'))
+
+
+@abastecimento_bp.route('/mapa')
+@login_required
+def mapa():
+    veiculo = get_veiculo_ativo()
+    if not veiculo:
+        flash('Selecione um veículo para ver o mapa.', 'info')
+        return redirect(url_for('veiculo.index'))
+    return render_template('mapa_abastecimentos.html', veiculo=veiculo)
+
+
+@abastecimento_bp.route('/mapa/pontos.json')
+@login_required
+def mapa_pontos():
+    veiculo = get_veiculo_ativo()
+    if not veiculo:
+        return jsonify([])
+    registros = Abastecimento.query.filter(
+        Abastecimento.veiculo_id == veiculo.id,
+        Abastecimento.latitude.isnot(None),
+        Abastecimento.longitude.isnot(None),
+    ).order_by(Abastecimento.data.desc()).all()
+    pontos = [{
+        'lat': r.latitude,
+        'lng': r.longitude,
+        'data': r.data.strftime('%d/%m/%Y'),
+        'posto': r.posto or '—',
+        'litros': r.litros_abastecidos,
+        'valor': r.valor_total,
+        'preco_litro': r.preco_combustivel,
+        'tipo': r.tipo_combustivel or '',
+    } for r in registros]
+    return jsonify(pontos)
 
 
 @abastecimento_bp.route('/delete/<int:id>', methods=['POST'])
