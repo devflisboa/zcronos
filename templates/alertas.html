@@ -1,19 +1,148 @@
-{% extends 'conta_base.html' %}{% block titulo %}Alertas{% endblock %}{% block conteudo %}
-<section class="conta-card"><h2>Como você quer receber avisos?</h2><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label class="check"><input type="checkbox" name="email" value="sim" {% if preferencia and preferencia.email %}checked{% endif %}>Receber alertas por e-mail</label><button class="btn btn-primary" type="submit">Salvar preferência</button></form>
-<p class="ajuda">Envios por e-mail exigem endereço confirmado e configuração do servidor.</p>
-<div id="push-config" data-vapid="{{ vapid_public }}" data-url="{{ url_for('alerta.push') }}" data-remove="{{ url_for('alerta.remover_push') }}"><button class="btn btn-ghost" type="button" id="ativar-push" {% if not vapid_public %}disabled{% endif %}>Ativar notificações neste dispositivo</button><button class="btn btn-ghost" type="button" id="desativar-push">Desativar neste dispositivo</button><p id="push-status" role="status">{% if not vapid_public %}Notificações push aguardam configuração do servidor.{% endif %}</p></div></section>
-<section aria-labelledby="alertas-pendentes">
-  <h2 id="alertas-pendentes">Avisos para revisar ({{ alertas|length }})</h2>
-  <p class="ajuda">Avisos urgentes aparecem primeiro. As datas e a quilometragem seguem os dados informados no cadastro e na agenda.</p>
-  <div class="conta-grid">
-    {% for alerta in alertas %}
-    <article class="conta-card">
-      <p><strong>{{ alerta.prioridade|capitalize }}</strong></p>
-      <h3>{{ alerta.titulo }}</h3>
-      <p>{{ alerta.texto }}</p>
-      {% if alerta.url %}<a class="btn btn-ghost" href="{{ alerta.url }}">{{ alerta.acao }}</a>{% endif %}
-    </article>
-    {% else %}<p>Nenhum alerta pendente. Mantenha datas e quilometragem atualizadas.</p>{% endfor %}
+{% extends 'conta_base.html' %}
+{% block titulo %}Alertas{% endblock %}
+
+{% block head %}
+<style>
+.alertas-layout{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:flex-start}
+@media(max-width:900px){.alertas-layout{grid-template-columns:1fr}}
+
+.alerta-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 20px 20px 0;margin-bottom:12px;display:flex;gap:0;overflow:hidden;transition:border-color var(--t),transform var(--t)}
+.alerta-card:hover{transform:translateY(-2px)}
+.alerta-card.urgente{border-left:3px solid var(--danger);padding-left:17px}
+.alerta-card.atenção{border-left:3px solid var(--warn);padding-left:17px}
+.alerta-card.informativo{border-left:3px solid var(--gold);padding-left:17px}
+
+.alerta-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;margin-right:16px}
+.alerta-card.urgente .alerta-icon{background:var(--danger-d)}
+.alerta-card.atenção .alerta-icon{background:var(--warn-d)}
+.alerta-card.informativo .alerta-icon{background:var(--gold-d)}
+
+.alerta-badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 8px;border-radius:99px;margin-bottom:6px}
+.alerta-badge.urgente{background:var(--danger-d);color:var(--danger)}
+.alerta-badge.atenção{background:var(--warn-d);color:var(--warn)}
+.alerta-badge.informativo{background:var(--gold-d);color:var(--gold)}
+
+.alerta-body{flex:1;min-width:0}
+.alerta-titulo{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.3}
+.alerta-texto{font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px}
+.alerta-card .btn{min-height:36px;padding:6px 14px;font-size:13px}
+
+.pref-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:sticky;top:24px}
+.pref-card h2{font-size:15px;font-weight:700;margin-bottom:16px;color:var(--text)}
+.pref-card .ajuda{font-size:12px;color:var(--text3);margin-top:8px;line-height:1.4}
+
+.pref-check{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border-radius:10px;margin-bottom:12px;cursor:pointer}
+.pref-check input[type=checkbox]{width:18px;height:18px;accent-color:var(--gold);flex-shrink:0}
+.pref-check-label{font-size:14px;color:var(--text2)}
+
+.push-btn-wrap{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+
+.empty-alertas{text-align:center;padding:48px 24px;color:var(--text3)}
+.empty-alertas-icon{font-size:48px;margin-bottom:12px;opacity:.5}
+.empty-alertas h3{font-size:16px;color:var(--text2);margin-bottom:6px}
+.empty-alertas p{font-size:13px}
+
+.count-badge{background:var(--bg3);border:1px solid var(--border);border-radius:99px;padding:2px 10px;font-size:13px;font-weight:600;color:var(--text2);margin-left:8px}
+.count-badge.has-urgente{background:var(--danger-d);color:var(--danger);border-color:rgba(255,59,48,.3)}
+</style>
+{% endblock %}
+
+{% block conteudo %}
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+  <h1 style="margin-bottom:0">Alertas</h1>
+  {% set urgentes = alertas|selectattr('prioridade','eq','urgente')|list|length %}
+  {% if alertas %}
+  <span class="count-badge {% if urgentes %}has-urgente{% endif %}">
+    {{ alertas|length }} alerta{{ 's' if alertas|length != 1 }}{% if urgentes %} · {{ urgentes }} urgente{{ 's' if urgentes != 1 }}{% endif %}
+  </span>
+  {% endif %}
+</div>
+
+<div class="alertas-layout">
+  <!-- Lista de alertas -->
+  <div>
+    {% if alertas %}
+      {% for alerta in alertas %}
+      <div class="alerta-card {{ alerta.prioridade }}">
+        <div class="alerta-icon">
+          {% if alerta.prioridade == 'urgente' %}⚠️
+          {% elif alerta.prioridade == 'atenção' %}🔔
+          {% else %}ℹ️{% endif %}
+        </div>
+        <div class="alerta-body">
+          <span class="alerta-badge {{ alerta.prioridade }}">{{ alerta.prioridade|capitalize }}</span>
+          <div class="alerta-titulo">{{ alerta.titulo }}</div>
+          <div class="alerta-texto">{{ alerta.texto }}</div>
+          {% if alerta.url %}
+          <a class="btn btn-ghost" href="{{ alerta.url }}">{{ alerta.acao }}</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-alertas conta-card">
+        <div class="empty-alertas-icon">✅</div>
+        <h3>Tudo em dia!</h3>
+        <p>Nenhum alerta pendente. Mantenha datas e quilometragem atualizadas para receber avisos no momento certo.</p>
+      </div>
+    {% endif %}
+    <p class="ajuda" style="margin-top:16px">Avisos urgentes aparecem primeiro. As datas e a quilometragem seguem os dados informados no cadastro e na agenda de manutenção.</p>
   </div>
-</section>
-{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='js/alertas.js') }}"></script>{% endblock %}
+
+  <!-- Painel de preferências -->
+  <div class="pref-card">
+    <h2>Como receber avisos</h2>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="pref-check">
+        <input type="checkbox" name="email" value="sim" {% if preferencia and preferencia.email %}checked{% endif %}>
+        <div>
+          <div class="pref-check-label">Alertas por e-mail</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">Requer plano Pro</div>
+        </div>
+      </label>
+      <button class="btn btn-primary" type="submit" style="width:100%">Salvar preferência</button>
+    </form>
+
+    <div id="push-config" data-vapid="{{ vapid_public }}" data-url="{{ url_for('alerta.push') }}" data-remove="{{ url_for('alerta.remover_push') }}" style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px">Notificações push</div>
+      <div class="push-btn-wrap">
+        <button class="btn btn-ghost" type="button" id="ativar-push" {% if not vapid_public %}disabled{% endif %} style="width:100%">Ativar neste dispositivo</button>
+        <button class="btn btn-ghost" type="button" id="desativar-push" style="width:100%">Desativar neste dispositivo</button>
+      </div>
+      <p id="push-status" role="status" class="ajuda" style="margin-top:8px">
+        {% if not vapid_public %}Notificações push aguardam configuração do servidor.{% endif %}
+      </p>
+    </div>
+
+    {% if alertas %}
+    <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Resumo</div>
+      {% set urgentes = alertas|selectattr('prioridade','eq','urgente')|list|length %}
+      {% set atencao = alertas|selectattr('prioridade','eq','atenção')|list|length %}
+      {% set info = alertas|selectattr('prioridade','eq','informativo')|list|length %}
+      {% if urgentes %}
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px;color:var(--danger)">⚠️ Urgentes</span>
+        <span style="font-size:13px;font-weight:700;color:var(--danger)">{{ urgentes }}</span>
+      </div>
+      {% endif %}
+      {% if atencao %}
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px;color:var(--warn)">🔔 Atenção</span>
+        <span style="font-size:13px;font-weight:700;color:var(--warn)">{{ atencao }}</span>
+      </div>
+      {% endif %}
+      {% if info %}
+      <div style="display:flex;justify-content:space-between;padding:6px 0">
+        <span style="font-size:13px;color:var(--gold)">ℹ️ Informativos</span>
+        <span style="font-size:13px;font-weight:700;color:var(--gold)">{{ info }}</span>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/alertas.js') }}"></script>{% endblock %}

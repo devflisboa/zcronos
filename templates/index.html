@@ -412,10 +412,11 @@
                   <td>R$ {{ a.preco_litro }}</td>
                   <td style="color:var(--red);font-weight:600">R$ {{ '%.2f'|format(a.valor) }}</td>
                   <td>{% if a.consumo %}<span class="pill pill-ok">{{ a.consumo }} km/L</span>{% else %}<span class="pill pill-gray">—</span>{% endif %}</td>
-                  <td>
+                  <td style="white-space:nowrap">
                     {% if a.latitude %}<span title="Localização registrada" style="color:var(--gold);margin-right:4px"><i data-lucide="map-pin" style="width:12px;height:12px"></i></span>{% endif %}
-                    <form id="del-abast-{{ a.id }}" method="POST" action="{{ url_for('abastecimento.delete_abastecimento', id=a.id) }}">
-                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-abast-{{ a.id }}')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
+                    <a href="{{ url_for('abastecimento.editar_abastecimento', id=a.id) }}" class="btn btn-ghost btn-sm btn-icon" title="Editar" style="margin-right:2px"><i data-lucide="pencil" style="width:14px;height:14px"></i></a>
+                    <form id="del-abast-{{ a.id }}" method="POST" action="{{ url_for('abastecimento.delete_abastecimento', id=a.id) }}" style="display:inline">
+                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-abast-{{ a.id }}')" title="Excluir"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
                     </form>
                   </td>
                 </tr>
@@ -468,9 +469,10 @@
                   <td>{{ '{:,}'.format(d.quilometragem).replace(',','.') if d.quilometragem else '—' }}</td>
                   <td>{{ d.forma_pagamento or '—' }}</td>
                   <td style="color:var(--red);font-weight:600">R$ {{ '%.2f'|format(d.valor) }}</td>
-                  <td>
-                    <form id="del-desp-{{ d.id }}" method="POST" action="{{ url_for('despesa.delete_despesa', id=d.id) }}">
-                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-desp-{{ d.id }}')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
+                  <td style="white-space:nowrap">
+                    <a href="{{ url_for('despesa.editar_despesa', id=d.id) }}" class="btn btn-ghost btn-sm btn-icon" title="Editar" style="margin-right:2px"><i data-lucide="pencil" style="width:14px;height:14px"></i></a>
+                    <form id="del-desp-{{ d.id }}" method="POST" action="{{ url_for('despesa.delete_despesa', id=d.id) }}" style="display:inline">
+                      <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-desp-{{ d.id }}')" title="Excluir"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
                     </form>
                   </td>
                 </tr>

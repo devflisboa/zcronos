@@ -81,6 +81,39 @@ def mapa_pontos():
     return jsonify(pontos)
 
 
+@abastecimento_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+def editar_abastecimento(id):
+    veiculo = get_veiculo_ativo()
+    abastecimento = db.session.get(Abastecimento, id)
+    if not abastecimento or not veiculo or abastecimento.veiculo_id != veiculo.id:
+        abort(404)
+    if request.method == 'POST':
+        try:
+            data_str = request.form.get('data')
+            def _float(v): return float(v) if v else None
+            abastecimento.quilometragem = int(request.form.get('quilometragem') or 0)
+            abastecimento.litros_abastecidos = float(request.form.get('litros_abastecidos') or 0)
+            abastecimento.valor_total = float(request.form.get('valor_total') or 0)
+            abastecimento.posto = request.form.get('posto') or ''
+            abastecimento.preco_combustivel = float(request.form.get('preco_combustivel') or 0)
+            abastecimento.data = date.fromisoformat(data_str) if data_str else abastecimento.data
+            abastecimento.tipo_combustivel = request.form.get('tipo_combustivel') or None
+            abastecimento.observacao = request.form.get('observacao') or None
+            lat = _float(request.form.get('latitude'))
+            lng = _float(request.form.get('longitude'))
+            if lat is not None and lng is not None:
+                abastecimento.latitude = lat
+                abastecimento.longitude = lng
+            db.session.commit()
+            flash('Abastecimento atualizado com sucesso!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao atualizar abastecimento: {e}', 'danger')
+        return redirect(url_for('main.index'))
+    return render_template('editar_abastecimento.html', a=abastecimento, veiculo=veiculo)
+
+
 @abastecimento_bp.route('/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_abastecimento(id):
