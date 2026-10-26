@@ -96,14 +96,12 @@
           </div>
           {% endif %}
           <div class="sb-car-name">{{ veiculo.marca }} {{ veiculo.modelo }}</div>
-          {% if veiculo and veiculo.placa %}
           <div style="display:flex;justify-content:center;padding:6px 0 10px">
             <div class="sb-placa-mercosul">
               <div class="sbpm-topo"><span class="sbpm-flag">🇧🇷</span><span class="sbpm-brasil">BRASIL</span></div>
-              <div class="sbpm-numero">{{ veiculo.placa }}</div>
+              <div class="sbpm-numero">{{ veiculo.placa or '———' }}</div>
             </div>
           </div>
-          {% endif %}
       {% if total_veiculos > 1 %}
         </div>
         <form method="post" action="{{ url_for('veiculo.trocar_proximo') }}" class="sb-switcher-arrow">
