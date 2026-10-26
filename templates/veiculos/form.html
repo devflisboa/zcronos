@@ -412,18 +412,28 @@ window.GARAGE_CAPA_URL = "{{ url_for('veiculo.capa', id=veiculo.id) if veiculo a
 <script>document.getElementById('app').classList.add('ready'); if(window.lucide) lucide.createIcons();</script>
 <script>
 (function(){
-  // Mostra overlay de loading ao submeter form com foto selecionada
+  // Overlay + bloqueio de saída enquanto rembg processa a foto
   var fotoInp = document.getElementById('foto_capa');
   var overlay = document.getElementById('foto-loading-overlay');
-  if (fotoInp && overlay) {
-    document.querySelectorAll('form[enctype]').forEach(function(frm) {
-      frm.addEventListener('submit', function() {
-        if (fotoInp.files && fotoInp.files.length > 0) {
-          overlay.classList.add('ativo');
-        }
-      });
-    });
+  if (!fotoInp || !overlay) return;
+
+  var processando = false;
+
+  function guardarSaida(e) {
+    if (!processando) return;
+    e.preventDefault();
+    e.returnValue = ''; // Chrome exige isso para mostrar o diálogo nativo
   }
+  window.addEventListener('beforeunload', guardarSaida);
+
+  document.querySelectorAll('form[enctype]').forEach(function(frm) {
+    frm.addEventListener('submit', function() {
+      if (fotoInp.files && fotoInp.files.length > 0) {
+        processando = true;
+        overlay.classList.add('ativo');
+      }
+    });
+  });
 })();
 (function(){
   var inp = document.getElementById('placa');
