@@ -365,3 +365,14 @@ class EventoGateway(db.Model):
     __tablename__ = 'evento_gateway'
     id = db.Column(db.String(100), primary_key=True)
     criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class MetaGasto(db.Model):
+    __tablename__ = 'metas_gasto'
+    id           = db.Column(db.Integer, primary_key=True)
+    veiculo_id   = db.Column(db.Integer, db.ForeignKey('veiculo.id'), nullable=False, index=True)
+    categoria_id = db.Column(db.Integer, db.ForeignKey('categorias.id'), nullable=True)
+    tipo         = db.Column(db.String(20), default='categoria')  # total | combustivel | categoria
+    valor_limite = db.Column(db.Float, nullable=False)
+
+    categoria = db.relationship('Categoria', backref='metas')

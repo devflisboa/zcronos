@@ -273,6 +273,14 @@ def get_gastos_fixos_vs_variaveis(veiculo_id, mes=None, ano=None):
     return {'fixo': round(float(fixo), 2), 'variavel': round(float(variavel) + comb, 2)}
 
 
+def _get_metas(veiculo_id, mes, ano):
+    try:
+        from services.meta_service import get_metas_progresso
+        return get_metas_progresso(veiculo_id, mes, ano)
+    except Exception:
+        return []
+
+
 def get_dashboard_data(veiculo_id, mes=None, ano=None):
     veiculo = Veiculo.query.filter_by(id=veiculo_id, user_id=current_user.id, ativo=True).first_or_404()
     m_ref, a_ref = mes or _mes_ano()[0], ano or _mes_ano()[1]
@@ -301,6 +309,7 @@ def get_dashboard_data(veiculo_id, mes=None, ano=None):
         'ultimo_abastecimento': get_ultimo_abastecimento(veiculo_id),
         'alertas': get_alertas_manutencao(veiculo_id),
         'km_por_dia': get_km_por_dia(veiculo_id),
+        'metas': _get_metas(veiculo_id, m_ref, a_ref),
         'abastecimentos': get_abastecimentos_com_consumo(veiculo_id),
         'despesas': Despesa.query.filter_by(veiculo_id=veiculo_id).order_by(
             Despesa.data.desc()

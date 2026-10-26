@@ -656,6 +656,35 @@
           <div class="chart-box tall"><canvas id="chart-anual"></canvas></div>
         </div>
 
+        <!-- Metas de Gasto -->
+        <div class="card gap-top">
+          <div class="card-title-row">
+            <div class="card-title">Metas de Gasto (Mês)</div>
+            <button class="btn btn-ghost btn-sm" onclick="openModal('nova-meta')">+ Meta</button>
+          </div>
+          {% if metas %}
+          {% for meta in metas %}
+          <div style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+              <span style="color:var(--text2)">{{ meta.rotulo }}</span>
+              <div style="display:flex;gap:10px;align-items:center">
+                <span style="color:var(--{% if meta.status == 'danger' %}danger{% elif meta.status == 'warn' %}warn{% else %}ok{% endif %});font-weight:600">R$ {{ '%.0f'|format(meta.gasto) }} / {{ '%.0f'|format(meta.limite) }}</span>
+                <form id="del-meta-{{ meta.id }}" method="POST" action="{{ url_for('meta.delete_meta', id=meta.id) }}" style="display:inline">
+                  <button type="button" class="btn btn-ghost btn-sm btn-icon" onclick="confirmDelete('del-meta-{{ meta.id }}')" title="Remover"><i data-lucide="x" style="width:12px;height:12px"></i></button>
+                </form>
+              </div>
+            </div>
+            <div class="prog-bar">
+              <div class="prog-fill" style="width:{{ [meta.pct, 100]|min }}%;background:var(--{% if meta.status == 'danger' %}red{% elif meta.status == 'warn' %}warn{% else %}ok{% endif %})"></div>
+            </div>
+            <div style="font-size:11px;color:var(--text3);margin-top:3px">{{ meta.pct }}% do limite</div>
+          </div>
+          {% endfor %}
+          {% else %}
+          <div class="empty"><div class="empty-text">Nenhuma meta definida. Clique em "+ Meta" para adicionar.</div></div>
+          {% endif %}
+        </div>
+
         <div class="grid-2 gap-top">
           <div class="card">
             <div class="card-title">Por Categoria (Mês Atual)</div>
@@ -769,6 +798,45 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-ghost" data-close-modal>Cancelar</button>
         <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Nova Meta de Gasto -->
+<div class="modal-overlay" id="modal-nova-meta">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Nova Meta de Gasto</div>
+      <button class="modal-close" data-close-modal>✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('meta.add_meta') }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select name="tipo" id="meta-tipo" class="form-control" onchange="toggleMetaCategoria(this.value)">
+            <option value="categoria">Por Categoria</option>
+            <option value="combustivel">Combustível</option>
+            <option value="total">Total do Mês</option>
+          </select>
+        </div>
+        <div class="form-group" id="meta-cat-group">
+          <label class="form-label">Categoria</label>
+          <select name="categoria_id" class="form-control">
+            <option value="">Selecione...</option>
+            {% for cat in categorias %}
+            <option value="{{ cat.id }}">{{ cat.icone }} {{ cat.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Limite Mensal (R$)</label>
+        <input type="number" step="0.01" name="valor_limite" class="form-control" placeholder="Ex: 500" required>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar Meta</button>
       </div>
     </form>
   </div>
@@ -1176,6 +1244,11 @@ window.DASH = {
   });
 })();
 if(window.lucide) lucide.createIcons();
+// Controla visibilidade do select de categoria no modal de meta
+function toggleMetaCategoria(tipo) {
+  var g = document.getElementById('meta-cat-group');
+  if (g) g.style.display = tipo === 'categoria' ? '' : 'none';
+}
 // Preenche campos de data com hoje ao abrir modais
 (function() {
   var hoje = new Date().toISOString().split('T')[0];

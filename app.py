@@ -108,6 +108,8 @@ def create_app(config_name='default', *, test_config=None, initialize_database=T
 
     from blueprints.relatorio.routes import relatorio_bp
     app.register_blueprint(relatorio_bp, url_prefix='/relatorios')
+    from blueprints.meta.routes import meta_bp
+    app.register_blueprint(meta_bp, url_prefix='/meta')
     from blueprints.condutor.routes import condutor_bp
     from blueprints.documento.routes import documento_bp
     from blueprints.galeria.routes import galeria_bp
