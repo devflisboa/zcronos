@@ -90,30 +90,20 @@
         <div class="sb-switcher-center">
       {% endif %}
           {% if veiculo and veiculo.foto_capa %}
-          <div style="padding:0 12px 10px;text-align:center">
+          <div style="padding:0 12px 8px;text-align:center">
             <img src="{{ url_for('veiculo.capa', id=veiculo.id) }}" alt="{{ veiculo.marca }} {{ veiculo.modelo }}"
                  style="max-height:80px;max-width:100%;object-fit:cover;border-radius:10px;filter:drop-shadow(0 2px 8px rgba(212,175,55,.25))">
           </div>
           {% endif %}
-          {% if total_veiculos > 1 %}
-          <div class="sb-switcher-label">{{ veiculo.marca }} {{ veiculo.modelo }}</div>
-          {% endif %}
-          <div class="sb-vehicle">
-            <div>
-              {% if veiculo and veiculo.placa %}
-              <div class="sb-placa-mercosul">
-                <div class="sbpm-topo"><span class="sbpm-flag">🇧🇷</span><span class="sbpm-brasil">BRASIL</span></div>
-                <div class="sbpm-numero">{{ veiculo.placa }}</div>
-              </div>
-              {% else %}
-              <div class="sb-plate">—</div>
-              {% endif %}
-              <div class="sb-km" style="margin-top:4px">
-                <span>{{ '{:,}'.format(km_atual).replace(',','.') }}</span> km
-              </div>
+          <div class="sb-car-name">{{ veiculo.marca }} {{ veiculo.modelo }}</div>
+          {% if veiculo and veiculo.placa %}
+          <div style="display:flex;justify-content:center;padding:6px 0 10px">
+            <div class="sb-placa-mercosul">
+              <div class="sbpm-topo"><span class="sbpm-flag">🇧🇷</span><span class="sbpm-brasil">BRASIL</span></div>
+              <div class="sbpm-numero">{{ veiculo.placa }}</div>
             </div>
-            <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openModal('km')"><i data-lucide="pencil" style="width:14px;height:14px"></i></button>
           </div>
+          {% endif %}
       {% if total_veiculos > 1 %}
         </div>
         <form method="post" action="{{ url_for('veiculo.trocar_proximo') }}" class="sb-switcher-arrow">
