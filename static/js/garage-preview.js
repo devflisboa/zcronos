@@ -392,8 +392,8 @@
   // ── Foto real no lugar do SVG ────────────────────────────────────────────
   function htmlFotoReal(url) {
     return `<img src="${url}" alt="Foto do veículo"
-      style="width:100%;height:100%;object-fit:contain;object-position:center bottom;
-             display:block;filter:drop-shadow(0 8px 24px rgba(0,0,0,.8))">`;
+      style="width:100%;height:100%;object-fit:cover;object-position:center;
+             display:block;border-radius:10px;filter:drop-shadow(0 8px 24px rgba(0,0,0,.8))">`;
   }
 
   function definirVisualizacao(carWrap, refWrap, url, hex) {
