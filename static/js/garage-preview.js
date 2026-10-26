@@ -367,6 +367,31 @@
 }
 `;
 
+  // ── Foto real no lugar do SVG ────────────────────────────────────────────
+  function htmlFotoReal(url) {
+    return `<img src="${url}" alt="Foto do veículo"
+      style="width:100%;height:100%;object-fit:contain;display:block;
+             filter:drop-shadow(0 8px 24px rgba(0,0,0,.8))">`;
+  }
+
+  function definirVisualizacao(carWrap, refWrap, url, hex) {
+    if (url) {
+      if (carWrap) carWrap.innerHTML = htmlFotoReal(url);
+      if (refWrap) {
+        refWrap.innerHTML = htmlFotoReal(url);
+        refWrap.style.opacity = '0.12';
+        refWrap.style.filter  = 'blur(3px)';
+      }
+    } else {
+      if (carWrap) carWrap.innerHTML = gerarCarSVG(hex);
+      if (refWrap) {
+        refWrap.innerHTML = gerarCarSVG(hex);
+        refWrap.style.opacity = '';
+        refWrap.style.filter  = '';
+      }
+    }
+  }
+
   // ── Init ─────────────────────────────────────────────────────────────────
   function init() {
     const el = document.getElementById('garage-preview');
@@ -388,6 +413,9 @@
       cor: document.getElementById('cor'),
     };
 
+    // URL da foto já salva (injetada pelo template)
+    let capaAtual = (window.GARAGE_CAPA_URL || '').trim();
+
     function atualizar() {
       const marca = campos.marca ? campos.marca.value.trim() : '';
       const modelo = campos.modelo ? campos.modelo.value.trim() : '';
@@ -408,16 +436,11 @@
         sub.textContent = ano ? `${ano} · Gestão Automotiva` : 'Gestão Automotiva';
       }
 
-      // Atualiza cor do carro
+      // Foto real ou SVG com cor
       const hex = resolverCor(cor);
       const carWrap = document.getElementById('gp-car-wrap');
       const refWrap = document.getElementById('gp-reflection');
-      if (carWrap) {
-        carWrap.innerHTML = gerarCarSVG(hex);
-      }
-      if (refWrap) {
-        refWrap.innerHTML = gerarCarSVG(hex);
-      }
+      definirVisualizacao(carWrap, refWrap, capaAtual, hex);
     }
 
     // Escuta mudanças em todos os campos relevantes
@@ -426,6 +449,21 @@
       inp.addEventListener('input', atualizar);
       inp.addEventListener('change', atualizar);
     });
+
+    // Preview ao selecionar nova foto (antes do upload)
+    const inputFoto = document.getElementById('foto_capa');
+    if (inputFoto) {
+      inputFoto.addEventListener('change', function () {
+        const file = this.files && this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          capaAtual = e.target.result;
+          atualizar();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
 
     // Roda com os valores iniciais (edição de veículo existente)
     atualizar();

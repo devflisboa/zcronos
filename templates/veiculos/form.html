@@ -297,6 +297,9 @@ html, body { overflow-x: hidden; }
 <script src="https://unpkg.com/lucide@0.298.0/dist/umd/lucide.min.js"></script>
 <script src="{{ url_for('static', filename='js/automotive.js') }}"></script>
 <script src="{{ url_for('static', filename='js/documentos.js') }}"></script>
+<script>
+window.GARAGE_CAPA_URL = "{{ url_for('veiculo.capa', id=veiculo.id) if veiculo and veiculo.foto_capa else '' }}";
+</script>
 <script src="{{ url_for('static', filename='js/garage-preview.js') }}"></script>
 <script>document.getElementById('app').classList.add('ready'); if(window.lucide) lucide.createIcons();</script>
 <script>
