@@ -92,7 +92,7 @@
           {% if veiculo and veiculo.foto_capa %}
           <div style="padding:0 12px 10px;text-align:center">
             <img src="{{ url_for('veiculo.capa', id=veiculo.id) }}" alt="{{ veiculo.marca }} {{ veiculo.modelo }}"
-                 style="max-height:80px;max-width:100%;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(212,175,55,.25))">
+                 style="max-height:80px;max-width:100%;object-fit:cover;border-radius:10px;filter:drop-shadow(0 2px 8px rgba(212,175,55,.25))">
           </div>
           {% endif %}
           {% if total_veiculos > 1 %}
