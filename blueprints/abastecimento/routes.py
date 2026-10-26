@@ -39,6 +39,8 @@ def add_abastecimento():
             longitude=_float(request.form.get('longitude')),
         )
         db.session.add(novo)
+        if novo.quilometragem and (not veiculo.km_atual or novo.quilometragem > veiculo.km_atual):
+            veiculo.km_atual = novo.quilometragem
         db.session.commit()
         flash('Abastecimento adicionado com sucesso!', 'success')
     except Exception as e:
@@ -105,6 +107,8 @@ def editar_abastecimento(id):
             if lat is not None and lng is not None:
                 abastecimento.latitude = lat
                 abastecimento.longitude = lng
+            if abastecimento.quilometragem and (not veiculo.km_atual or abastecimento.quilometragem > veiculo.km_atual):
+                veiculo.km_atual = abastecimento.quilometragem
             db.session.commit()
             flash('Abastecimento atualizado com sucesso!', 'success')
         except Exception as e:

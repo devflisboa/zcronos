@@ -45,11 +45,14 @@ def add_despesa():
             data=datetime.strptime(request.form.get('data'), '%Y-%m-%d'),
             categoria=categoria,
             quilometragem=int(km_str) if km_str else None,
+            forma_pagamento=request.form.get('forma_pagamento') or None,
             observacoes=request.form.get('observacao') or None,
             latitude=_float(request.form.get('latitude')),
             longitude=_float(request.form.get('longitude')),
         )
         db.session.add(nova)
+        if nova.quilometragem and (not veiculo.km_atual or nova.quilometragem > veiculo.km_atual):
+            veiculo.km_atual = nova.quilometragem
         db.session.commit()
         flash('Despesa adicionada com sucesso!', 'success')
     except Exception as e:
