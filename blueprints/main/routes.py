@@ -46,8 +46,10 @@ def _opcoes_periodo(mes_sel, ano_sel):
 
 
 @main_bp.route('/')
-@login_required
 def index():
+    if not current_user.is_authenticated:
+        from services.assinatura_service import catalogo
+        return render_template('landing.html', planos=catalogo())
     periodo = request.args.get('periodo', '')
     mes, ano = None, None
     filtrado = False
