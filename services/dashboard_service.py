@@ -230,6 +230,19 @@ def get_combustivel_por_mes(veiculo_id, ultimos=6):
     return resultado
 
 
+def get_projecao_ano(veiculo_id, ano=None):
+    """Projeta o gasto total do ano com base na média mensal até o mês atual."""
+    hoje = date.today()
+    a = ano or hoje.year
+    custo_ate_agora = get_custo_ano(veiculo_id, a)
+    meses_passados = hoje.month
+    if meses_passados == 0 or custo_ate_agora == 0:
+        return 0
+    media = custo_ate_agora / meses_passados
+    meses_restantes = 12 - meses_passados
+    return round(custo_ate_agora + media * meses_restantes, 2)
+
+
 def get_custo_historico(veiculo_id):
     d = db.session.query(func.sum(Despesa.valor)).filter(Despesa.veiculo_id == veiculo_id).scalar() or 0
     c = db.session.query(func.sum(Abastecimento.valor_total)).filter(Abastecimento.veiculo_id == veiculo_id).scalar() or 0
@@ -284,6 +297,7 @@ def get_dashboard_data(veiculo_id, mes=None, ano=None):
         'periodo_mes': m_ref,
         'periodo_ano': a_ref,
         'custo_historico': get_custo_historico(veiculo_id),
+        'projecao_ano': get_projecao_ano(veiculo_id, a_ref),
         'ultimo_abastecimento': get_ultimo_abastecimento(veiculo_id),
         'alertas': get_alertas_manutencao(veiculo_id),
         'km_por_dia': get_km_por_dia(veiculo_id),

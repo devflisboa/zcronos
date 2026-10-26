@@ -163,7 +163,11 @@
             <div class="kpi-icon"><i data-lucide="calendar" style="width:22px;height:22px;stroke:var(--blue)"></i></div>
             <div class="kpi-label">Custo do Ano</div>
             <div class="kpi-value blue" data-count="{{ custo_ano }}" data-prefix="R$ " data-dec="2">R$ 0</div>
+            {% if projecao_ano > 0 %}
+            <div class="kpi-delta neutral" title="Projeção até dezembro baseada na média mensal">⟶ R$ {{ '%.0f'|format(projecao_ano) }} até dez</div>
+            {% else %}
             <div class="kpi-delta neutral">Acumulado {{ current_date[-4:] }}</div>
+            {% endif %}
             <div class="kpi-bar" style="background:var(--blue)"></div>
           </div>
 
@@ -420,10 +424,13 @@
         <div class="card gap-top">
           <div class="card-title-row">
             <div class="card-title">Histórico de Abastecimentos</div>
-            <a href="{{ url_for('abastecimento.mapa') }}" class="btn btn-ghost btn-sm" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="map-pin" style="width:13px;height:13px"></i> Mapa</a>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input type="search" id="busca-abastecimentos" placeholder="Buscar..." style="background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:6px;padding:5px 10px;font-size:13px;width:140px" oninput="filtrarTabela('tabela-abastecimentos',this.value)">
+              <a href="{{ url_for('abastecimento.mapa') }}" class="btn btn-ghost btn-sm" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="map-pin" style="width:13px;height:13px"></i> Mapa</a>
+            </div>
           </div>
           <div class="table-wrap">
-            <table class="auto">
+            <table class="auto" id="tabela-abastecimentos">
               <thead><tr>
                 <th>Data</th><th>Combustível</th><th>Posto</th><th>Km</th><th>Litros</th><th>R$/L</th><th>Total</th><th>Consumo</th><th></th>
               </tr></thead>
@@ -480,9 +487,10 @@
         <div class="card gap-top">
           <div class="card-title-row">
             <div class="card-title">Todas as Despesas</div>
+            <input type="search" id="busca-despesas" placeholder="Buscar..." style="background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:6px;padding:5px 10px;font-size:13px;width:160px" oninput="filtrarTabela('tabela-despesas',this.value)">
           </div>
           <div class="table-wrap">
-            <table class="auto">
+            <table class="auto" id="tabela-despesas">
               <thead><tr>
                 <th>Data</th><th>Categoria</th><th>Descrição</th><th>Km</th><th>Pagamento</th><th>Valor</th><th></th>
               </tr></thead>
@@ -793,7 +801,12 @@
         </div>
         <div class="form-group">
           <label class="form-label">Posto</label>
-          <input type="text" name="posto" class="form-control">
+          <input type="text" name="posto" class="form-control" list="postos-list" autocomplete="off">
+          <datalist id="postos-list">
+            {% for a in abastecimentos if a.posto %}
+            <option value="{{ a.posto }}">
+            {% endfor %}
+          </datalist>
         </div>
       </div>
       <div class="form-row">
@@ -857,7 +870,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Quilometragem</label>
-          <input type="number" name="quilometragem" class="form-control">
+          <input type="number" name="quilometragem" class="form-control" value="{{ km_atual or '' }}">
         </div>
       </div>
       <div class="form-row">
@@ -1154,6 +1167,22 @@ window.DASH = {
   });
 })();
 if(window.lucide) lucide.createIcons();
+// Preenche campos de data com hoje ao abrir modais
+(function() {
+  var hoje = new Date().toISOString().split('T')[0];
+  document.querySelectorAll('#modal-abastecimento input[type="date"], #modal-despesa input[type="date"]').forEach(function(el) {
+    if (!el.value) el.value = hoje;
+  });
+})();
+// Filtro de busca nas tabelas
+function filtrarTabela(tabelaId, termo) {
+  var t = document.getElementById(tabelaId);
+  if (!t) return;
+  var q = termo.toLowerCase().trim();
+  Array.from(t.tBodies[0].rows).forEach(function(row) {
+    row.style.display = q === '' || row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
 // Auto-calc valor total no modal de abastecimento
 (function() {
   function recalcTotal() {
