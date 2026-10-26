@@ -156,9 +156,9 @@ def consultar_valor(tipo, marca, modelo, ano, referencia):
 def buscar_automatico(veiculo):
     """Tenta encontrar e buscar FIPE automaticamente pelos dados do veículo.
 
-    Faz matching normalizado de marca → modelo → ano. Retorna dict de cotação
-    (mesmo formato de consultar_valor) ou None se não for possível identificar
-    de forma unívoca. Nunca lança exceção — falhas silenciosas.
+    Faz matching normalizado de marca → modelo → ano. Itera pelos candidatos
+    de modelo até encontrar um que tenha o ano correto. Retorna dict de cotação
+    (mesmo formato de consultar_valor) ou None. Nunca lança exceção.
     """
     tipo = 'cars'
     try:
@@ -185,30 +185,43 @@ def buscar_automatico(veiculo):
         ]
         if not candidatas_modelo:
             return None
-        if len(candidatas_modelo) > 1 and veiculo.versao:
-            termos_versao = normalizar(veiculo.versao).split()
-            refinados = [
-                m for m in candidatas_modelo
-                if any(t in normalizar(m['name']) for t in termos_versao)
-            ]
-            if refinados:
-                candidatas_modelo = refinados
-        # menor nome = versão mais genérica, menos risco de erro
-        candidatas_modelo.sort(key=lambda m: len(m['name']))
-        modelo_id = candidatas_modelo[0]['code']
 
-        # ── Ano/combustível ────────────────────────────────────────────────────
-        lista_anos = anos(tipo, marca_id, modelo_id, ref['code'])
+        # Pista de combustível/versão a partir dos campos do veículo
+        _hint = normalizar(' '.join(filter(None, [veiculo.versao, veiculo.motor])))
+
+        def _score_modelo(m):
+            nome = normalizar(m['name'])
+            # conta palavras do hint que aparecem no nome do modelo FIPE
+            acertos = sum(1 for t in _hint.split() if t in nome) if _hint else 0
+            return (-acertos, len(m['name']))  # mais acertos e nome mais curto = melhor
+
+        candidatas_modelo.sort(key=_score_modelo)
+
+        # ── Ano/combustível — tenta cada candidato até achar o ano certo ───────
         ano_str = str(veiculo.ano)
-        candidatas_ano = [a for a in lista_anos if a['code'].startswith(ano_str + '-')]
-        if not candidatas_ano:
-            return None
-        # prefere gasolina (-1), depois flex/etanol (-3), depois outros
-        _pref = {'1': 0, '3': 1, '2': 2}
-        candidatas_ano.sort(key=lambda a: _pref.get(a['code'].split('-')[-1], 9))
-        ano_id = candidatas_ano[0]['code']
+        _pref_combustivel = {'1': 0, '3': 1, '2': 2}  # gasolina, flex/diesel, álcool
+        diesel = 'diesel' in _hint
+        flex   = 'flex'  in _hint
 
-        return consultar_valor(tipo, marca_id, modelo_id, ano_id, ref)
+        for candidato in candidatas_modelo[:8]:
+            lista_anos = anos(tipo, marca_id, candidato['code'], ref['code'])
+            candidatas_ano = [a for a in lista_anos if a['code'].startswith(ano_str + '-')]
+            if not candidatas_ano:
+                continue
+            # aplica pista de combustível se disponível
+            if diesel:
+                filtrados = [a for a in candidatas_ano if 'diesel' in normalizar(a['name'])]
+                if filtrados:
+                    candidatas_ano = filtrados
+            elif flex:
+                filtrados = [a for a in candidatas_ano if 'flex' in normalizar(a['name'])]
+                if filtrados:
+                    candidatas_ano = filtrados
+            candidatas_ano.sort(key=lambda a: _pref_combustivel.get(a['code'].split('-')[-1], 9))
+            ano_id = candidatas_ano[0]['code']
+            return consultar_valor(tipo, marca_id, candidato['code'], ano_id, ref)
+
+        return None
     except Exception:
         return None
 
