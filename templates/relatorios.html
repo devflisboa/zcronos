@@ -1,4 +1,25 @@
-{% extends 'conta_base.html' %}{% block titulo %}Relatórios{% endblock %}{% block conteudo %}
+{% extends 'conta_base.html' %}{% block titulo %}Relatórios{% endblock %}
+{% block head %}
+<style>
+@media print {
+  body { background:#fff !important; color:#000 !important; }
+  .conta-sidebar, .conta-topbar, .conta-actions, details, .no-print { display:none !important; }
+  .conta-main { margin:0 !important; padding:0 !important; }
+  .conta-card { border:1px solid #ccc !important; background:#fff !important; break-inside:avoid; }
+  .conta-grid { grid-template-columns:1fr !important; }
+  h2 { color:#000 !important; }
+  div[style*="color:var(--gold)"] { color:#000 !important; }
+  div[style*="color:var(--text1)"], div[style*="color:var(--text2)"] { color:#000 !important; }
+  div[style*="background:var(--bg3)"] { background:#f5f5f5 !important; }
+}
+</style>
+{% endblock %}{% block conteudo %}
+<div style="margin-bottom:12px;display:flex;gap:8px" class="no-print">
+  <button class="btn btn-primary" onclick="window.print()">
+    <i data-lucide="printer" style="width:15px;height:15px"></i> Imprimir / PDF
+  </button>
+  <span style="font-size:12px;color:var(--text3);align-self:center">Use Ctrl+P → Salvar como PDF</span>
+</div>
 <div class="conta-grid">
 {% for linha in linhas %}
 <section class="conta-card">
