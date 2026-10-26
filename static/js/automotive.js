@@ -265,6 +265,42 @@ function initChartCombustivel(data) {
   });
 }
 
+function initChartConsumo(data) {
+  if (!data || !data.length) return;
+  mkChart('chart-consumo', {
+    type: 'line',
+    data: {
+      labels: data.map(d => d.data),
+      datasets: [{
+        label: 'Consumo (km/L)',
+        data: data.map(d => d.consumo),
+        borderColor: CHART_DEFAULTS.ok,
+        backgroundColor: CHART_DEFAULTS.bg_ok,
+        borderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: CHART_DEFAULTS.ok,
+        tension: .35,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: {
+          title: ctx => data[ctx[0].dataIndex].data + (data[ctx[0].dataIndex].posto ? ' · ' + data[ctx[0].dataIndex].posto : ''),
+          label: ctx => ' ' + ctx.raw.toFixed(2) + ' km/L',
+        }}
+      },
+      scales: {
+        x: { grid: gridOpts(), ticks: tickOpts() },
+        y: { grid: gridOpts(), ticks: { ...tickOpts(), callback: v => v + ' km/L' }, beginAtZero: false },
+      }
+    }
+  });
+}
+
 function initChartAnual(data) {
   if (!data || !data.length) return;
   mkChart('chart-anual', {
@@ -400,6 +436,7 @@ function initAll() {
     initChartGastosMes(window.DASH.gastos_por_mes);
     initChartCategorias(window.DASH.gastos_por_categoria);
     initChartCombustivel(window.DASH.combustivel_por_mes);
+    initChartConsumo(window.DASH.consumo);
     initChartAnual(window.DASH.gastos_por_mes);
   }
 }

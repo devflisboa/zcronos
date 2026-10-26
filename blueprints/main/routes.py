@@ -37,6 +37,10 @@ def renderizar_dashboard(**contexto):
     data['gastos_por_mes_json'] = json.dumps(data['gastos_por_mes'])
     data['gastos_por_categoria_json'] = json.dumps(data['gastos_por_categoria'])
     data['combustivel_por_mes_json'] = json.dumps(data['combustivel_por_mes'])
+    data['consumo_json'] = json.dumps([
+        {'data': a['data'], 'consumo': a['consumo'], 'posto': a['posto'] or ''}
+        for a in reversed(data['abastecimentos']) if a['consumo'] is not None
+    ])
     data['current_date'] = datetime.now().strftime('%d/%m/%Y')
     data.update(contexto)
     return render_template('index.html', **data)

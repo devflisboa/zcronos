@@ -392,6 +392,11 @@
         </div>
 
         <div class="card gap-top">
+          <div class="card-title">Evolução do Consumo (km/L)</div>
+          <div class="chart-box tall"><canvas id="chart-consumo"></canvas></div>
+        </div>
+
+        <div class="card gap-top">
           <div class="card-title-row">
             <div class="card-title">Histórico de Abastecimentos</div>
             <a href="{{ url_for('abastecimento.mapa') }}" class="btn btn-ghost btn-sm" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="map-pin" style="width:13px;height:13px"></i> Mapa</a>
@@ -1018,6 +1023,7 @@ window.DASH = {
   gastos_por_mes: {{ gastos_por_mes_json | safe }},
   gastos_por_categoria: {{ gastos_por_categoria_json | safe }},
   combustivel_por_mes: {{ combustivel_por_mes_json | safe }},
+  consumo: {{ consumo_json | safe }},
 };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
