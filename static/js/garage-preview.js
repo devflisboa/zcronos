@@ -305,6 +305,9 @@
   max-width: 400px;
   animation: gpShowcase 5s ease-in-out infinite alternate;
   filter: drop-shadow(0 8px 20px rgba(0,0,0,.7));
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 @keyframes gpShowcase {
   0%   { transform: perspective(900px) rotateY(-18deg) scale(1.0); }
@@ -341,6 +344,7 @@
 }
 .gp-car-wrap.has-photo {
   animation: gpFloat 4s ease-in-out infinite;
+  height: 155px;
 }
 .gp-reflection.has-photo {
   animation: gpFloatRef 4s ease-in-out infinite;
@@ -376,18 +380,20 @@
   .gp-stage { height: 220px; }
   .gp-car-wrap, .gp-reflection { width: 90%; }
   .gp-turntable { margin-bottom: 30px; }
+  .gp-car-wrap.has-photo { height: 125px; }
 }
 @media(max-width: 600px) {
   .gp-stage { height: 190px; }
   .gp-label-brand { font-size: 12px; }
+  .gp-car-wrap.has-photo { height: 105px; }
 }
 `;
 
   // ── Foto real no lugar do SVG ────────────────────────────────────────────
   function htmlFotoReal(url) {
     return `<img src="${url}" alt="Foto do veículo"
-      style="width:100%;height:100%;object-fit:contain;display:block;
-             filter:drop-shadow(0 8px 24px rgba(0,0,0,.8))">`;
+      style="width:100%;height:100%;object-fit:contain;object-position:center bottom;
+             display:block;filter:drop-shadow(0 8px 24px rgba(0,0,0,.8))">`;
   }
 
   function definirVisualizacao(carWrap, refWrap, url, hex) {
