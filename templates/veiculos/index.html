@@ -273,7 +273,17 @@ html, body { overflow-x: hidden; }
                  loading="lazy">
           </div>
           {% elif v.fotos %}
-          <img src="{{ url_for('galeria.imagem', id=v.id, foto_id=v.fotos[0].id, thumb=1) }}" alt="Foto de {{ v.marca }} {{ v.modelo }}" style="width:100%;height:190px;object-fit:cover" loading="lazy">
+          <div style="width:100%;height:190px;overflow:hidden">
+            <img src="{{ url_for('galeria.imagem', id=v.id, foto_id=v.fotos[0].id, thumb=1) }}"
+                 alt="Foto de {{ v.marca }} {{ v.modelo }}"
+                 style="width:100%;height:100%;object-fit:cover" loading="lazy">
+          </div>
+          {% else %}
+          <div style="width:100%;height:190px;background:linear-gradient(160deg,#0d0d14 0%,#111118 100%);
+                      display:flex;align-items:center;justify-content:center;position:relative">
+            <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(212,175,55,.06) 0%,transparent 70%);pointer-events:none"></div>
+            <i data-lucide="car" style="width:56px;height:56px;stroke:rgba(212,175,55,.22);stroke-width:1;position:relative;z-index:1"></i>
+          </div>
           {% endif %}
           <!-- Cabeçalho: ícone + nome + badge ativo -->
           <div class="vc-head">

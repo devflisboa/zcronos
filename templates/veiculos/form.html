@@ -60,9 +60,18 @@ html, body { overflow-x: hidden; }
   gap: 24px;
   align-items: flex-start;
 }
-#garage-preview {
+
+/* ── Coluna direita: animação + upload ── */
+.garage-col {
   position: sticky;
   top: 24px;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#garage-preview {
+  position: static;
 }
 .gp-title {
   font-size: 11px;
@@ -74,11 +83,69 @@ html, body { overflow-x: hidden; }
   text-align: center;
 }
 
+/* ── Upload de capa ── */
+.upload-capa-wrap {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.upload-capa-preview {
+  width: 100%;
+  height: 140px;
+  background: #080810;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  margin-bottom: 12px;
+  position: relative;
+}
+.upload-capa-preview::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 40%, rgba(212,175,55,.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+.upload-capa-preview img {
+  max-width: 90%; max-height: 130px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,.8));
+  position: relative; z-index: 1;
+}
+.upload-capa-label {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg3);
+  border: 1px dashed var(--border2);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--t);
+  box-sizing: border-box;
+}
+.upload-capa-label:hover {
+  border-color: var(--gold-border);
+  color: var(--gold);
+  background: var(--gold-d);
+}
+.upload-capa-hint {
+  font-size: 11px;
+  color: var(--text3);
+  margin: 6px 0 0;
+  text-align: center;
+}
+
 /* ── MOBILE ── */
 @media(max-width:900px){
   .form-and-preview { grid-template-columns: 1fr; }
-  #garage-preview { position: static; order: -1; }
+  .garage-col { position: static; }
+  #garage-preview { order: -1; }
   .gp-title { display: none; }
+  .upload-capa-wrap { order: 0; }
 }
 @media(max-width:768px){
   .page-topbar { display:flex; }
@@ -151,12 +218,14 @@ html, body { overflow-x: hidden; }
         {% endwith %}
       </div>
 
-      <div class="form-and-preview">
-      <div class="form-card">
-        {% if cadastro %}{% with etapa_cadastro=3 %}{% include '_cadastro_etapas.html' %}{% endwith %}{% endif %}
-        <form method="POST" enctype="multipart/form-data">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <form method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
+      <div class="form-and-preview">
+
+        <!-- ── Coluna esquerda: dados do veículo ── -->
+        <div class="form-card">
+          {% if cadastro %}{% with etapa_cadastro=3 %}{% include '_cadastro_etapas.html' %}{% endwith %}{% endif %}
 
           {% with tipo_documento='crlv' %}{% include '_importar_documento.html' %}{% endwith %}
           <div class="form-grid-2">
@@ -243,6 +312,7 @@ html, body { overflow-x: hidden; }
 <h2>Documentação e vencimentos</h2><div class="form-grid-2">
 {% for campo, rotulo, tipo, tamanho in [('ano_fabricacao', 'Ano de fabricação', 'number', 4),('chassi','Chassi','text',17),('renavam','Renavam','text',11),('proprietario','Proprietário','text',120),('crlv_validade','Vencimento do licenciamento','date',10),('seguro_validade','Vencimento do seguro','date',10)] %}
 <div class="form-group"><label class="form-label" for="{{ campo }}">{{ rotulo }}</label><input class="form-control" id="{{ campo }}" name="{{ campo }}" type="{{ tipo }}" maxlength="{{ tamanho }}" value="{{ request.form.get(campo, (veiculo|attr(campo) or '') if veiculo else '') }}"></div>{% endfor %}</div>
+
           {% if veiculo %}
           <section style="margin:24px 0" aria-label="Referência FIPE">
             <h2>Valor de referência FIPE</h2>
@@ -256,24 +326,7 @@ html, body { overflow-x: hidden; }
             <label><input type="checkbox" name="vincular_condutor" value="sim" {% if (request.method == 'POST' and request.form.get('vincular_condutor') == 'sim') or (request.method != 'POST' and (not veiculo or veiculo.condutor_id == condutor.id)) %}checked{% endif %}> Vincular {{ condutor.nome }} como condutor deste veículo</label>
           </section>
           {% endif %}
-          {% if veiculo %}
-          <section style="margin:24px 0" aria-label="Foto de capa do veículo">
-            <h2>Foto do veículo</h2>
-            <p style="font-size:13px;color:var(--text3);margin-bottom:12px">O fundo da imagem será removido automaticamente, deixando apenas o carro.</p>
-            {% if veiculo.foto_capa %}
-            <div style="margin-bottom:12px;display:inline-block;border-radius:8px;overflow:hidden;border:1px solid var(--border)">
-              <img src="{{ url_for('veiculo.capa', id=veiculo.id) }}" alt="Capa de {{ veiculo.marca }} {{ veiculo.modelo }}"
-                   style="max-height:180px;max-width:100%;display:block;background:repeating-conic-gradient(#2a2a2e 0% 25%,#1a1a1e 0% 50%) 0 0/16px 16px">
-            </div>
-            {% endif %}
-            <div class="form-group">
-              <label class="form-label" for="foto_capa">{{ 'Trocar foto' if veiculo.foto_capa else 'Adicionar foto' }}</label>
-              <input class="form-control" id="foto_capa" name="foto_capa" type="file"
-                     accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
-                     style="padding:10px">
-            </div>
-          </section>
-          {% endif %}
+
           <p style="margin-top:16px;font-size:14px;color:var(--text2)">Revise as informações preenchidas pelo documento antes de confirmar o cadastro.</p>
           <div class="form-actions">
             <a href="{{ url_for('veiculo.index') }}" class="btn btn-ghost">Cancelar</a>
@@ -281,15 +334,40 @@ html, body { overflow-x: hidden; }
               {{ 'Salvar alterações' if veiculo else 'Cadastrar veículo' }}
             </button>
           </div>
-        </form>
-      </div>
+        </div><!-- /.form-card -->
 
-      <!-- Painel de prévia — garagem 3D -->
-      <div id="garage-preview">
-        <div class="gp-title">Prévia do veículo</div>
-      </div>
+        <!-- ── Coluna direita: animação 3D + upload de foto ── -->
+        <div class="garage-col">
+          <div class="gp-title">Prévia do veículo</div>
+          <div id="garage-preview"></div>
+
+          {% if veiculo %}
+          <div class="upload-capa-wrap">
+            <div class="upload-capa-preview" id="upload-capa-preview-box">
+              {% if veiculo.foto_capa %}
+              <img src="{{ url_for('veiculo.capa', id=veiculo.id) }}"
+                   alt="Capa de {{ veiculo.marca }} {{ veiculo.modelo }}">
+              {% else %}
+              <i data-lucide="image" style="width:36px;height:36px;stroke:rgba(212,175,55,.25);stroke-width:1.25"></i>
+              {% endif %}
+            </div>
+            <label class="upload-capa-label" for="foto_capa" id="upload-capa-label-btn">
+              <i data-lucide="image-plus" style="width:16px;height:16px;margin-right:6px;vertical-align:middle"></i>
+              {{ 'Trocar foto' if veiculo.foto_capa else 'Adicionar foto do carro' }}
+            </label>
+            <input id="foto_capa" name="foto_capa" type="file"
+                   accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
+                   style="display:none">
+            <p class="upload-capa-hint">O fundo será removido automaticamente.</p>
+            <button type="submit" class="btn btn-primary" style="width:100%;margin-top:12px">
+              {{ 'Salvar alterações' if veiculo else 'Cadastrar veículo' }}
+            </button>
+          </div>
+          {% endif %}
+        </div><!-- /.garage-col -->
 
       </div><!-- /.form-and-preview -->
+      </form>
     </div>
   </main>
 </div>
@@ -318,13 +396,10 @@ window.GARAGE_CAPA_URL = "{{ url_for('veiculo.capa', id=veiculo.id) if veiculo a
   function format(v){
     v = raw(v.toUpperCase());
     if(v.length <= 3) return v;
-    // Mercosul: 4º char é dígito → sem hífen
     if(/\d/.test(v[3])){
       inp.maxLength = 7;
       return v.slice(0,7);
     }
-    // Padrão: 4º char é dígito depois das 3 letras (mas 4º é letra = ainda digitando)
-    // hífen após 3 letras
     inp.maxLength = 8;
     var letras = v.slice(0,3);
     var resto  = v.slice(3).replace(/\D/g,'').slice(0,4);
@@ -345,13 +420,10 @@ window.GARAGE_CAPA_URL = "{{ url_for('veiculo.capa', id=veiculo.id) if veiculo a
     var pos = inp.selectionStart;
     var formatted = format(inp.value);
     inp.value = formatted;
-    // restaura cursor (compensa hífen inserido)
     try{ inp.setSelectionRange(pos,pos); }catch(e){}
   });
 
   inp.addEventListener('blur', function(){ validate(inp.value); });
-
-  // valida valor já preenchido ao carregar
   if(inp.value) validate(inp.value);
 })();
 </script>

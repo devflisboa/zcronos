@@ -329,6 +329,22 @@
   70%  { transform: scaleY(-0.22) translateY(-4px) perspective(900px) rotateY(8deg); }
   100% { transform: scaleY(-0.22) translateY(-4px) perspective(900px) rotateY(20deg); }
 }
+@keyframes gpFloat {
+  0%   { transform: translateY(0px)   scale(1.04); }
+  50%  { transform: translateY(-10px) scale(1.04); }
+  100% { transform: translateY(0px)   scale(1.04); }
+}
+@keyframes gpFloatRef {
+  0%   { transform: scaleY(-0.22) translateY(-4px); }
+  50%  { transform: scaleY(-0.22) translateY(-14px); }
+  100% { transform: scaleY(-0.22) translateY(-4px); }
+}
+.gp-car-wrap.has-photo {
+  animation: gpFloat 4s ease-in-out infinite;
+}
+.gp-reflection.has-photo {
+  animation: gpFloatRef 4s ease-in-out infinite;
+}
 .gp-label-bar {
   position: absolute;
   bottom: 0;
@@ -376,16 +392,24 @@
 
   function definirVisualizacao(carWrap, refWrap, url, hex) {
     if (url) {
-      if (carWrap) carWrap.innerHTML = htmlFotoReal(url);
+      if (carWrap) {
+        carWrap.innerHTML = htmlFotoReal(url);
+        carWrap.classList.add('has-photo');
+      }
       if (refWrap) {
         refWrap.innerHTML = htmlFotoReal(url);
+        refWrap.classList.add('has-photo');
         refWrap.style.opacity = '0.12';
         refWrap.style.filter  = 'blur(3px)';
       }
     } else {
-      if (carWrap) carWrap.innerHTML = gerarCarSVG(hex);
+      if (carWrap) {
+        carWrap.innerHTML = gerarCarSVG(hex);
+        carWrap.classList.remove('has-photo');
+      }
       if (refWrap) {
         refWrap.innerHTML = gerarCarSVG(hex);
+        refWrap.classList.remove('has-photo');
         refWrap.style.opacity = '';
         refWrap.style.filter  = '';
       }
@@ -460,6 +484,26 @@
         reader.onload = function (e) {
           capaAtual = e.target.result;
           atualizar();
+          // atualiza o box de preview ao lado do upload
+          const previewBox = document.getElementById('upload-capa-preview-box');
+          if (previewBox) {
+            let img = previewBox.querySelector('img');
+            if (!img) {
+              previewBox.innerHTML = '';
+              img = document.createElement('img');
+              previewBox.appendChild(img);
+            }
+            img.src = e.target.result;
+            img.alt = 'Pré-visualização';
+            const labelBtn = document.getElementById('upload-capa-label-btn');
+            if (labelBtn) {
+              Array.from(labelBtn.childNodes).forEach(function(n) {
+                if (n.nodeType === Node.TEXT_NODE && n.textContent.trim()) {
+                  n.textContent = ' Trocar foto';
+                }
+              });
+            }
+          }
         };
         reader.readAsDataURL(file);
       });
