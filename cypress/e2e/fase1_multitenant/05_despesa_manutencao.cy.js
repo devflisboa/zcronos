@@ -90,13 +90,27 @@ describe('Fase 1 — Despesa e Manutenção', () => {
       })
     })
 
-    it('DELETE /manutencao/delete/99999 retorna 404 ou redirect', () => {
+    it('DELETE /manutencao/delete/99999 retorna 404', () => {
       cy.visit('/')
       cy.getCsrfToken().then((token) => {
         cy.request({
           method: 'POST',
           url: '/manutencao/delete/99999',
           body: { csrf_token: token },
+          form: true,
+          failOnStatusCode: false,
+          followRedirect: false,
+        }).its('status').should('eq', 404)
+      })
+    })
+
+    it('POST /manutencao/editar/99999 retorna 404', () => {
+      cy.visit('/')
+      cy.getCsrfToken().then((token) => {
+        cy.request({
+          method: 'POST',
+          url: '/manutencao/editar/99999',
+          body: { csrf_token: token, tipo: 'oleo', descricao: 'Teste', status: 'pendente' },
           form: true,
           failOnStatusCode: false,
           followRedirect: false,
