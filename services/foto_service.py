@@ -57,3 +57,28 @@ def remover_foto(veiculo_id, filename):
     pasta = pasta_fotos(veiculo_id)
     for nome in (filename, filename[:-4] + '_thumb.jpg'):
         (pasta / nome).unlink(missing_ok=True)
+
+
+def preparar_foto_capa(arquivo):
+    from rembg import remove as rembg_remove
+    bruto = arquivo.stream.read(10 * 1024 * 1024 + 1)
+    if not bruto or len(bruto) > 10 * 1024 * 1024:
+        raise ValueError('A foto deve ter até 10 MB.')
+    if arquivo.mimetype not in ('image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp'):
+        raise ValueError('Use JPG, PNG, HEIC ou WebP.')
+    try:
+        from pillow_heif import register_heif_opener
+        register_heif_opener()
+        with warnings.catch_warnings():
+            warnings.simplefilter('error', Image.DecompressionBombWarning)
+            with Image.open(io.BytesIO(bruto)) as imagem:
+                if imagem.width * imagem.height > 24_000_000:
+                    raise ValueError('Foto com dimensões excessivas.')
+                imagem = ImageOps.exif_transpose(imagem).convert('RGBA')
+                imagem.thumbnail((1200, 1200))
+                buf = io.BytesIO()
+                imagem.save(buf, 'PNG')
+                resultado = rembg_remove(buf.getvalue())
+        return resultado
+    except (UnidentifiedImageError, OSError, Image.DecompressionBombWarning, Image.DecompressionBombError):
+        raise ValueError('Não foi possível ler esta foto.') from None

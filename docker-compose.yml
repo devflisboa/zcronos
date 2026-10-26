@@ -22,8 +22,10 @@ services:
       DB_PORT: 3306
     volumes:
       - .:/app
+      - u2net_cache:/home/appuser/.u2net
     depends_on:
       - db
 
 volumes:
   mysql_data:
+  u2net_cache:

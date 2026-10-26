@@ -114,7 +114,7 @@ html, body { overflow-x: hidden; }
       </a>
       <div class="nav-group-label">Veículo</div>
       <a href="{{ url_for('veiculo.index') }}" class="nav-item active">
-        <span class="ni"><i data-lucide="car"></i></span> Meus Veículos
+        <span class="ni"><i data-lucide="warehouse"></i></span> Garagem
       </a>
       <div class="nav-group-label">Registros</div>
       <a href="{{ url_for('abastecimento.cadastrar_abastecimento') }}" class="nav-item">
@@ -154,7 +154,7 @@ html, body { overflow-x: hidden; }
       <div class="form-and-preview">
       <div class="form-card">
         {% if cadastro %}{% with etapa_cadastro=3 %}{% include '_cadastro_etapas.html' %}{% endwith %}{% endif %}
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
 
@@ -254,6 +254,24 @@ html, body { overflow-x: hidden; }
           {% if condutor %}
           <section class="cadastro-condutor" aria-label="Condutor do veículo">
             <label><input type="checkbox" name="vincular_condutor" value="sim" {% if (request.method == 'POST' and request.form.get('vincular_condutor') == 'sim') or (request.method != 'POST' and (not veiculo or veiculo.condutor_id == condutor.id)) %}checked{% endif %}> Vincular {{ condutor.nome }} como condutor deste veículo</label>
+          </section>
+          {% endif %}
+          {% if veiculo %}
+          <section style="margin:24px 0" aria-label="Foto de capa do veículo">
+            <h2>Foto do veículo</h2>
+            <p style="font-size:13px;color:var(--text3);margin-bottom:12px">O fundo da imagem será removido automaticamente, deixando apenas o carro.</p>
+            {% if veiculo.foto_capa %}
+            <div style="margin-bottom:12px;display:inline-block;border-radius:8px;overflow:hidden;border:1px solid var(--border)">
+              <img src="{{ url_for('veiculo.capa', id=veiculo.id) }}" alt="Capa de {{ veiculo.marca }} {{ veiculo.modelo }}"
+                   style="max-height:180px;max-width:100%;display:block;background:repeating-conic-gradient(#2a2a2e 0% 25%,#1a1a1e 0% 50%) 0 0/16px 16px">
+            </div>
+            {% endif %}
+            <div class="form-group">
+              <label class="form-label" for="foto_capa">{{ 'Trocar foto' if veiculo.foto_capa else 'Adicionar foto' }}</label>
+              <input class="form-control" id="foto_capa" name="foto_capa" type="file"
+                     accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
+                     style="padding:10px">
+            </div>
           </section>
           {% endif %}
           <p style="margin-top:16px;font-size:14px;color:var(--text2)">Revise as informações preenchidas pelo documento antes de confirmar o cadastro.</p>
