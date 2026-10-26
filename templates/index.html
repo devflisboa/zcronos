@@ -129,12 +129,28 @@
       <!-- ──────────── HOME ──────────── -->
       <section id="sec-home" class="section active">
 
+        <!-- Filtro de Período -->
+        <div style="display:flex;align-items:center;gap:10px;margin-top:16px;margin-bottom:4px">
+          <span style="font-size:13px;color:var(--text3)">Período:</span>
+          <form method="GET" action="{{ url_for('main.index') }}" style="display:flex;gap:6px;align-items:center">
+            <select name="periodo" class="form-control" style="padding:4px 8px;font-size:13px;height:32px;width:auto"
+                    onchange="this.form.submit()">
+              {% for val, label, sel in opcoes_periodo %}
+              <option value="{{ val }}" {% if sel %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+            {% if periodo_filtrado %}
+            <a href="{{ url_for('main.index') }}" class="btn btn-ghost btn-sm" style="height:32px;font-size:12px">Hoje</a>
+            {% endif %}
+          </form>
+        </div>
+
         <!-- KPI Row -->
         <div class="grid-4 gap-top">
 
           <div class="kpi" style="--accent-c:var(--red-d)" onclick="switchSection('despesas','Despesas')" title="Ver despesas do mês">
             <div class="kpi-icon"><i data-lucide="dollar-sign" style="width:22px;height:22px;stroke:var(--danger)"></i></div>
-            <div class="kpi-label">Custo do Mês</div>
+            <div class="kpi-label">{% set meses_pt = ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'] %}Custo — {{ meses_pt[periodo_mes] }}/{{ periodo_ano }}</div>
             <div class="kpi-value red" data-count="{{ custo_mes }}" data-prefix="R$ " data-dec="2">R$ 0</div>
             <div class="kpi-delta {% if custo_mes_delta > 0 %}up{% elif custo_mes_delta < 0 %}down{% else %}neutral{% endif %}">
               {% if custo_mes_delta > 0 %}▲{% elif custo_mes_delta < 0 %}▼{% else %}–{% endif %}

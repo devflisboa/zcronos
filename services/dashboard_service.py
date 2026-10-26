@@ -189,11 +189,11 @@ def get_alertas_manutencao(veiculo_id):
     return alertas
 
 
-def get_comparativo_mes(veiculo_id):
-    agora = datetime.now()
-    atual = get_custo_mes(veiculo_id, agora.month, agora.year)
-    m_ant = agora.month - 1 if agora.month > 1 else 12
-    a_ant = agora.year if agora.month > 1 else agora.year - 1
+def get_comparativo_mes(veiculo_id, mes=None, ano=None):
+    m, a = mes or _mes_ano()[0], ano or _mes_ano()[1]
+    atual = get_custo_mes(veiculo_id, m, a)
+    m_ant = m - 1 if m > 1 else 12
+    a_ant = a if m > 1 else a - 1
     anterior = get_custo_mes(veiculo_id, m_ant, a_ant)
     delta = round(((atual - anterior) / anterior) * 100, 1) if anterior > 0 else 0
     return {'atual': atual, 'anterior': anterior, 'delta': delta}
@@ -254,26 +254,29 @@ def get_gastos_fixos_vs_variaveis(veiculo_id, mes=None, ano=None):
     return {'fixo': round(float(fixo), 2), 'variavel': round(float(variavel) + comb, 2)}
 
 
-def get_dashboard_data(veiculo_id):
+def get_dashboard_data(veiculo_id, mes=None, ano=None):
     veiculo = Veiculo.query.filter_by(id=veiculo_id, user_id=current_user.id, ativo=True).first_or_404()
-    comp = get_comparativo_mes(veiculo_id)
+    m_ref, a_ref = mes or _mes_ano()[0], ano or _mes_ano()[1]
+    comp = get_comparativo_mes(veiculo_id, m_ref, a_ref)
     return {
         'veiculo': veiculo,
         'custo_mes': comp['atual'],
         'custo_mes_anterior': comp['anterior'],
         'custo_mes_delta': comp['delta'],
-        'custo_ano': get_custo_ano(veiculo_id),
+        'custo_ano': get_custo_ano(veiculo_id, a_ref),
         'media_mensal': get_media_mensal(veiculo_id),
         'custo_por_km': get_custo_por_km(veiculo_id),
-        'gastos_combustivel_mes': get_gastos_combustivel_mes(veiculo_id),
-        'gastos_manutencao_mes': get_gastos_manutencao_mes(veiculo_id),
+        'gastos_combustivel_mes': get_gastos_combustivel_mes(veiculo_id, m_ref, a_ref),
+        'gastos_manutencao_mes': get_gastos_manutencao_mes(veiculo_id, m_ref, a_ref),
         'consumo_medio': get_consumo_medio(veiculo_id),
         'preco_medio_litro': get_preco_medio_litro(veiculo_id),
         'km_atual': veiculo.km_atual if veiculo else 0,
         'gastos_por_mes': get_gastos_por_mes(veiculo_id, 12),
         'gastos_por_categoria': get_gastos_por_categoria(veiculo_id),
         'combustivel_por_mes': get_combustivel_por_mes(veiculo_id, 6),
-        'fixo_vs_variavel': get_gastos_fixos_vs_variaveis(veiculo_id),
+        'fixo_vs_variavel': get_gastos_fixos_vs_variaveis(veiculo_id, m_ref, a_ref),
+        'periodo_mes': m_ref,
+        'periodo_ano': a_ref,
         'custo_historico': get_custo_historico(veiculo_id),
         'ultimo_abastecimento': get_ultimo_abastecimento(veiculo_id),
         'alertas': get_alertas_manutencao(veiculo_id),
