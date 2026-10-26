@@ -168,6 +168,43 @@
           </div>
         </div>
 
+        <!-- Segunda linha de KPIs -->
+        <div class="grid-4 gap-top" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+          <div class="kpi" style="--accent-c:#2a2a2d">
+            <div class="kpi-icon"><i data-lucide="history" style="width:22px;height:22px;stroke:var(--text2)"></i></div>
+            <div class="kpi-label">Total Histórico</div>
+            <div class="kpi-value" style="color:var(--text1)" data-count="{{ custo_historico }}" data-prefix="R$ " data-dec="2">R$ 0</div>
+            <div class="kpi-delta neutral">Desde o primeiro registro</div>
+            <div class="kpi-bar" style="background:var(--text3)"></div>
+          </div>
+          <div class="kpi" style="--accent-c:#2a2a2d" onclick="switchSection('combustivel','Combustível')" title="Ver histórico de abastecimento">
+            <div class="kpi-icon"><i data-lucide="fuel" style="width:22px;height:22px;stroke:var(--gold)"></i></div>
+            <div class="kpi-label">Último Abastecimento</div>
+            {% if ultimo_abastecimento %}
+            <div class="kpi-value" style="color:var(--text1);font-size:1.1rem">{{ ultimo_abastecimento.data.strftime('%d/%m/%Y') if ultimo_abastecimento.data else '—' }}</div>
+            <div class="kpi-delta neutral">{{ ultimo_abastecimento.posto or '—' }}</div>
+            {% else %}
+            <div class="kpi-value" style="color:var(--text3)">—</div>
+            <div class="kpi-delta neutral">Nenhum registro</div>
+            {% endif %}
+            <div class="kpi-bar" style="background:var(--gold)"></div>
+          </div>
+          <div class="kpi" style="--accent-c:#2a2a2d" onclick="switchSection('combustivel','Combustível')" title="Ver consumo">
+            <div class="kpi-icon"><i data-lucide="gauge" style="width:22px;height:22px;stroke:var(--ok)"></i></div>
+            <div class="kpi-label">Consumo Médio</div>
+            <div class="kpi-value ok" data-count="{{ consumo_medio }}" data-suffix=" km/L" data-dec="1">—</div>
+            <div class="kpi-delta neutral">Histórico</div>
+            <div class="kpi-bar" style="background:var(--ok)"></div>
+          </div>
+          <div class="kpi" style="--accent-c:#2a2a2d" onclick="switchSection('combustivel','Combustível')" title="Ver preços de combustível">
+            <div class="kpi-icon"><i data-lucide="droplets" style="width:22px;height:22px;stroke:#60aaff"></i></div>
+            <div class="kpi-label">Preço Médio/Litro</div>
+            <div class="kpi-value" style="color:#60aaff" data-count="{{ preco_medio_litro }}" data-prefix="R$ " data-dec="3">—</div>
+            <div class="kpi-delta neutral">Histórico de abastecimentos</div>
+            <div class="kpi-bar" style="background:#60aaff"></div>
+          </div>
+        </div>
+
         <!-- Valor de Mercado FIPE -->
         {% if veiculo.fipe_codigo %}
         <div class="card gap-top" id="fipe-card" style="cursor:default">

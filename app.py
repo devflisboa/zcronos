@@ -66,6 +66,16 @@ def create_app(config_name='default', *, test_config=None, initialize_database=T
     def inject_now():
         return {'now': datetime.utcnow()}
 
+    @app.context_processor
+    def inject_sidebar_alertas():
+        from flask_login import current_user
+        if current_user.is_authenticated:
+            from services.alerta_service import listar_alertas
+            count = sum(1 for a in listar_alertas(current_user.id)
+                        if a['prioridade'] in ('urgente', 'atenção'))
+            return {'sidebar_alertas_count': count}
+        return {}
+
     app.config['SCHEDULER_API_ENABLED'] = False
     if start_scheduler:
         scheduler.init_app(app)

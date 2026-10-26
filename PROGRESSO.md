@@ -5,7 +5,7 @@ _(atualizar a cada commit)_
 
 ## Testes Cypress
 - Baseline: 167/167 passando (master)
-- Último run: pendente
+- Último run: **167/167 ✅** (dev branch, 25/10/2026)
 
 ## Funcionalidades entregues
 | Feature | Status | Commit |
@@ -15,4 +15,5 @@ _(atualizar a cada commit)_
 | Email HTML dark-theme | ✅ em master | 38a4408 |
 | Open Graph tags | ✅ em master | 38a4408 |
 | Logo no card galeria | ✅ em master | 38a4408 |
-| Animação garagem 3D | 🔄 em progresso | — |
+| Animação garagem 3D | ✅ em dev | 0a24b90 |
+| Mapa de abastecimentos (Leaflet.js) | ✅ em dev | 1508018 |

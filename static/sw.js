@@ -6,7 +6,7 @@
  * - Imagens e CDNs com versão fixa (lucide@x.y.z): cache primeiro
  * Ao alterar este arquivo, incrementar VERSION para descartar caches antigos.
  */
-const VERSION = 'autoviu-v3';
+const VERSION = 'autoviu-v4';
 const CACHE = VERSION + '-static';
 const OFFLINE_URL = '/static/offline.html';
 const PRECACHE = [

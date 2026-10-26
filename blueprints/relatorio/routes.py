@@ -24,14 +24,23 @@ def index():
 def exportar(id):
     Veiculo.query.filter_by(id=id, user_id=current_user.id, ativo=True).first_or_404()
     tipo = request.args.get('tipo', 'abastecimentos')
-    modelos = {'abastecimentos': (Abastecimento, ('data', 'posto', 'quilometragem', 'litros_abastecidos', 'valor_total', 'preco_combustivel')),
-        'despesas': (Despesa, ('data', 'descricao', 'valor', 'quilometragem', 'forma_pagamento', 'observacoes')),
-        'manutencoes': (Manutencao, ('tipo', 'descricao', 'data_realizada', 'km_realizada', 'data_prevista', 'km_previsto', 'custo', 'status'))}
+    modelos = {'abastecimentos': (Abastecimento, ('data', 'posto', 'quilometragem', 'litros_abastecidos', 'valor_total', 'preco_combustivel', 'tipo_combustivel', 'observacao', 'latitude', 'longitude'), 'data'),
+        'despesas': (Despesa, ('data', 'descricao', 'valor', 'quilometragem', 'forma_pagamento', 'observacoes', 'latitude', 'longitude'), 'data'),
+        'manutencoes': (Manutencao, ('tipo', 'descricao', 'data_realizada', 'km_realizada', 'data_prevista', 'km_previsto', 'custo', 'status'), 'data_realizada')}
     if tipo not in modelos:
         from flask import abort
         abort(400)
-    model, campos = modelos[tipo]
-    registros = model.query.filter_by(veiculo_id=id).order_by(model.id).all()
+    from datetime import date as date_type
+    model, campos, campo_data = modelos[tipo]
+    q = model.query.filter_by(veiculo_id=id)
+    try:
+        if request.args.get('de'):
+            q = q.filter(getattr(model, campo_data) >= date_type.fromisoformat(request.args['de']))
+        if request.args.get('ate'):
+            q = q.filter(getattr(model, campo_data) <= date_type.fromisoformat(request.args['ate']))
+    except (ValueError, AttributeError):
+        pass
+    registros = q.order_by(model.id).all()
     saida = io.StringIO(newline='')
     writer = csv.writer(saida, delimiter=';')
     writer.writerow(campos)
