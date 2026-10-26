@@ -216,10 +216,16 @@ def get_combustivel_por_mes(veiculo_id, ultimos=6):
             extract('month', Abastecimento.data) == m,
             extract('year', Abastecimento.data) == a,
         ).scalar() or 0
+        preco_medio = db.session.query(func.avg(Abastecimento.preco_combustivel)).filter(
+            Abastecimento.veiculo_id == veiculo_id,
+            extract('month', Abastecimento.data) == m,
+            extract('year', Abastecimento.data) == a,
+        ).scalar()
         resultado.append({
             'mes': calendar.month_abbr[m],
             'valor': total,
             'litros': round(float(litros), 2),
+            'preco_medio': round(float(preco_medio), 3) if preco_medio else None,
         })
     return resultado
 
