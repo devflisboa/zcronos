@@ -70,7 +70,7 @@
         <span class="ni"><i data-lucide="map-pin"></i></span> Mapa
       </a>
       <a href="{{ url_for('veiculo.index') }}" class="nav-item">
-        <span class="ni"><i data-lucide="car"></i></span> Meus Veículos
+        <span class="ni"><i data-lucide="warehouse"></i></span> Garagem
       </a>
 
       <div class="nav-group-label" style="margin-top:auto">Conta</div>
@@ -81,6 +81,12 @@
     </nav>
 
     <div class="sb-footer">
+      {% if veiculo and veiculo.foto_capa %}
+      <div style="padding:0 12px 10px;text-align:center">
+        <img src="{{ url_for('veiculo.capa', id=veiculo.id) }}" alt="{{ veiculo.marca }} {{ veiculo.modelo }}"
+             style="max-height:80px;max-width:100%;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(212,175,55,.25))">
+      </div>
+      {% endif %}
       <div class="sb-vehicle">
         <div>
           <div class="sb-plate">{{ veiculo.placa if veiculo else '—' }}</div>

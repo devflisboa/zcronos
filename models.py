@@ -91,6 +91,7 @@ class Veiculo(db.Model):
     fipe_referencia = db.Column(db.String(60))
     fipe_valor = db.Column(db.Numeric(12, 2))
     fipe_consultado_em = db.Column(db.DateTime)
+    foto_capa = db.Column(db.String(200))
 
     fotos = db.relationship('FotoVeiculo', order_by='FotoVeiculo.ordem', lazy='select')
 

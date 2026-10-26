@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Meus Veículos | ΛUTOVIU</title>
+<title>Garagem | ΛUTOVIU</title>
 <link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
 {% include '_pwa_head.html' %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/automotive.css') }}">
@@ -204,7 +204,7 @@ html, body { overflow-x: hidden; }
       </a>
       <div class="nav-group-label">Veículo</div>
       <a href="{{ url_for('veiculo.index') }}" class="nav-item active">
-        <span class="ni"><i data-lucide="car"></i></span> Meus Veículos
+        <span class="ni"><i data-lucide="warehouse"></i></span> Garagem
       </a>
       <div class="nav-group-label">Registros</div>
       <a href="{{ url_for('abastecimento.cadastrar_abastecimento') }}" class="nav-item">
@@ -227,7 +227,7 @@ html, body { overflow-x: hidden; }
       <button class="btn btn-ghost btn-icon" id="sb-toggle">
         <i data-lucide="menu"></i>
       </button>
-      <span class="page-topbar-title">Meus Veículos</span>
+      <span class="page-topbar-title">Garagem</span>
       {% if pode_adicionar %}
       <a href="{{ url_for('veiculo.novo') }}" class="btn-add">
         <i data-lucide="plus" style="width:15px;height:15px"></i> Novo
@@ -238,7 +238,7 @@ html, body { overflow-x: hidden; }
     <div class="page-wrap">
       <!-- Header desktop -->
       <div class="page-header">
-        <div class="page-title">Meus Veículos</div>
+        <div class="page-title">Garagem</div>
         {% if pode_adicionar %}
         <a href="{{ url_for('veiculo.novo') }}" class="btn-add">
           <i data-lucide="plus" style="width:15px;height:15px"></i> Novo Veículo
@@ -263,7 +263,14 @@ html, body { overflow-x: hidden; }
         <div class="veiculo-card {% if v.id == veiculo_ativo_id %}is-ativo{% endif %}"
              onclick="location.href='{{ url_for('veiculo.editar', id=v.id) }}'">
 
-          {% if v.fotos %}<img src="{{ url_for('galeria.imagem', id=v.id, foto_id=v.fotos[0].id, thumb=1) }}" alt="Foto de {{ v.marca }} {{ v.modelo }}" style="width:100%;height:180px;object-fit:cover" loading="lazy">{% endif %}
+          {% if v.foto_capa %}
+          <div style="width:100%;height:180px;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden">
+            <img src="{{ url_for('veiculo.capa', id=v.id) }}" alt="Foto de {{ v.marca }} {{ v.modelo }}"
+                 style="max-width:100%;max-height:100%;object-fit:contain" loading="lazy">
+          </div>
+          {% elif v.fotos %}
+          <img src="{{ url_for('galeria.imagem', id=v.id, foto_id=v.fotos[0].id, thumb=1) }}" alt="Foto de {{ v.marca }} {{ v.modelo }}" style="width:100%;height:180px;object-fit:cover" loading="lazy">
+          {% endif %}
           <!-- Cabeçalho: ícone + nome + badge ativo -->
           <div class="vc-head">
             <div class="vc-icon">

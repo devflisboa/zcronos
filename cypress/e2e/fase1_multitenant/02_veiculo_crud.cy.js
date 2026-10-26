@@ -12,7 +12,7 @@ describe('Fase 1 — Veículo CRUD', () => {
     beforeEach(() => cy.visit('/veiculos/'))
 
     it('carrega a página de veículos', () => {
-      cy.contains(/Meus veículos/i).should('be.visible')
+      cy.contains(/Garagem/i).should('be.visible')
     })
 
     it('exibe botão de novo veículo se dentro do limite do plano', () => {
