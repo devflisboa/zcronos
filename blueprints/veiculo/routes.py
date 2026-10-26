@@ -113,6 +113,38 @@ def selecionar(id):
     return redirect(url_for('main.index'))
 
 
+@veiculo_bp.route('/trocar/proximo', methods=['POST'])
+@login_required
+def trocar_proximo():
+    veiculos = Veiculo.query.filter_by(user_id=current_user.id, ativo=True).order_by(Veiculo.id).all()
+    if len(veiculos) < 2:
+        return redirect(request.referrer or url_for('main.index'))
+    ativo_id = session.get('veiculo_ativo_id')
+    ids = [v.id for v in veiculos]
+    try:
+        idx = ids.index(ativo_id)
+    except ValueError:
+        idx = 0
+    session['veiculo_ativo_id'] = ids[(idx + 1) % len(ids)]
+    return redirect(request.referrer or url_for('main.index'))
+
+
+@veiculo_bp.route('/trocar/anterior', methods=['POST'])
+@login_required
+def trocar_anterior():
+    veiculos = Veiculo.query.filter_by(user_id=current_user.id, ativo=True).order_by(Veiculo.id).all()
+    if len(veiculos) < 2:
+        return redirect(request.referrer or url_for('main.index'))
+    ativo_id = session.get('veiculo_ativo_id')
+    ids = [v.id for v in veiculos]
+    try:
+        idx = ids.index(ativo_id)
+    except ValueError:
+        idx = 0
+    session['veiculo_ativo_id'] = ids[(idx - 1) % len(ids)]
+    return redirect(request.referrer or url_for('main.index'))
+
+
 @veiculo_bp.route('/<int:id>/deletar', methods=['POST'])
 @login_required
 def deletar(id):

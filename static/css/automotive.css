@@ -116,6 +116,13 @@ input,select,textarea,button{font-family:inherit}
 .sbpm-brasil{font-family:Arial,Helvetica,sans-serif;font-size:6px;font-weight:800;color:#fff;letter-spacing:.7px}
 .sbpm-numero{font-family:'Arial Black',Arial,Helvetica,sans-serif;font-size:10px;font-weight:900;color:#111;text-align:center;letter-spacing:1px}
 .sb-km span{color:var(--text);font-weight:600}
+/* car switcher */
+.sb-switcher{display:flex;align-items:center;width:100%;gap:2px}
+.sb-switcher-center{flex:1;min-width:0}
+.sb-switcher-arrow{flex-shrink:0}
+.sb-switcher-arrow button{background:none;border:none;cursor:pointer;color:var(--gold,#D4AF37);font-size:26px;line-height:1;padding:4px 6px;border-radius:6px;transition:background .15s,color .15s;display:flex;align-items:center}
+.sb-switcher-arrow button:hover{background:rgba(212,175,55,.15);color:#f0c84a}
+.sb-switcher-label{font-size:10px;color:var(--text-muted,#888);text-align:center;padding:0 4px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* ── MAIN ── */
 #main{flex:1;min-width:0;margin-left:var(--sidebar);min-height:100vh;display:flex;flex-direction:column;width:calc(100% - var(--sidebar))}

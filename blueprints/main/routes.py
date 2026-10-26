@@ -66,7 +66,9 @@ def renderizar_dashboard(mes=None, ano=None, **contexto):
     veiculo = get_veiculo_ativo()
     if not veiculo:
         return redirect(destino_inicial(current_user))
+    total_veiculos = Veiculo.query.filter_by(user_id=current_user.id, ativo=True).count()
     data = get_dashboard_data(veiculo.id, mes=mes, ano=ano)
+    data['total_veiculos'] = total_veiculos
     data['gastos_por_mes_json'] = json.dumps(data['gastos_por_mes'])
     data['gastos_por_categoria_json'] = json.dumps(data['gastos_por_categoria'])
     data['combustivel_por_mes_json'] = json.dumps(data['combustivel_por_mes'])
