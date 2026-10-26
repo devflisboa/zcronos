@@ -513,7 +513,7 @@
           // indica que há foto pendente de save
           const hint = document.querySelector('.upload-capa-hint');
           if (hint) {
-            hint.textContent = 'Clique em "Salvar alterações" para confirmar.';
+            hint.textContent = 'Foto selecionada — clique em Salvar para confirmar.';
             hint.style.color = '#D4AF37';
           }
         };

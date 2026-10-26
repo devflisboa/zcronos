@@ -65,11 +65,11 @@ def editar(id):
             arquivo_capa = request.files.get('foto_capa')
             if arquivo_capa and arquivo_capa.filename:
                 try:
-                    png_bytes = preparar_foto_capa(arquivo_capa)
+                    img_bytes = preparar_foto_capa(arquivo_capa)
                     pasta = pasta_fotos(v.id)
                     pasta.mkdir(parents=True, exist_ok=True)
-                    nome_capa = f'capa_{v.id}.png'
-                    (pasta / nome_capa).write_bytes(png_bytes)
+                    nome_capa = f'capa_{v.id}.jpg'
+                    (pasta / nome_capa).write_bytes(img_bytes)
                     v.foto_capa = nome_capa
                 except ValueError as e:
                     flash(str(e), 'warning')
@@ -99,7 +99,7 @@ def capa(id):
     arquivo = pasta_fotos(id) / v.foto_capa
     if not arquivo.is_file():
         abort(404)
-    resp = send_file(arquivo, mimetype='image/png', max_age=0)
+    resp = send_file(arquivo, max_age=0)
     resp.headers['Cache-Control'] = 'private, no-store'
     return resp
 

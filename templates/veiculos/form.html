@@ -189,8 +189,8 @@ html, body { overflow-x: hidden; }
 <body>
 <div id="foto-loading-overlay">
   <div class="foto-loading-spinner"></div>
-  <div class="foto-loading-title">Removendo fundo da foto...</div>
-  <div class="foto-loading-sub">Este processo pode levar até 1 minuto na primeira vez. Aguarde.</div>
+  <div class="foto-loading-title">Salvando foto...</div>
+  <div class="foto-loading-sub">Aguarde enquanto a foto é processada.</div>
 </div>
 <div id="app">
   <div id="sb-overlay"></div>
@@ -388,7 +388,7 @@ html, body { overflow-x: hidden; }
             <input id="foto_capa" name="foto_capa" type="file"
                    accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
                    style="display:none">
-            <p class="upload-capa-hint">O fundo será removido automaticamente.</p>
+            <p class="upload-capa-hint">JPG, PNG ou WebP · até 10 MB.</p>
             <button type="submit" class="btn btn-primary" style="width:100%;margin-top:12px">
               {{ 'Salvar alterações' if veiculo else 'Cadastrar veículo' }}
             </button>
