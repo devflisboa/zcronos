@@ -6,6 +6,7 @@ from models import Veiculo, User, Condutor
 from services.veiculo_helper import get_veiculo_ativo
 from services.veiculo_service import validar_veiculo
 from services.foto_service import preparar_foto_capa, pasta_fotos
+from services import fipe_service as fipe
 
 veiculo_bp = Blueprint('veiculo', __name__)
 
@@ -37,6 +38,26 @@ def novo():
             db.session.add(v)
             db.session.commit()
             session['veiculo_ativo_id'] = v.id
+            # Tenta preencher FIPE automaticamente; falha silenciosa
+            try:
+                from decimal import Decimal
+                from datetime import datetime, timezone
+                cotacao = fipe.buscar_automatico(v)
+                if cotacao:
+                    v.fipe_tipo = cotacao['tipo']
+                    v.fipe_marca_id = cotacao['marca_id']
+                    v.fipe_modelo_id = cotacao['modelo_id']
+                    v.fipe_ano_id = cotacao['ano_id']
+                    v.fipe_codigo = cotacao['codigo']
+                    v.fipe_referencia = cotacao['referencia']
+                    v.fipe_valor = Decimal(cotacao['valor'])
+                    v.fipe_consultado_em = (
+                        datetime.fromisoformat(cotacao['consultado_em'])
+                        .astimezone(timezone.utc).replace(tzinfo=None)
+                    )
+                    db.session.commit()
+            except Exception:
+                db.session.rollback()
             flash(f'{v.marca} {v.modelo} cadastrado com sucesso!', 'success')
             return redirect(url_for('main.index'))
         except ValueError as erro:

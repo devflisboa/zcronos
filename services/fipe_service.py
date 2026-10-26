@@ -153,6 +153,66 @@ def consultar_valor(tipo, marca, modelo, ano, referencia):
         vigente=referencia_vigente(dados['referenceMonth']))
 
 
+def buscar_automatico(veiculo):
+    """Tenta encontrar e buscar FIPE automaticamente pelos dados do veículo.
+
+    Faz matching normalizado de marca → modelo → ano. Retorna dict de cotação
+    (mesmo formato de consultar_valor) ou None se não for possível identificar
+    de forma unívoca. Nunca lança exceção — falhas silenciosas.
+    """
+    tipo = 'cars'
+    try:
+        ref = referencia_atual()
+        # ── Marca ──────────────────────────────────────────────────────────────
+        lista_marcas = marcas(tipo, ref['code'])
+        nome_marca = normalizar(veiculo.marca)
+        candidatas_marca = [
+            m for m in lista_marcas
+            if normalizar(m['name']) == nome_marca
+            or normalizar(m['name'].split(' - ')[0]) == nome_marca
+            or nome_marca in normalizar(m['name'])
+        ]
+        if len(candidatas_marca) != 1:
+            return None
+        marca_id = candidatas_marca[0]['code']
+
+        # ── Modelo ─────────────────────────────────────────────────────────────
+        lista_modelos = modelos(tipo, marca_id, ref['code'])
+        termos_modelo = normalizar(veiculo.modelo).split()
+        candidatas_modelo = [
+            m for m in lista_modelos
+            if all(t in normalizar(m['name']) for t in termos_modelo)
+        ]
+        if not candidatas_modelo:
+            return None
+        if len(candidatas_modelo) > 1 and veiculo.versao:
+            termos_versao = normalizar(veiculo.versao).split()
+            refinados = [
+                m for m in candidatas_modelo
+                if any(t in normalizar(m['name']) for t in termos_versao)
+            ]
+            if refinados:
+                candidatas_modelo = refinados
+        # menor nome = versão mais genérica, menos risco de erro
+        candidatas_modelo.sort(key=lambda m: len(m['name']))
+        modelo_id = candidatas_modelo[0]['code']
+
+        # ── Ano/combustível ────────────────────────────────────────────────────
+        lista_anos = anos(tipo, marca_id, modelo_id, ref['code'])
+        ano_str = str(veiculo.ano)
+        candidatas_ano = [a for a in lista_anos if a['code'].startswith(ano_str + '-')]
+        if not candidatas_ano:
+            return None
+        # prefere gasolina (-1), depois flex/etanol (-3), depois outros
+        _pref = {'1': 0, '3': 1, '2': 2}
+        candidatas_ano.sort(key=lambda a: _pref.get(a['code'].split('-')[-1], 9))
+        ano_id = candidatas_ano[0]['code']
+
+        return consultar_valor(tipo, marca_id, modelo_id, ano_id, ref)
+    except Exception:
+        return None
+
+
 def interpretar_pergunta(pergunta):
     if len(pergunta) > 180:
         raise ValueError('Use uma pergunta com até 180 caracteres.')
