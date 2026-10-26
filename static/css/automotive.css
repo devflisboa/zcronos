@@ -102,6 +102,19 @@ input,select,textarea,button{font-family:inherit}
 .sb-vehicle{display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:var(--radius-s);border:1px solid var(--border)}
 .sb-plate{background:var(--bg);border:1px solid var(--border2);border-radius:5px;padding:3px 8px;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text)}
 .sb-km{font-size:11px;color:var(--text3)}
+
+/* ── Placa Mercosul (global) ── */
+.vc-placa-mercosul{border:1.5px solid #111;border-radius:6px;background:#f8f8f8;padding:0 5px 4px;min-width:88px;flex-shrink:0;box-shadow:0 1px 5px rgba(0,0,0,.55);line-height:1;user-select:none}
+.vpc-topo{background:#1455B7;border-radius:3px 3px 0 0;display:flex;align-items:center;justify-content:center;gap:3px;padding:2px 5px;margin:0 -5px 3px}
+.vpc-flag{font-size:9px;line-height:1}
+.vpc-brasil{font-family:Arial,Helvetica,sans-serif;font-size:7.5px;font-weight:800;color:#fff;letter-spacing:.8px}
+.vpc-numero{font-family:'Arial Black',Arial,Helvetica,sans-serif;font-size:14px;font-weight:900;color:#111;text-align:center;letter-spacing:1.5px}
+/* sidebar: versão menor */
+.sb-placa-mercosul{border:1.5px solid #111;border-radius:5px;background:#f8f8f8;padding:0 4px 3px;min-width:72px;box-shadow:0 1px 4px rgba(0,0,0,.5);line-height:1;flex-shrink:0}
+.sbpm-topo{background:#1455B7;border-radius:3px 3px 0 0;display:flex;align-items:center;justify-content:center;gap:2px;padding:1.5px 3px;margin:0 -4px 2px}
+.sbpm-flag{font-size:7px;line-height:1}
+.sbpm-brasil{font-family:Arial,Helvetica,sans-serif;font-size:6px;font-weight:800;color:#fff;letter-spacing:.7px}
+.sbpm-numero{font-family:'Arial Black',Arial,Helvetica,sans-serif;font-size:10px;font-weight:900;color:#111;text-align:center;letter-spacing:1px}
 .sb-km span{color:var(--text);font-weight:600}
 
 /* ── MAIN ── */

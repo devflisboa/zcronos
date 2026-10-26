@@ -89,7 +89,14 @@
       {% endif %}
       <div class="sb-vehicle">
         <div>
-          <div class="sb-plate">{{ veiculo.placa if veiculo else '—' }}</div>
+          {% if veiculo and veiculo.placa %}
+          <div class="sb-placa-mercosul">
+            <div class="sbpm-topo"><span class="sbpm-flag">🇧🇷</span><span class="sbpm-brasil">BRASIL</span></div>
+            <div class="sbpm-numero">{{ veiculo.placa }}</div>
+          </div>
+          {% else %}
+          <div class="sb-plate">—</div>
+          {% endif %}
           <div class="sb-km" style="margin-top:4px">
             <span>{{ '{:,}'.format(km_atual).replace(',','.') }}</span> km
           </div>
@@ -739,7 +746,12 @@
         {% if veiculo %}
         <div class="vehicle-hero">
           <div class="vehicle-hero-info">
-            <div class="vehicle-plate-display">{{ veiculo.placa }}</div>
+            {% if veiculo.placa %}
+            <div class="vc-placa-mercosul" style="display:inline-block;margin-bottom:16px">
+              <div class="vpc-topo"><span class="vpc-flag">🇧🇷</span><span class="vpc-brasil">BRASIL</span></div>
+              <div class="vpc-numero">{{ veiculo.placa }}</div>
+            </div>
+            {% endif %}
             <div class="vehicle-model-name">{{ veiculo.marca }} {{ veiculo.modelo }}</div>
             <div class="vehicle-version">{{ veiculo.versao }} — {{ veiculo.ano }}</div>
             <div class="vehicle-specs">
