@@ -17,7 +17,8 @@
     { "src": "/static/image/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Novo abastecimento", "url": "/abastecimento/cadastrar", "icons": [{ "src": "/static/image/icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Nova despesa", "url": "/despesa/cadastrar", "icons": [{ "src": "/static/image/icons/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Novo abastecimento", "short_name": "Abastecer", "url": "/abastecimento/cadastrar", "icons": [{ "src": "/static/image/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Nova despesa", "short_name": "Despesa", "url": "/despesa/cadastrar", "icons": [{ "src": "/static/image/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Relatórios", "short_name": "Relatórios", "url": "/relatorios/", "icons": [{ "src": "/static/image/icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }

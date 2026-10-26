@@ -585,9 +585,12 @@
         {% endif %}
 
         <div class="card gap-top">
-          <div class="card-title">Histórico e Agenda</div>
+          <div class="card-title-row">
+            <div class="card-title">Histórico e Agenda</div>
+            <input type="search" id="busca-manutencoes" placeholder="Buscar..." style="background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:6px;padding:5px 10px;font-size:13px;width:160px" oninput="filtrarTabela('tabela-manutencoes',this.value)">
+          </div>
           <div class="table-wrap">
-            <table class="auto">
+            <table class="auto" id="tabela-manutencoes">
               <thead><tr>
                 <th>Tipo</th><th>Descrição</th><th>Realizada em</th><th>Km Realizado</th><th>Prevista</th><th>Km Previsto</th><th>Custo</th><th>Status</th><th></th>
               </tr></thead>
@@ -677,6 +680,12 @@
               <li class="stat-item"><span class="stat-key">Total gasto</span><span class="stat-val">R$ {{ '%.2f'|format(custo_ano) }}</span></li>
               <li class="stat-item"><span class="stat-key">Média mensal</span><span class="stat-val">R$ {{ '%.2f'|format(media_mensal) }}</span></li>
               <li class="stat-item"><span class="stat-key">Custo por km</span><span class="stat-val">R$ {{ '%.2f'|format(custo_por_km) }}</span></li>
+              {% if projecao_ano > 0 %}
+              <li class="stat-item" style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px">
+                <span class="stat-key" style="color:var(--gold)">⟶ Projeção Dez/{{ current_date[-4:] }}</span>
+                <span class="stat-val" style="color:var(--gold)">R$ {{ '%.0f'|format(projecao_ano) }}</span>
+              </li>
+              {% endif %}
               <li class="stat-item"><span class="stat-key">Abastecimentos</span><span class="stat-val">{{ abastecimentos|length }}x</span></li>
               <li class="stat-item"><span class="stat-key">Total combustível</span><span class="stat-val">R$ {{ '%.2f'|format(gastos_combustivel_mes) }}/mês</span></li>
               <li class="stat-item"><span class="stat-key">Consumo médio</span><span class="stat-val">{{ consumo_medio }} km/L</span></li>
