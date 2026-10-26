@@ -84,7 +84,7 @@ input,select,textarea,button{font-family:inherit}
 #sidebar{width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform var(--t)}
 .sb-head{padding:20px 16px 16px;border-bottom:1px solid var(--border)}
 .sb-logo{display:flex;align-items:center;gap:10px}
-.sb-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#1A1A1E 0%,#D4AF37 100%);border:1px solid var(--gold-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#000;flex-shrink:0;font-family:'Orbitron',sans-serif}
+.sb-logo-icon{width:34px;height:34px;border-radius:8px;flex-shrink:0;display:block;object-fit:cover}
 .sb-logo-text{line-height:1.1}
 .sb-logo-brand{font-size:9px;font-weight:700;letter-spacing:3px;color:var(--text3);text-transform:uppercase}
 .sb-logo-model{font-size:15px;font-weight:700;color:var(--text)}

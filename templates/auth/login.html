@@ -7,7 +7,7 @@
 <link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
 {% include '_pwa_head.html' %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
   .auth-links { margin-top: 1.25rem; text-align: center; line-height: 1.8; }
   .auth-links a { color: #D4AF37; }
@@ -48,42 +48,14 @@
 
   .login-logo {
     text-align: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
   }
 
-  .login-logo-icon {
-    width: 72px;
-    height: 72px;
-    border-radius: 18px;
-    background: linear-gradient(135deg, #1A1A1E 0%, #D4AF37 100%);
-    border: 1px solid rgba(212,175,55,0.35);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 2rem;
-    font-weight: 900;
-    color: #000;
-    margin-bottom: 1.25rem;
-    box-shadow: 0 4px 32px rgba(212,175,55,0.25), 0 0 0 1px rgba(212,175,55,0.1);
-  }
-
-  .login-logo-brand {
-    font-size: .7rem;
-    font-weight: 600;
-    letter-spacing: .2em;
-    text-transform: uppercase;
-    color: #4e4e4e;
-    margin-bottom: .35rem;
-  }
-
-  .login-logo-model {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 800;
-    letter-spacing: .12em;
-    color: #D4AF37;
-    text-shadow: 0 0 24px rgba(212,175,55,0.3);
+  .login-logo-img {
+    width: 180px;
+    height: auto;
+    display: inline-block;
+    filter: drop-shadow(0 4px 24px rgba(212,175,55,0.2));
   }
 
   .login-card {
@@ -228,9 +200,7 @@
 
 <div class="login-wrap">
   <div class="login-logo">
-    <div class="login-logo-icon">Λ</div>
-    <div class="login-logo-brand">Gestão Automotiva</div>
-    <div class="login-logo-model">ΛUTOVIU</div>
+    <img src="{{ url_for('static', filename='image/autoviu_logo.png') }}" alt="AUTOVIU" class="login-logo-img">
   </div>
 
   <div class="login-card">

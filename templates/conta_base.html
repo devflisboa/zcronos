@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/automotive.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/conta.css') }}">
 {% block head %}{% endblock %}</head>
-<body><div id="app" class="ready"><div id="sb-overlay"></div><aside id="sidebar"><div class="sb-head"><a href="{{ url_for('main.index') }}" class="sb-logo-brand">ΛUTOVIU</a></div><nav class="sb-nav">
+<body><div id="app" class="ready"><div id="sb-overlay"></div><aside id="sidebar"><div class="sb-head"><a href="{{ url_for('main.index') }}" class="sb-logo"><img src="{{ url_for('static', filename='image/logo-icon.png') }}" alt="AUTOVIU" class="sb-logo-icon"><div class="sb-logo-text"><div class="sb-logo-brand">AUTOVIU</div><div class="sb-logo-model">Gestão Automotiva</div></div></a></div><nav class="sb-nav">
 <a class="nav-item" href="{{ url_for('main.index') }}">Dashboard</a><a class="nav-item" href="{{ url_for('veiculo.index') }}">Meus veículos</a>
 {% include '_conta_links.html' %}
 <a class="nav-item" href="{{ url_for('auth.logout') }}">Sair</a></nav></aside>
