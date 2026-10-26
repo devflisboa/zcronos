@@ -412,26 +412,76 @@ window.GARAGE_CAPA_URL = "{{ url_for('veiculo.capa', id=veiculo.id) if veiculo a
 <script>document.getElementById('app').classList.add('ready'); if(window.lucide) lucide.createIcons();</script>
 <script>
 (function(){
-  // Overlay + bloqueio de saída enquanto rembg processa a foto
   var fotoInp = document.getElementById('foto_capa');
   var overlay = document.getElementById('foto-loading-overlay');
   if (!fotoInp || !overlay) return;
 
   var processando = false;
 
-  function guardarSaida(e) {
+  // Bloqueia saída acidental durante o envio
+  window.addEventListener('beforeunload', function(e) {
     if (!processando) return;
     e.preventDefault();
-    e.returnValue = ''; // Chrome exige isso para mostrar o diálogo nativo
+    e.returnValue = '';
+  });
+
+  // Comprime a imagem no browser antes de enviar (Canvas API)
+  // Reduz foto de celular de ~8 MB para ~150 KB
+  function comprimirParaBlob(file, maxDim, quality, cb) {
+    var reader = new FileReader();
+    reader.onerror = function() { cb(null); };
+    reader.onload = function(e) {
+      var img = new Image();
+      img.onerror = function() { cb(null); };
+      img.onload = function() {
+        var w = img.naturalWidth, h = img.naturalHeight;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+          else        { w = Math.round(w * maxDim / h); h = maxDim; }
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        try {
+          canvas.toBlob(function(blob) { cb(blob); }, 'image/jpeg', quality);
+        } catch(err) { cb(null); }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   }
-  window.addEventListener('beforeunload', guardarSaida);
 
   document.querySelectorAll('form[enctype]').forEach(function(frm) {
-    frm.addEventListener('submit', function() {
-      if (fotoInp.files && fotoInp.files.length > 0) {
-        processando = true;
-        overlay.classList.add('ativo');
-      }
+    frm.addEventListener('submit', function(e) {
+      var file = fotoInp.files && fotoInp.files[0];
+      if (!file) return; // sem foto: submit normal, instantâneo
+
+      e.preventDefault();
+      processando = true;
+      overlay.classList.add('ativo');
+
+      comprimirParaBlob(file, 1000, 0.82, function(blob) {
+        var fd = new FormData(frm);
+        if (blob) {
+          fd.set('foto_capa', blob, 'capa.jpg');
+        } else {
+          // fallback: envia o arquivo original se Canvas falhar
+          fd.set('foto_capa', file, file.name);
+        }
+
+        fetch(frm.action || window.location.href, {
+          method: 'POST',
+          body: fd,
+          redirect: 'follow'
+        }).then(function(resp) {
+          processando = false;
+          window.location.href = resp.url; // segue o redirect do Flask
+        }).catch(function() {
+          processando = false;
+          overlay.classList.remove('ativo');
+          alert('Erro ao enviar a foto. Verifique sua conexão e tente novamente.');
+        });
+      });
     });
   });
 })();
