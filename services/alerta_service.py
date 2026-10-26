@@ -112,14 +112,14 @@ def processar_alertas():
                 try:
                     entregas = 0
                     if canal == 'email':
-                        enviar_email(user.email, alerta['titulo'] + ' — AUTOVIU', alerta['texto'])
+                        enviar_email(user.email, alerta['titulo'] + ' — ΛUTOVIU', alerta['texto'])
                         entregas = 1
                     else:
                         for sub in subscriptions[:]:
                             try:
                                 # Nunca colocar dados de CNH/CPF na tela bloqueada.
                                 webpush(subscription_info=sub.dados,
-                                    data=json.dumps({'title': 'AUTOVIU', 'body': 'Você tem alertas para revisar no aplicativo.'}),
+                                    data=json.dumps({'title': 'ΛUTOVIU', 'body': 'Você tem alertas para revisar no aplicativo.'}),
                                     vapid_private_key=current_app.config['VAPID_PRIVATE_KEY'],
                                     vapid_claims={'sub': current_app.config['VAPID_SUBJECT']}, timeout=10)
                                 entregas += 1

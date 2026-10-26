@@ -144,7 +144,7 @@ def criar_assinatura(user, plano, cpf, forma):
         resultado = asaas('POST', '/subscriptions', json={
             'customer': conta.customer_id, 'billingType': forma, 'value': float(assinatura.valor),
             'nextDueDate': date.today().isoformat(), 'cycle': 'MONTHLY',
-            'description': 'AUTOVIU — ' + planos[plano]['nome'],
+            'description': 'ΛUTOVIU — ' + planos[plano]['nome'],
             'externalReference': 'autoviu-assinatura:' + str(assinatura.id)})
         assinatura.gateway_id = resultado['id']
         assinatura.status = 'pendente'

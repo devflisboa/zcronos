@@ -31,11 +31,11 @@ def enviar_confirmacao(user):
         raise RuntimeError('SMTP não configurado')
     link = origem + '/auth/confirmar/' + gerar_token_confirmacao(user)
     mensagem = EmailMessage()
-    mensagem['Subject'] = 'Confirme seu e-mail — AUTOVIU'
+    mensagem['Subject'] = 'Confirme seu e-mail — ΛUTOVIU'
     mensagem['From'] = config['MAIL_DEFAULT_SENDER']
     mensagem['To'] = user.email
     mensagem.set_content(
-        'Bem-vindo ao AUTOVIU!\n\n'
+        'Bem-vindo ao ΛUTOVIU!\n\n'
         'Para confirmar seu cadastro, abra o link e clique em Confirmar e-mail:\n'
         + link + '\n\nEste link expira em 24 horas. '
         'Se você não solicitou o cadastro, ignore esta mensagem.'
@@ -84,6 +84,6 @@ def ler_token_senha(token):
 
 def enviar_recuperacao(user):
     link = public_base_url() + '/auth/redefinir-senha/' + gerar_token_senha(user)
-    enviar_email(user.email, 'Redefinir senha — AUTOVIU',
+    enviar_email(user.email, 'Redefinir senha — ΛUTOVIU',
         'Para definir uma nova senha, abra o link abaixo. Ele expira em 1 hora e funciona uma única vez.\n\n'
         + link + '\n\nSe você não solicitou, ignore esta mensagem.')

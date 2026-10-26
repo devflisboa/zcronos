@@ -13,11 +13,7 @@
 
 <!-- ═══════════════ BOOT ═══════════════ -->
 <div id="boot">
-  <img class="boot-car" src="{{ url_for('static', filename='image/autoviu_logo.png') }}" alt="AUTOVIU">
-  <div class="boot-logo">
-    <span class="boot-brand">Gestão Automotiva</span>
-    <span class="boot-model">ΛUTOVIU</span>
-  </div>
+  <img class="boot-car" src="{{ url_for('static', filename='image/autoviu_logo_card.png') }}" alt="AUTOVIU — Gestão Automotiva" width="220" height="175">
   <div class="boot-line"></div>
   <div class="boot-sub">Gestão Automotiva Inteligente</div>
   <div class="boot-bar-wrap"><div class="boot-bar"></div></div>
@@ -36,7 +32,7 @@
       <div class="sb-logo">
         <img src="{{ url_for('static', filename='image/logo-icon.png') }}" alt="AUTOVIU" class="sb-logo-icon">
         <div class="sb-logo-text">
-          <div class="sb-logo-brand">AUTOVIU</div>
+          <div class="sb-logo-brand">ΛUTOVIU</div>
           <div class="sb-logo-model">Gestão Automotiva</div>
         </div>
       </div>
@@ -82,9 +78,6 @@
     </nav>
 
     <div class="sb-footer">
-      <div class="sb-car-thumb">
-        <img src="{{ url_for('static', filename='image/autoviu_logo.png') }}" alt="AUTOVIU">
-      </div>
       <div class="sb-vehicle">
         <div>
           <div class="sb-plate">{{ veiculo.placa if veiculo else '—' }}</div>
@@ -595,7 +588,7 @@
             </div>
           </div>
           <div class="vehicle-hero-img">
-            <img src="{{ url_for('static', filename='image/autoviu_logo.png') }}" alt="AUTOVIU">
+            <img src="{{ url_for('static', filename='image/autoviu_logo_card.png') }}" alt="AUTOVIU">
           </div>
         </div>
 

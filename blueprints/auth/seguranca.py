@@ -68,7 +68,7 @@ def registro_inicio():
     existentes = WebAuthnCredential.query.filter_by(user_id=current_user.id).all()
     if len(existentes) >= 10:
         return jsonify(erro='Limite de 10 dispositivos atingido.'), 400
-    options = generate_registration_options(rp_id=rp, rp_name='AUTOVIU',
+    options = generate_registration_options(rp_id=rp, rp_name='ΛUTOVIU',
         user_id=str(current_user.id).encode(), user_name=current_user.email,
         user_display_name=current_user.nome, timeout=60000,
         exclude_credentials=[PublicKeyCredentialDescriptor(id=base64url_to_bytes(c.credential_id)) for c in existentes],

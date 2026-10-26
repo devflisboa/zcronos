@@ -42,14 +42,15 @@ describe('Fase 1 — Dashboard', () => {
 
   context('Navegação por seções', () => {
     it('clica em "Combustível" e mostra a seção correspondente', () => {
-      cy.contains(/combustível/i).first().click()
-      // Seção deve estar visível
-      cy.get('#main, main').should('be.visible')
+      cy.get('#app.ready', { timeout: 15000 })
+      cy.get('[data-section="combustivel"]').click({ force: true })
+      cy.get('#sec-combustivel').should('have.class', 'active')
     })
 
     it('clica em "Despesas" e mostra a seção', () => {
-      cy.contains(/despesas/i).first().click()
-      cy.get('#main, main').should('be.visible')
+      cy.get('#app.ready', { timeout: 15000 })
+      cy.get('[data-section="despesas"]').click({ force: true })
+      cy.get('#sec-despesas').should('have.class', 'active')
     })
   })
 })

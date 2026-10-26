@@ -1,7 +1,7 @@
 # AUTOVIU — Roadmap Fase 3
 
 **Criado em:** 24/10/2026  
-**Atualizado em:** 24/10/2026  
+**Atualizado em:** 25/10/2026  
 **Status:** Em execução
 
 ---
@@ -716,6 +716,39 @@ Referências oficiais usadas na implementação:
 
 ---
 
+## 3.9 — Identidade Visual e Aplicação da Marca
+
+**Objetivo:** aplicar a logo oficial (A amarelo + check verde + "GESTÃO AUTOMOTIVA / AUTOVIU") de forma consistente e profissional em todos os pontos de contato, sem alterar a arte original.
+
+### Entregue localmente (25/10/2026)
+
+| Item | Detalhe |
+|---|---|
+| Gerador de assets | `tools/gerar_assets_logo.py` gera tudo a partir de `static/image/autoviu_logo.png`. Reexecutar sempre que a logo mudar |
+| Logo transparente | `autoviu_logo_card.png` (ícone + texto, fundo removido; quadrado do ícone mantido 100% original) |
+| Ícone isolado | `autoviu_icon.png` (256px) e `logo-icon.png` (128px, sidebar nítida em telas retina) |
+| Login em card único | Logo dentro do card, glassmorphism (`backdrop-filter: blur(20px)`), borda dourada, inputs 56px/raio 12px, fundo bokeh dourado em CSS. Vale para todas as telas que herdam `auth/login.html` (registro, recuperação, confirmação, reautenticação) |
+| PWA / favicon | Ícones `any`, `maskable` (safe zone 80%), `apple-touch-icon` e `favicon.ico` agora usam **só o ícone** — antes a logo com texto ficava ilegível em 192px |
+| Splash do dashboard | Logo transparente com glow dourado; removido o texto "Gestão Automotiva / ΛUTOVIU" que duplicava o texto da própria logo |
+| Sidebar e hero | Removida a miniatura redundante no rodapé da sidebar; hero do veículo usa a logo transparente (sem quadrado preto) |
+
+### Ideias (backlog)
+
+| # | Ideia | Por quê | Esforço |
+|---|---|---|---|
+| 1 | **E-mails transacionais em HTML** com a logo no cabeçalho (confirmação, recuperação, alertas), mantendo a parte texto puro como alternativa (`multipart/alternative`) | Hoje os e-mails são só texto; e-mail com marca aumenta confiança e reduz chance de parecer phishing | 1 dia |
+| 2 | **Foto real de carro de luxo desfocada** no fundo do login (WebP < 150 KB, imagem licenciada), substituindo o bokeh em CSS | Fica idêntico ao mockup aprovado | ½ dia |
+| 3 | **Versão vetorial (SVG) da logo** | A arte atual é raster gerada por IA; SVG fica nítido em qualquer tamanho e permite favicon SVG | 1 dia (design) |
+| 4 | **Open Graph / preview de link** (`og:image` 1200×630, `og:title`, `twitter:card`) | Link compartilhado no WhatsApp/LinkedIn mostra a marca em vez de nada | ½ dia |
+| 5 | **Card social da galeria com a logo real** (`static/js/galeria.js` hoje escreve "ΛUTOVIU" em texto no canvas) | Consistência com a marca oficial nos posts dos usuários | ½ dia |
+| 6 | **Splash screens iOS** (`apple-touch-startup-image`) para o PWA instalado | Abertura do app no iPhone sem tela branca | ½ dia |
+| 7 | ✅ **Grafia oficial definida: ΛUTOVIU** (25/10/2026). Aplicada em sidebar, títulos, manifest PWA, e-mails, push, passkey e descrição da fatura. "AUTOVIU" permanece só em `alt` de imagens (leitor de tela), User-Agent HTTP (ASCII) e identificadores de código | Coerência de marca | feito |
+| 8 | **Guia de marca** em `Docs/` (área de respiro, tamanho mínimo, fundos permitidos, o que não fazer) | Evita usos errados em telas novas | ½ dia |
+| 9 | **Estados vazios e loading** com o ícone da marca (listas sem veículos, sem abastecimentos) | Acabamento premium | 1 dia |
+| 10 | **Telas legadas** `estatistica.html` / `estatistica_semanal.html` (Uber, layout antigo sem marca): rebrand ou remoção | Últimas telas fora do design system | a definir |
+
+---
+
 ## Prioridade de Implementação
 
 ```
@@ -730,6 +763,7 @@ Referências oficiais usadas na implementação:
 3.4  Upload CNH/CRLV     ← diferencial competitivo
 3.5  Alertas inteligentes ← retenção de usuários
 3.8  Login biométrico    ← após 3.7 (WebAuthn/Passkeys)
+3.9  Identidade visual   ← e-mails HTML + Open Graph primeiro (confiança e divulgação)
 ```
 
 ### Estimativas

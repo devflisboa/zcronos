@@ -15,7 +15,8 @@
 
   body {
     min-height: 100vh;
-    background: #0A0A0C;
+    min-height: 100dvh;
+    background: #000000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -25,54 +26,73 @@
     overflow-x: hidden;
   }
 
-  /* Glow ambiente dourado no fundo */
+  /* Fundo: bokeh dourado desfocado (interior de carro à noite) */
   body::before {
     content: '';
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(ellipse at center, rgba(212,175,55,0.07) 0%, transparent 65%);
+    inset: -40px;
+    background:
+      radial-gradient(circle at 12% 22%, rgba(255,215,0,0.30) 0, transparent 4%),
+      radial-gradient(circle at 85% 18%, rgba(212,175,55,0.35) 0, transparent 5%),
+      radial-gradient(circle at 78% 62%, rgba(255,215,0,0.22) 0, transparent 6%),
+      radial-gradient(circle at 8% 70%, rgba(212,175,55,0.25) 0, transparent 5%),
+      radial-gradient(circle at 30% 88%, rgba(255,215,0,0.18) 0, transparent 4%),
+      radial-gradient(circle at 60% 35%, rgba(212,175,55,0.16) 0, transparent 7%),
+      radial-gradient(circle at 92% 85%, rgba(255,215,0,0.20) 0, transparent 4%),
+      radial-gradient(ellipse at 50% 45%, rgba(212,175,55,0.10) 0, transparent 60%),
+      linear-gradient(160deg, #15130e 0%, #050505 55%, #0d0b07 100%);
+    filter: blur(18px);
+    pointer-events: none;
+  }
+
+  /* Overlay preto para contraste */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.7) 100%);
     pointer-events: none;
   }
 
   .login-wrap {
     width: 100%;
-    max-width: 420px;
-    padding: 2rem;
+    max-width: 440px;
+    padding: 2rem 1rem;
     position: relative;
     z-index: 1;
   }
 
-  .login-logo {
-    text-align: center;
-    margin-bottom: 2rem;
+  /* Card único: logo + form */
+  .login-card {
+    background: rgba(20,20,20,0.72);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,215,0,0.06);
   }
 
-  .login-logo-img {
-    width: 180px;
+  .logo-inside {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  /* Ícone da logo com 80px; a imagem inclui o texto, por isso 160px de largura total */
+  .logo-inside img {
+    width: 160px;
     height: auto;
     display: inline-block;
-    filter: drop-shadow(0 4px 24px rgba(212,175,55,0.2));
-  }
-
-  .login-card {
-    background: #111116;
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 18px;
-    padding: 2rem;
-    box-shadow: 0 8px 48px rgba(0,0,0,.7), 0 0 0 1px rgba(212,175,55,0.05);
+    filter: drop-shadow(0 0 15px rgba(255,215,0,0.3));
   }
 
   .login-card h2 {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #4e4e4e;
-    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: #e6e6e6;
+    margin-bottom: 1.75rem;
     text-align: center;
-    letter-spacing: .025em;
+    letter-spacing: .01em;
   }
 
   .alert {
@@ -94,18 +114,18 @@
     font-weight: 600;
     letter-spacing: .04em;
     text-transform: uppercase;
-    color: #4e4e4e;
+    color: #d0d0d0;
     margin-bottom: .5rem;
     line-height: 1.5;
   }
 
   .form-group input {
     width: 100%;
-    padding: .875rem 1rem;
-    min-height: 48px;
-    background: #0A0A0C;
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 9px;
+    padding: 0 1rem;
+    height: 56px;
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 12px;
     color: #f0f0f0;
     font-size: 1rem;
     font-family: 'Inter', sans-serif;
@@ -119,7 +139,7 @@
     box-shadow: 0 0 0 3px rgba(212,175,55,0.14);
   }
 
-  .form-group input::placeholder { color: #2e2e2e; }
+  .form-group input::placeholder { color: #6a6a6a; }
 
   .form-check {
     display: flex;
@@ -137,17 +157,17 @@
 
   .form-check label {
     font-size: .875rem;
-    color: #4e4e4e;
+    color: #c8c8c8;
     cursor: pointer;
   }
 
   .btn-login {
     width: 100%;
     padding: .875rem;
-    min-height: 52px;
+    min-height: 56px;
     background: linear-gradient(135deg, #B8960C 0%, #D4AF37 50%, #FFD700 100%);
     border: none;
-    border-radius: 9px;
+    border-radius: 12px;
     color: #000;
     font-size: 1rem;
     font-weight: 700;
@@ -175,7 +195,7 @@
     text-align: center;
     margin-top: 1.5rem;
     font-size: .78rem;
-    color: #2e2e2e;
+    color: #6a6a6a;
     letter-spacing: .04em;
   }
 
@@ -184,26 +204,31 @@
   .btn-toggle-pw {
     position: absolute; right: .75rem; top: 50%; transform: translateY(-50%);
     background: none; border: none; padding: .25rem; cursor: pointer;
-    color: #4e4e4e; display: flex; align-items: center; line-height: 1;
+    color: #9a9a9a; display: flex; align-items: center; line-height: 1;
     transition: color .15s;
   }
   .btn-toggle-pw:hover { color: #D4AF37; }
   .btn-toggle-pw:focus-visible { outline: 2px solid #D4AF37; outline-offset: 2px; border-radius: 4px; }
 
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .login-card { background: rgba(20,20,20,0.92); }
+  }
+
   @media(max-width:375px){
-    .login-wrap { padding: 1rem; }
+    .login-wrap { padding: 1rem .75rem; }
     .login-card { padding: 1.25rem; }
+    .logo-inside { margin-bottom: 24px; }
   }
 </style>
 </head>
 <body>
 
 <div class="login-wrap">
-  <div class="login-logo">
-    <img src="{{ url_for('static', filename='image/autoviu_logo.png') }}" alt="AUTOVIU" class="login-logo-img">
-  </div>
-
   <div class="login-card">
+    <div class="logo-inside">
+      <img src="{{ url_for('static', filename='image/autoviu_logo_card.png') }}" alt="AUTOVIU — Gestão Automotiva" width="160" height="127">
+    </div>
+
     {% block auth_content %}
     <h2>Acesso à plataforma</h2>
 

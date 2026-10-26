@@ -6,7 +6,7 @@
  * - Imagens e CDNs com versão fixa (lucide@x.y.z): cache primeiro
  * Ao alterar este arquivo, incrementar VERSION para descartar caches antigos.
  */
-const VERSION = 'autoviu-v2';
+const VERSION = 'autoviu-v3';
 const CACHE = VERSION + '-static';
 const OFFLINE_URL = '/static/offline.html';
 const PRECACHE = [
@@ -74,7 +74,7 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('push', event => {
-  event.waitUntil(self.registration.showNotification('AUTOVIU', {
+  event.waitUntil(self.registration.showNotification('ΛUTOVIU', {
     body: 'Você tem alertas para revisar no aplicativo.',
     icon: '/static/image/icons/icon-192.png', tag: 'autoviu-alertas',
     data: {url: '/alertas/'}
