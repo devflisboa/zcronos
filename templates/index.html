@@ -492,6 +492,46 @@
           <button class="btn btn-primary" onclick="openModal('manutencao')">+ Registrar</button>
         </div>
 
+        <!-- Odômetro Inteligente -->
+        {% if km_por_dia %}
+        <div class="card gap-top" style="border-color:var(--gold-border)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+            <div style="width:36px;height:36px;border-radius:9px;background:var(--gold-d);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <i data-lucide="gauge" style="width:18px;height:18px;stroke:var(--gold)"></i>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--gold)">Odômetro Inteligente</div>
+              <div style="font-size:12px;color:var(--text3)">Ritmo atual: <strong style="color:var(--text2)">{{ km_por_dia }} km/dia</strong> · {{ (km_por_dia * 30)|int }} km/mês estimado</div>
+            </div>
+          </div>
+          {% set tem_previsao = namespace(v=false) %}
+          {% for m in manutencoes %}
+            {% if m.km_previsto and m.status_calculado != 'realizada' %}
+              {% set tem_previsao.v = true %}
+              {% set km_rest = m.km_previsto - km_atual %}
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+                <div style="font-size:13px;color:var(--text2)">
+                  {{ m.descricao or m.tipo|capitalize }}
+                  <span style="font-size:11px;color:var(--text3);margin-left:6px">{{ '{:,}'.format(m.km_previsto).replace(',','.') }} km</span>
+                </div>
+                {% if km_rest <= 0 %}
+                <span style="font-size:12px;font-weight:700;color:var(--danger)">Km atingido!</span>
+                {% else %}
+                  {% set dias_est = (km_rest / km_por_dia)|int %}
+                  <div style="text-align:right">
+                    <div style="font-size:13px;font-weight:700;color:{% if dias_est <= 30 %}var(--danger){% elif dias_est <= 90 %}var(--warn){% else %}var(--ok){% endif %}">~{{ dias_est }} dia{{ 's' if dias_est != 1 }}</div>
+                    <div style="font-size:11px;color:var(--text3)">Faltam {{ '{:,}'.format(km_rest).replace(',','.') }} km</div>
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endfor %}
+          {% if not tem_previsao.v %}
+          <div style="font-size:13px;color:var(--text3)">Nenhuma manutenção com km previsto cadastrada.</div>
+          {% endif %}
+        </div>
+        {% endif %}
+
         <!-- Alertas -->
         {% if alertas %}
         <div class="gap-top">

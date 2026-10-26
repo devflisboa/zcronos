@@ -128,6 +128,19 @@ def get_consumo_medio(veiculo_id):
     return round(sum(medias) / len(medias), 2) if medias else 0
 
 
+def get_km_por_dia(veiculo_id):
+    abast = Abastecimento.query.filter_by(veiculo_id=veiculo_id).order_by(
+        Abastecimento.data, Abastecimento.quilometragem
+    ).all()
+    if len(abast) < 2:
+        return None
+    delta_days = (abast[-1].data - abast[0].data).days
+    delta_km = abast[-1].quilometragem - abast[0].quilometragem
+    if delta_days <= 0 or delta_km <= 0:
+        return None
+    return round(delta_km / delta_days, 1)
+
+
 def get_preco_medio_litro(veiculo_id):
     v = db.session.query(func.avg(Abastecimento.preco_combustivel)).filter(
         Abastecimento.veiculo_id == veiculo_id
@@ -264,6 +277,7 @@ def get_dashboard_data(veiculo_id):
         'custo_historico': get_custo_historico(veiculo_id),
         'ultimo_abastecimento': get_ultimo_abastecimento(veiculo_id),
         'alertas': get_alertas_manutencao(veiculo_id),
+        'km_por_dia': get_km_por_dia(veiculo_id),
         'abastecimentos': get_abastecimentos_com_consumo(veiculo_id),
         'despesas': Despesa.query.filter_by(veiculo_id=veiculo_id).order_by(
             Despesa.data.desc()
