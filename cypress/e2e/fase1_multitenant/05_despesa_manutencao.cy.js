@@ -32,13 +32,32 @@ describe('Fase 1 — Despesa e Manutenção', () => {
       cy.contains(/adicionada|sucesso/i).should('be.visible')
     })
 
-    it('DELETE /despesa/delete/99999 retorna 404 ou redirect', () => {
+    it('DELETE /despesa/delete/99999 retorna 404', () => {
       cy.visit('/')
       cy.getCsrfToken().then((token) => {
         cy.request({
           method: 'POST',
           url: '/despesa/delete/99999',
           body: { csrf_token: token },
+          form: true,
+          failOnStatusCode: false,
+          followRedirect: false,
+        }).its('status').should('eq', 404)
+      })
+    })
+
+    it('GET /despesa/editar/99999 retorna 404', () => {
+      cy.request({ url: '/despesa/editar/99999', failOnStatusCode: false })
+        .its('status').should('eq', 404)
+    })
+
+    it('POST /despesa/editar/99999 retorna 404', () => {
+      cy.visit('/')
+      cy.getCsrfToken().then((token) => {
+        cy.request({
+          method: 'POST',
+          url: '/despesa/editar/99999',
+          body: { csrf_token: token, descricao: 'Teste', valor: '100', data: '2024-01-01', categoria_id: '1' },
           form: true,
           failOnStatusCode: false,
           followRedirect: false,
